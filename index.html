@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVAKids Popup Print Manager - Professional Edition</title>
+    <title>AVAKids Popup Print Manager - Professional Visual Edition</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- SheetJS để đọc file Excel chính xác -->
+    <!-- SheetJS (Excel Importer) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Google Fonts Hỗ trợ đầy đủ tiếng Việt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;900&family=Inter:wght@400;600;700;900&family=Lato:wght@400;700;900&family=Montserrat:wght@400;600;700;900&family=Noto+Sans:wght@400;700;900&family=Open+Sans:wght@400;600;700;800&family=Oswald:wght@500;700&family=Roboto+Condensed:wght@400;700;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -46,122 +50,62 @@
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
-            [contenteditable="true"] { outline: none !important; }
         }
 
-        /* BẢO TOÀN KÍCH THƯỚC VẬT LÝ VÀ BỐ CỤC CHUẨN MIENTAY2 */
-        .popup-card {
-            background-color: #ffffff !important;
-            border: 4px solid #000000;
-            border-radius: 0px !important;
-            box-sizing: border-box;
-            text-align: center;
-            font-family: Arial, Helvetica, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        /* KHUNG VẬT LÝ POPUP CHUẨN (MM) */
+        .card-a8 { width: 52mm !important; height: 53mm !important; }
+        .card-a6 { width: 95mm !important; height: 105mm !important; }
+        .card-ngang { width: 120mm !important; height: 60mm !important; }
+        .card-tron { width: 95mm !important; height: 95mm !important; }
+
+        /* MẪU BÁT GIÁC (CLIP-PATH CHO MẪU TRÒN CŨ) */
+        .card-octagon-wrap {
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            background: #000;
+            padding: 3px;
+        }
+        .card-octagon-inner {
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            background: #fff;
+            width: 100%;
+            height: 100%;
             position: relative;
-            color: #000000;
-            overflow: hidden !important;
         }
 
-        /* 1. A8: Ngang 52mm x Dọc 53mm */
-        .card-a8 {
-            width: 52mm !important;
-            height: 53mm !important;
-            max-width: 52mm !important;
-            max-height: 53mm !important;
-            padding: 2.5mm 2.5mm 2mm 2.5mm;
+        /* KHUNG CANVAS BIÊN TẬP CỦA ADMIN */
+        .editor-canvas-stage {
+            background-image: 
+                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+            background-size: 10mm 10mm;
+            position: relative;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
         }
 
-        /* 2. A6: Ngang 95mm x Dọc 105mm (Vừa 2 cột trên A4 có lề) */
-        .card-a6 {
-            width: 95mm !important;
-            height: 105mm !important;
-            max-width: 95mm !important;
-            max-height: 105mm !important;
-            padding: 4mm;
+        .editor-layer-selected {
+            outline: 2px dashed #2563eb !important;
+            outline-offset: 1px;
+            cursor: move;
         }
 
-        /* 3. NGANG: Ngang 120mm x Dọc 60mm */
-        .card-ngang {
-            width: 120mm !important;
-            height: 60mm !important;
-            max-width: 120mm !important;
-            max-height: 60mm !important;
-            padding: 3mm 4mm;
+        .editor-layer-locked {
+            cursor: not-allowed !important;
         }
 
-        /* 4. TRÒN: Đường kính 95mm */
-        .card-tron {
-            width: 95mm !important;
-            height: 95mm !important;
-            max-width: 95mm !important;
-            max-height: 95mm !important;
-            border-radius: 50% !important;
-            padding: 6mm 4mm;
+        /* GẠCH NGANG CHUYÊN DỤNG CHO GIÁ CŨ */
+        .price-strike-line {
+            position: relative;
+            display: inline-block;
         }
-
-        .card-content-wrap {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            flex: 1 1 auto;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        /* 2 KHUNG ĐỘC LẬP TÁCH RỜI CHUẨN MẪU: ĐƯỢC ADMIN CẤU HÌNH KÍCH THƯỚC */
-        .bottom-boxes {
-            display: flex;
-            width: 100%;
-            gap: 4px;
-            align-items: stretch;
-            flex-shrink: 0;
-            justify-content: space-between;
-        }
-
-        .box-product-name {
-            border: 2px solid #000;
-            background: #fff;
-            padding: 1px 4px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .box-print-date {
-            border: 2px solid #000;
-            background: #fff;
-            padding: 1px 4px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-        }
-
-        [contenteditable="true"]:focus {
-            background-color: rgba(59, 130, 246, 0.12);
-            outline: none;
-        }
-
-        .screen-page {
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin: 0 auto 20px auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: flex-start;
-            padding: 12px;
-            border-radius: 8px;
-            max-width: 720px;
+        .price-strike-line::after {
+            content: '';
+            position: absolute;
+            left: -2px;
+            right: -2px;
+            top: 50%;
+            height: var(--strike-thick, 2px);
+            background-color: var(--strike-color, #000);
+            transform: translateY(-50%);
         }
     </style>
 </head>
@@ -169,17 +113,16 @@
 
     <!-- HEADER / NAVIGATION (NO-PRINT) -->
     <header class="no-print bg-slate-900 text-white shadow sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <span class="text-lg font-black tracking-wider text-amber-400">AVAKIDS</span>
-                <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-700">POPUP PRO</span>
+                <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-700">POPUP PRO VISUAL</span>
                 <span id="supabase-status-badge" class="text-[10px] px-2 py-0.5 rounded font-medium bg-rose-900 text-rose-200">Supabase: Ngoại tuyến</span>
             </div>
 
-            <!-- CHUYỂN ĐỔI CHẾ ĐỘ NGƯỜI DÙNG / ADMIN -->
             <div class="flex items-center gap-2">
                 <button onclick="App.switchView('user')" id="btn-view-user" class="px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white">Chế độ In ấn</button>
-                <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-3 py-1.5 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800">Quản trị (Admin)</button>
+                <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-3 py-1.5 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800">Trình thiết kế (Admin)</button>
                 <div id="admin-user-info" class="hidden items-center gap-2 border-l border-slate-700 pl-2">
                     <span id="admin-email-display" class="text-[11px] text-amber-300 font-mono"></span>
                     <button onclick="AuthManager.logout()" class="text-[11px] text-rose-400 hover:underline">Thoát</button>
@@ -191,47 +134,45 @@
     <!-- CONTAINER NỘI DUNG CHÍNH -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-3">
 
-        <!-- ========================================== -->
-        <!-- KHU VỰC 1: GIAO DIỆN NGƯỜI DÙNG (USER VIEW) -->
-        <!-- ========================================== -->
+        <!-- ======================================================= -->
+        <!-- 1. GIAO DIỆN NGƯỜI DÙNG: CHỌN MẪU, NHẬP EXCEL & IN A4 -->
+        <!-- ======================================================= -->
         <section id="user-view" class="space-y-3">
-            
-            <!-- 1. BƯỚC 1: CHỌN MẪU IN & ĐỊNH DẠNG TẠM THỜI -->
             <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5">
                     <span class="font-bold text-slate-700 mr-1">1. Loại mẫu in:</span>
                     <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="px-3 py-1.5 rounded-lg font-bold border border-blue-600 bg-blue-600 text-white">A8 (5.2x5.3cm)</button>
                     <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">A6 (9.5x10.5cm)</button>
                     <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">NGANG (12x6cm)</button>
-                    <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">TRÒN (Ø 9.5cm)</button>
+                    <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">BÁT GIÁC (9.5cm)</button>
                 </div>
 
-                <!-- TÙY CHỈNH TẠM THỜI (PHIÊN HIỆN TẠI - KHÔNG ĐỔI MẪU GỐC ADMIN) -->
                 <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
                     <span class="text-slate-400 text-[10px] font-bold">Tùy biến tạm:</span>
                     <select id="user-temp-font" onchange="TemplateEngine.applyTempFont(this.value)" class="bg-white border border-slate-300 rounded px-2 py-1 text-xs">
-                        <option value="">Font mặc định</option>
+                        <option value="">Font mặc định Admin</option>
                         <option value="Arial, sans-serif">Arial</option>
-                        <option value="'Impact', sans-serif">Impact (Chữ đậm)</option>
                         <option value="'Roboto', sans-serif">Roboto</option>
-                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Oswald', sans-serif">Oswald</option>
+                        <option value="'Roboto Condensed', sans-serif">Roboto Condensed</option>
+                        <option value="'Inter', sans-serif">Inter</option>
                     </select>
                     <button onclick="TemplateEngine.adjustTempSize(1)" class="bg-white border border-slate-300 px-2 py-1 rounded font-bold hover:bg-slate-100">A+</button>
                     <button onclick="TemplateEngine.adjustTempSize(-1)" class="bg-white border border-slate-300 px-2 py-1 rounded font-bold hover:bg-slate-100">A-</button>
-                    <button onclick="document.execCommand('strikeThrough', false, null)" class="bg-white border border-slate-300 px-2 py-1 rounded hover:bg-slate-100 font-bold" title="Bôi đen chữ rồi bấm"><s>Gạch</s></button>
                     <button onclick="TemplateEngine.resetTempSettings()" class="text-slate-400 hover:text-slate-700 ml-1 text-[11px]" title="Khôi phục chuẩn Admin">↺ Mặc định</button>
                 </div>
             </div>
 
-            <!-- 2. BƯỚC 2: NHẬP SẢN PHẨM & IMPORT EXCEL -->
+            <!-- BẢNG NHẬP THỦ CÔNG & EXCEL -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <!-- FORM NHẬP THỦ CÔNG -->
                 <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm md:col-span-1 space-y-2">
                     <div class="font-bold text-slate-800 flex justify-between items-center">
                         <span>✍️ Thêm sản phẩm thủ công</span>
-                        <span class="text-[10px] text-slate-400">Lưu vào IndexedDB</span>
+                        <span class="text-[10px] text-slate-400">IndexedDB Offline</span>
                     </div>
-                    <input type="text" id="manual-name" placeholder="Tên sản phẩm (*)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                    <input type="text" id="manual-name" placeholder="Tên sản phẩm (*)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
                     <div class="grid grid-cols-2 gap-2">
                         <input type="text" id="manual-original-price" placeholder="Giá gốc (VD: 450.000)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
                         <input type="text" id="manual-price" placeholder="Giá giảm (*) (VD: 250.000)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
@@ -245,16 +186,15 @@
                     </button>
                 </div>
 
-                <!-- IMPORT FILE EXCEL & QUY TRÌNH KIỂM CHUẨN 6 BƯỚC -->
                 <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm md:col-span-2 flex flex-col justify-between">
                     <div>
                         <div class="font-bold text-slate-800 flex items-center justify-between">
                             <span>📁 Import từ file Excel (.xlsx, .xls)</span>
-                            <span class="text-[10px] text-blue-600 font-semibold">Quy trình kiểm chuẩn 6 bước</span>
+                            <span class="text-[10px] text-blue-600 font-semibold">Quy trình kiểm định 6 bước</span>
                         </div>
-                        <p class="text-slate-500 text-[11px] mt-0.5">Hỗ trợ tự động phân tích dấu chấm/phẩy, chuẩn hóa số tiền và báo cáo dòng dữ liệu lỗi.</p>
+                        <p class="text-slate-500 text-[11px] mt-0.5">Tự động nhận diện cột giá, phân tích dấu chấm/phẩy và báo lỗi dòng.</p>
                         
-                        <div class="mt-3 border-2 border-dashed border-slate-300 rounded-lg p-3 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="document.getElementById('excel-file-input').click()">
+                        <div class="mt-2.5 border-2 border-dashed border-slate-300 rounded-lg p-3 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="document.getElementById('excel-file-input').click()">
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
                             <div class="text-slate-600 font-medium text-xs">Nhấp để chọn file Excel hoặc kéo thả vào đây</div>
                             <div id="excel-filename-display" class="text-blue-600 font-mono text-[11px] mt-1 font-bold">Chưa chọn file</div>
@@ -262,30 +202,29 @@
                     </div>
 
                     <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-2">
-                        <span class="text-[10px] text-slate-400">Dữ liệu lưu an toàn trong trình duyệt (IndexedDB)</span>
+                        <span class="text-[10px] text-slate-400">Dữ liệu lưu an toàn trên máy người dùng</span>
                         <button onclick="ProductController.clearAllProducts()" class="text-rose-600 hover:text-rose-800 text-[11px] font-bold">Xóa trắng danh sách</button>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. BƯỚC 3: BẢNG DANH SÁCH SẢN PHẨM & CHỈNH SỬA TRỰC TIẾP -->
+            <!-- BẢNG DANH SÁCH SẢN PHẨM SẴN SÀNG IN -->
             <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-slate-800">Danh sách sản phẩm in</span>
+                        <span class="font-bold text-slate-800">Danh sách sản phẩm</span>
                         <span id="badge-total-items" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-black text-[10px]">0 SP</span>
                         <span id="badge-total-prints" class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-black text-[10px]">0 Bản popup</span>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="🔍 Tìm kiếm sản phẩm..." class="px-2 py-1 border border-slate-300 rounded text-xs w-44">
+                        <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="🔍 Tìm kiếm..." class="px-2 py-1 border border-slate-300 rounded text-xs w-44">
                         <button onclick="PrintEngine.openPreviewModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-lg flex items-center gap-1 shadow">
                             <span>🖨️</span> Xem trước & In A4
                         </button>
                     </div>
                 </div>
 
-                <!-- BẢNG DỮ LIỆU ĐƯỢC PHÉP CHỈNH SỬA TRỰC TIẾP -->
                 <div class="overflow-x-auto max-h-80">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0 border-b border-slate-200">
@@ -300,117 +239,198 @@
                             </tr>
                         </thead>
                         <tbody id="product-list-tbody" class="divide-y divide-slate-100">
-                            <tr>
-                                <td colspan="7" class="text-center p-8 text-slate-400">Chưa có sản phẩm nào. Vui lòng nhập thủ công hoặc import file Excel.</td>
-                            </tr>
+                            <tr><td colspan="7" class="text-center p-8 text-slate-400">Chưa có sản phẩm. Vui lòng thêm thủ công hoặc import Excel.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- KHU VỰC 2: GIAO DIỆN ADMIN (QUẢN TRỊ VIÊN) -->
-        <!-- ========================================== -->
+        <!-- ======================================================= -->
+        <!-- 2. TRÌNH THIẾT KẾ ĐỒ HỌA TRỰC QUAN CHO ADMIN (CANVAS) -->
+        <!-- ======================================================= -->
         <section id="admin-view" class="hidden space-y-3">
             
-            <!-- MÀN HÌNH ĐĂNG NHẬP NẾU CHƯA XÁC THỰC -->
+            <!-- ĐĂNG NHẬP ADMIN -->
             <div id="admin-login-box" class="max-w-md mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-md space-y-4 my-8">
                 <div class="text-center">
-                    <h2 class="text-lg font-black text-slate-800 tracking-wide">ĐĂNG NHẬP ADMIN AVAKIDS</h2>
-                    <p class="text-slate-500 text-xs mt-1">Xác thực quyền qua Supabase để cập nhật cấu hình mẫu online</p>
+                    <h2 class="text-lg font-black text-slate-800 tracking-wide">XÁC THỰC ADMIN AVAKIDS</h2>
+                    <p class="text-slate-500 text-xs mt-1">Đăng nhập tài khoản Supabase để cấu hình trực quan</p>
                 </div>
                 <div class="space-y-3">
                     <div>
                         <label class="font-bold text-slate-700 block mb-1">Email quản trị</label>
-                        <input type="email" id="admin-email" placeholder="admin@avakids.vn" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="email" id="admin-email" placeholder="admin@avakids.vn" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
                     </div>
                     <div>
                         <label class="font-bold text-slate-700 block mb-1">Mật khẩu</label>
-                        <input type="password" id="admin-password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="password" id="admin-password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
                     </div>
                     <button onclick="AuthManager.login()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg transition">Đăng nhập</button>
                 </div>
             </div>
 
-            <!-- BẢNG ĐIỀU KHIỂN QUẢN TRỊ SAU KHI ĐĂNG NHẬP THÀNH CÔNG -->
+            <!-- BẢNG BIÊN TẬP THIẾT KẾ VISUAL CANVAS -->
             <div id="admin-panel-box" class="hidden space-y-3">
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-slate-800">Chọn mẫu cấu hình:</span>
-                        <button onclick="AdminManager.loadTemplateToEdit('A8')" id="adm-btn-A8" class="px-3 py-1 rounded font-bold border border-blue-600 bg-blue-600 text-white">Mẫu A8</button>
-                        <button onclick="AdminManager.loadTemplateToEdit('A6')" id="adm-btn-A6" class="px-3 py-1 rounded font-bold border border-slate-300 text-slate-700">Mẫu A6</button>
-                        <button onclick="AdminManager.loadTemplateToEdit('NGANG')" id="adm-btn-NGANG" class="px-3 py-1 rounded font-bold border border-slate-300 text-slate-700">Mẫu NGANG</button>
-                        <button onclick="AdminManager.loadTemplateToEdit('TRON')" id="adm-btn-TRON" class="px-3 py-1 rounded font-bold border border-slate-300 text-slate-700">Mẫu TRÒN</button>
+                
+                <!-- THANH TÁC VỤ QUẢN TRỊ TRÊN CÙNG -->
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-700 mr-1">Mẫu đang sửa:</span>
+                        <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="px-3 py-1.5 rounded font-bold border border-blue-600 bg-blue-600 text-white">Mẫu A8</button>
+                        <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="px-3 py-1.5 rounded font-bold border border-slate-300 text-slate-700">Mẫu A6</button>
+                        <button onclick="VisualDesigner.switchEditingFormat('NGANG')" id="adm-btn-NGANG" class="px-3 py-1.5 rounded font-bold border border-slate-300 text-slate-700">Mẫu NGANG</button>
+                        <button onclick="VisualDesigner.switchEditingFormat('TRON')" id="adm-btn-TRON" class="px-3 py-1.5 rounded font-bold border border-slate-300 text-slate-700">Mẫu BÁT GIÁC</button>
                     </div>
 
-                    <button onclick="AdminManager.publishTemplateOnline()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-lg shadow flex items-center gap-1">
-                        <span>🚀</span> Xuất bản Online lên Supabase
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="VisualDesigner.undo()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded font-bold" title="Hoàn tác (Ctrl+Z)">↩ Hoàn tác</button>
+                        <button onclick="VisualDesigner.redo()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded font-bold" title="Làm lại (Ctrl+Y)">↪ Làm lại</button>
+                        <button onclick="VisualDesigner.resetToDefault()" class="px-2.5 py-1.5 border border-slate-300 rounded hover:bg-slate-50 font-medium text-slate-600">Khôi phục mặc định</button>
+                        <button onclick="VisualDesigner.saveDraft()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold">Lưu nháp</button>
+                        <button onclick="VisualDesigner.publishOnline()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow flex items-center gap-1">
+                            <span>🚀</span> Xuất bản cho người dùng
+                        </button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- BẢNG THÔNG SỐ CẤU HÌNH ADMIN -->
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                        <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-2">Thông số thiết kế & Giới hạn 2 khung</h3>
+                <!-- BỐ CỤC: BÊN TRÁI THUỘC TÍNH - BÊN PHẢI VÙNG CANVAS KÉO THẢ -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+                    
+                    <!-- CỘT TRÁI: DANH SÁCH LAYER VÀ THUỘC TÍNH CHI TIẾT (5 CỘT) -->
+                    <div class="lg:col-span-5 space-y-3">
                         
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="font-bold text-slate-700 block mb-1">Tiêu đề (VD: GIẢM NGAY)</label>
-                                <input type="text" id="cfg-label" class="w-full px-2 py-1.5 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                        <!-- DANH SÁCH LỚP (LAYERS) -->
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="font-bold text-slate-800">Danh sách đối tượng (Layers)</span>
+                                <span class="text-[10px] text-slate-400">Chọn để sửa hoặc kéo trên mẫu</span>
                             </div>
-                            <div>
-                                <label class="font-bold text-slate-700 block mb-1">Cỡ chữ tiêu đề (px)</label>
-                                <input type="number" id="cfg-label-size" class="w-full px-2 py-1.5 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
-                            </div>
+                            <div id="layer-list-container" class="space-y-1 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="font-bold text-slate-700 block mb-1">Cỡ chữ giá tiền (px)</label>
-                                <input type="number" id="cfg-price-size" class="w-full px-2 py-1.5 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                        <!-- BẢNG ĐIỀU KHIỂN THUỘC TÍNH CHI TIẾT CỦA LAYER ĐƯỢC CHỌN -->
+                        <div id="property-inspector-box" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="font-bold text-slate-800" id="prop-layer-title">Thuộc tính đối tượng</span>
+                                <div class="flex items-center gap-2">
+                                    <label class="flex items-center gap-1 text-[11px] cursor-pointer">
+                                        <input type="checkbox" id="prop-layer-lock" onchange="VisualDesigner.toggleActiveLock(this.checked)">
+                                        <span>Khóa vị trí</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 text-[11px] cursor-pointer">
+                                        <input type="checkbox" id="prop-layer-visible" onchange="VisualDesigner.toggleActiveVisibility(this.checked)">
+                                        <span>Hiển thị</span>
+                                    </label>
+                                </div>
                             </div>
-                            <div>
-                                <label class="font-bold text-slate-700 block mb-1">Font chữ mặc định</label>
-                                <select id="cfg-font-family" class="w-full px-2 py-1.5 border border-slate-300 rounded" onchange="AdminManager.previewLive()">
-                                    <option value="Arial, Helvetica, sans-serif">Arial</option>
-                                    <option value="'Impact', sans-serif">Impact</option>
-                                    <option value="'Roboto', sans-serif">Roboto</option>
-                                    <option value="'Times New Roman', serif">Times New Roman</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <!-- ĐẶC TẢ NGHIỆP VỤ: ĐIỀU CHỈNH KÍCH THƯỚC 2 KHUNG TÊN SP VÀ NGÀY IN -->
-                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-                            <span class="font-bold text-slate-800 text-[11px] block text-blue-700">★ Cấu hình 2 Khung: Tên Sản Phẩm & Ngày In</span>
-                            <div class="grid grid-cols-2 gap-2">
+                            <!-- NỘI DUNG VĂN BẢN -->
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-600 block mb-1">Nội dung mẫu</label>
+                                <textarea id="prop-text-content" rows="2" class="w-full p-1.5 border border-slate-300 rounded text-xs" oninput="VisualDesigner.updateActiveText(this.value)"></textarea>
+                            </div>
+
+                            <!-- VỊ TRÍ & KÍCH THƯỚC (MM) -->
+                            <div class="grid grid-cols-4 gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
                                 <div>
-                                    <label class="text-[11px] text-slate-600 block">Tỷ lệ chiều rộng ô Tên (%)</label>
-                                    <input type="number" id="cfg-namebox-flex" min="30" max="80" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                    <label class="text-[10px] text-slate-500 block font-bold">X (mm)</label>
+                                    <input type="number" id="prop-x" step="0.5" class="w-full p-1 border border-slate-300 rounded text-xs text-center" oninput="VisualDesigner.updateActiveGeometry('x', parseFloat(this.value)||0)">
                                 </div>
                                 <div>
-                                    <label class="text-[11px] text-slate-600 block">Tỷ lệ chiều rộng ô Ngày (%)</label>
-                                    <input type="number" id="cfg-datebox-flex" min="20" max="70" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                    <label class="text-[10px] text-slate-500 block font-bold">Y (mm)</label>
+                                    <input type="number" id="prop-y" step="0.5" class="w-full p-1 border border-slate-300 rounded text-xs text-center" oninput="VisualDesigner.updateActiveGeometry('y', parseFloat(this.value)||0)">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block font-bold">Rộng (mm)</label>
+                                    <input type="number" id="prop-w" step="0.5" class="w-full p-1 border border-slate-300 rounded text-xs text-center" oninput="VisualDesigner.updateActiveGeometry('w', parseFloat(this.value)||0)">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block font-bold">Cao (mm)</label>
+                                    <input type="number" id="prop-h" step="0.5" class="w-full p-1 border border-slate-300 rounded text-xs text-center" oninput="VisualDesigner.updateActiveGeometry('h', parseFloat(this.value)||0)">
                                 </div>
                             </div>
+
+                            <!-- ĐỊNH DẠNG FONT & CỠ CHỮ -->
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="text-[11px] text-slate-600 block">Chiều cao 2 khung (px)</label>
-                                    <input type="number" id="cfg-boxes-height" min="15" max="60" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Font chữ tiếng Việt</label>
+                                    <select id="prop-font-family" class="w-full p-1.5 border border-slate-300 rounded text-xs" onchange="VisualDesigner.updateActiveStyle('fontFamily', this.value)">
+                                        <option value="Arial, sans-serif">Arial</option>
+                                        <option value="'Roboto', sans-serif">Roboto</option>
+                                        <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
+                                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                                        <option value="'Open Sans', sans-serif">Open Sans</option>
+                                        <option value="'Oswald', sans-serif">Oswald</option>
+                                        <option value="'Roboto Condensed', sans-serif">Roboto Condensed</option>
+                                        <option value="'Inter', sans-serif">Inter</option>
+                                        <option value="'Noto Sans', sans-serif">Noto Sans</option>
+                                        <option value="'Lato', sans-serif">Lato</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <label class="text-[11px] text-slate-600 block">Độ dày viền khung (px)</label>
-                                    <input type="number" id="cfg-boxes-border" min="1" max="4" step="0.5" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Cỡ chữ (px)</label>
+                                    <input type="number" id="prop-font-size" class="w-full p-1.5 border border-slate-300 rounded text-xs" oninput="VisualDesigner.updateActiveStyle('fontSize', parseInt(this.value)||10)">
+                                </div>
+                            </div>
+
+                            <!-- CĂN LỀ, MÀU & ĐẶC TÍNH RIÊNG -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Căn lề</label>
+                                    <select id="prop-text-align" class="w-full p-1.5 border border-slate-300 rounded text-xs" onchange="VisualDesigner.updateActiveStyle('textAlign', this.value)">
+                                        <option value="center">Giữa</option>
+                                        <option value="left">Trái</option>
+                                        <option value="right">Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Độ đậm</label>
+                                    <select id="prop-font-weight" class="w-full p-1.5 border border-slate-300 rounded text-xs" onchange="VisualDesigner.updateActiveStyle('fontWeight', this.value)">
+                                        <option value="900">Siêu đậm (900)</option>
+                                        <option value="700">Đậm (700)</option>
+                                        <option value="600">Vừa (600)</option>
+                                        <option value="400">Thường (400)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-600 block mb-1">Gạch ngang giá</label>
+                                    <select id="prop-strikethrough" class="w-full p-1.5 border border-slate-300 rounded text-xs" onchange="VisualDesigner.updateActiveStrike(this.value === 'yes')">
+                                        <option value="no">Tắt</option>
+                                        <option value="yes">Bật gạch</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- MÀN HÌNH XEM TRƯỚC THAY ĐỔI LIVE CỦA ADMIN -->
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
-                        <span class="text-xs font-bold text-slate-500 mb-3">Xem trước trực quan thời gian thực</span>
-                        <div id="admin-preview-render-target"></div>
+                    <!-- CỘT PHẢI: VÙNG CANVAS THIẾT KẾ TRỰC QUAN (7 CỘT) -->
+                    <div class="lg:col-span-7 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-start min-h-[550px] relative overflow-hidden">
+                        
+                        <!-- THANH ĐIỀU KHIỂN ZOOM & ĐIỀU HƯỚNG TỌA ĐỘ -->
+                        <div class="w-full flex items-center justify-between pb-3 border-b border-slate-100 text-xs mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-700">Vùng vẽ thiết kế:</span>
+                                <span id="canvas-physical-spec" class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-mono text-slate-600">52 x 53 mm</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="VisualDesigner.setZoom(0.8)" class="px-2 py-0.5 border border-slate-300 rounded">80%</button>
+                                <button onclick="VisualDesigner.setZoom(1.0)" class="px-2 py-0.5 border border-slate-300 rounded font-bold bg-slate-100">100%</button>
+                                <button onclick="VisualDesigner.setZoom(1.2)" class="px-2 py-0.5 border border-slate-300 rounded">120%</button>
+                                <button onclick="VisualDesigner.setZoom(1.5)" class="px-2 py-0.5 border border-slate-300 rounded">150%</button>
+                            </div>
+                        </div>
+
+                        <!-- KHUNG CANVAS ĐỒ HỌA THỰC THỂ -->
+                        <div class="w-full flex-1 flex items-center justify-center overflow-auto p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div id="visual-canvas-stage" class="editor-canvas-stage bg-white transition-transform origin-center">
+                                <!-- Các layer đối tượng được render động tại đây -->
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-slate-400 mt-2 text-center">
+                            Nhấp trực tiếp vào chữ trên mẫu để chọn hoặc kéo thả để di chuyển. Giữ Shift hoặc dùng các nút điều hướng để căn chỉnh mượt mà.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -418,9 +438,9 @@
 
     </main>
 
-    <!-- ========================================== -->
-    <!-- MODAL 1: QUY TRÌNH ÁNH XẠ CỘT & CHECK LỖI EXCEL -->
-    <!-- ========================================== -->
+    <!-- ======================================================= -->
+    <!-- MODAL 1: ÁNH XẠ CỘT & KIỂM TRA LỖI DỮ LIỆU EXCEL -->
+    <!-- ======================================================= -->
     <div id="excel-mapping-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
         <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-4 py-3 bg-slate-900 text-white flex justify-between items-center">
@@ -429,9 +449,8 @@
             </div>
 
             <div class="p-4 overflow-y-auto space-y-3 flex-1 text-xs">
-                <p class="text-slate-600">Hệ thống đã đọc dữ liệu từ file Excel. Vui lòng xác nhận đúng 4 cột nghiệp vụ bên dưới trước khi import:</p>
+                <p class="text-slate-600">Hệ thống đã phân tích các cột trong file Excel. Vui lòng xác nhận đúng 4 trường thông tin nghiệp vụ:</p>
 
-                <!-- ÁNH XẠ CỘT -->
                 <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <div>
                         <label class="font-bold text-slate-700 block mb-1">1. Cột Tên sản phẩm (*)</label>
@@ -451,7 +470,6 @@
                     </div>
                 </div>
 
-                <!-- BẢNG BÁO LỖI NẾU PHÁT HIỆN DÒNG BỊ LỖI CHUẨN HÓA GIÁ -->
                 <div id="excel-error-report" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
                     <span class="font-bold text-rose-800 text-[11px] block">⚠️ Phát hiện dòng dữ liệu không rõ ràng hoặc sai định dạng:</span>
                     <div class="max-h-36 overflow-y-auto">
@@ -478,13 +496,13 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL 2: XEM TRƯỚC BẢN IN A4 & IN / XUẤT PDF -->
-    <!-- ========================================== -->
+    <!-- ======================================================= -->
+    <!-- MODAL 2: XEM TRƯỚC VÀ THỰC HIỆN IN TRỰC TIẾP / PDF -->
+    <!-- ======================================================= -->
     <div id="print-preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex flex-col items-center p-3">
         <div class="no-print bg-white max-w-4xl w-full p-3 rounded-xl shadow-lg flex items-center justify-between mb-3">
             <div>
-                <span class="font-bold text-sm text-slate-800">Xem trước bản in A4 (Kích thước vật lý 1:1)</span>
+                <span class="font-bold text-sm text-slate-800">Xem trước bản in A4 (Tỷ lệ 1:1 chuẩn xác)</span>
                 <span id="preview-stat-summary" class="text-xs text-slate-500 block"></span>
             </div>
             <div class="flex items-center gap-2">
@@ -495,34 +513,35 @@
             </div>
         </div>
 
-        <div id="print-sheet-wrapper" class="w-full flex-1 overflow-y-auto flex flex-col items-center gap-4 pb-12">
-            <!-- Render các trang A4 -->
-        </div>
+        <div id="print-sheet-wrapper" class="w-full flex-1 overflow-y-auto flex flex-col items-center gap-4 pb-12"></div>
     </div>
 
     <!-- ======================================================= -->
-    <!-- LOGIC HỆ THỐNG TOÀN DIỆN (JAVASCRIPT MODULES ĐỘC LẬP) -->
+    <!-- LOGIC TOÀN DIỆN CỦA HỆ THỐNG (JAVASCRIPT MODULES) -->
     <!-- ======================================================= -->
     <script>
         /**
-         * 1. CẤU HÌNH SUPABASE & LOCAL STORAGE
+         * 1. CẤU HÌNH SUPABASE & CLIENT
          */
-        const SUPABASE_URL = "https://anknaltyafulhkoaupyc.supabase.co"; // Thay URL dự án của bạn
-        const SUPABASE_ANON_KEY = "sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz"; // Thay Anon Key của bạn
+        const SUPABASE_URL = "https://anknaltyafulhkoaupyc.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz";
         
         let supabaseClient = null;
         try {
             if (SUPABASE_URL.indexOf("your-project") === -1) {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
-        } catch(e) { console.warn("Supabase chưa được cấu hình."); }
+        } catch(e) { console.warn("Supabase Init Error:", e); }
+
+        // Tỷ lệ quy đổi chuẩn hệ Web mm sang pixel hiển thị: 1mm = 3.779527px
+        const MM_TO_PX = 3.779528;
 
         /**
-         * 2. INDEXEDDB REPOSITORY: LƯU TRỮ DỮ LIỆU RIÊNG TRÊN MÁY NGƯỜI DÙNG
+         * 2. INDEXEDDB DATABASE (LƯU TRỮ OFFLINE)
          */
         const DBManager = {
             dbName: "AvakidsPopupDB",
-            version: 1,
+            version: 2,
             db: null,
             async init() {
                 return new Promise((resolve, reject) => {
@@ -591,70 +610,79 @@
         };
 
         /**
-         * 3. TEMPLATE ENGINE: QUẢN LÝ 4 LOẠI MẪU & ĐỒNG BỘ ONLINE VỚI SUPABASE
+         * 3. TEMPLATE ENGINE: CẤU HÌNH VẬT LÝ VÀ LAYER ĐỘC LẬP TỪNG MẪU
          */
         const TemplateEngine = {
             activeFormat: 'A8',
-            // Dữ liệu mẫu chuẩn mặc định
-            templates: {
+            // Bộ mẫu mặc định dựa trên hệ tọa độ mm và từng đối tượng độc lập
+            defaultTemplates: {
                 A8: {
-                    cardBorder: 2.5,
-                    label: "GIẢM NGAY",
-                    labelFontSize: 10,
-                    labelFontWeight: "900",
-                    priceFontSize: 18,
-                    priceFontWeight: "900",
-                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
-                    subFontSize: 6.5,
-                    fontFamily: "Arial, Helvetica, sans-serif",
-                    nameBox: { flex: "0 0 62%", height: 18, borderWidth: 1.5, fontSize: 6.5 },
-                    dateBox: { flex: "0 0 35%", height: 18, borderWidth: 1.5, fontSize: 6.5 }
+                    name: "Popup A8 Nhỏ",
+                    widthMm: 52,
+                    heightMm: 53,
+                    borderWidth: 2.5,
+                    isOctagon: false,
+                    layers: [
+                        { id: "lbl", name: "Tiêu đề", text: "GIẢM NGAY", x: 2, y: 3, w: 48, h: 6, fontSize: 10, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000", x: 2, y: 10, w: 48, h: 10, fontSize: 19, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 2, y: 22, w: 48, h: 5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 2, y: 44, w: 30, h: 6.5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 33, y: 44, w: 17, h: 6.5, fontSize: 6, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                    ]
                 },
                 A6: {
-                    cardBorder: 4,
-                    label: "GIẢM NGAY",
-                    labelFontSize: 26,
-                    labelFontWeight: "900",
-                    priceFontSize: 46,
-                    priceFontWeight: "900",
-                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
-                    subFontSize: 13,
-                    fontFamily: "Arial, Helvetica, sans-serif",
-                    nameBox: { flex: "0 0 65%", height: 30, borderWidth: 2, fontSize: 12 },
-                    dateBox: { flex: "0 0 32%", height: 30, borderWidth: 2, fontSize: 12 }
+                    name: "Popup A6 Chuẩn",
+                    widthMm: 95,
+                    heightMm: 105,
+                    borderWidth: 4,
+                    isOctagon: false,
+                    layers: [
+                        { id: "lbl", name: "Tiêu đề", text: "GIẢM NGAY", x: 5, y: 8, w: 85, h: 12, fontSize: 26, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000", x: 5, y: 24, w: 85, h: 22, fontSize: 46, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 52, w: 85, h: 8, fontSize: 13, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 92, w: 56, h: 9, fontSize: 12, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 63, y: 92, w: 27, h: 9, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                    ]
                 },
                 NGANG: {
-                    cardBorder: 3,
-                    label: "GIẢM NGAY",
-                    labelFontSize: 13,
-                    labelFontWeight: "900",
-                    priceFontSize: 28,
-                    priceFontWeight: "900",
-                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
-                    subFontSize: 9.5,
-                    fontFamily: "Arial, Helvetica, sans-serif",
-                    nameBox: { flex: "0 0 65%", height: 22, borderWidth: 1.5, fontSize: 9 },
-                    dateBox: { flex: "0 0 32%", height: 22, borderWidth: 1.5, fontSize: 9 }
+                    name: "Popup Ngang",
+                    widthMm: 120,
+                    heightMm: 60,
+                    borderWidth: 3,
+                    isOctagon: false,
+                    layers: [
+                        { id: "lbl", name: "Tiêu đề", text: "GIẢM NGAY", x: 5, y: 4, w: 110, h: 8, fontSize: 14, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 32, w: 110, h: 6, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 50, w: 75, h: 7, fontSize: 9.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                    ]
                 },
                 TRON: {
-                    cardBorder: 3.5,
-                    label: "GIẢM NGAY",
-                    labelFontSize: 12,
-                    labelFontWeight: "900",
-                    priceFontSize: 26,
-                    priceFontWeight: "900",
-                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
-                    subFontSize: 8.5,
-                    fontFamily: "Arial, Helvetica, sans-serif",
-                    nameBox: { flex: "0 0 60%", height: 20, borderWidth: 1, fontSize: 7.5 },
-                    dateBox: { flex: "0 0 36%", height: 20, borderWidth: 1, fontSize: 7.5 }
+                    name: "Popup Bát Giác",
+                    widthMm: 95,
+                    heightMm: 95,
+                    borderWidth: 3.5,
+                    isOctagon: true,
+                    layers: [
+                        { id: "star", name: "Ngôi sao đỉnh", text: "★ ★ ★", x: 20, y: 4, w: 55, h: 6, fontSize: 13, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#e11d48", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "lbl", name: "Tiêu đề", text: "GIẢM SỐC", x: 15, y: 11, w: 65, h: 10, fontSize: 22, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá cũ gạch", text: "450.000 đ", x: 15, y: 23, w: 65, h: 7, fontSize: 15, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm lớn", text: "250.000 đ", x: 10, y: 31, w: 75, h: 16, fontSize: 34, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "promo", name: "Khuyến mãi", text: "TẶNG 1 QUÀ CÙNG LOẠI", x: 15, y: 50, w: 65, h: 7, fontSize: 10.5, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "prod_box", name: "Tên sản phẩm", text: "CHẢO INOX GREEN COOK 20CM", x: 12, y: 60, w: 71, h: 14, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Thời gian áp dụng", text: "Áp dụng: 10/11 - 30/11/2026", x: 15, y: 77, w: 65, h: 6, fontSize: 8.5, fontWeight: "600", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#334155", isStrike: false, isLocked: false, isVisible: true }
+                    ]
                 }
             },
-            // Tùy biến tạm thời của người dùng trong phiên làm việc
-            userTempMods: {
-                fontFamily: null,
-                sizeDelta: 0
+            templates: {},
+            userTempMods: { fontFamily: null, sizeDelta: 0 },
+
+            init() {
+                // Nạp bản sao mặc định vào bộ nhớ hoạt động
+                this.templates = JSON.parse(JSON.stringify(this.defaultTemplates));
             },
+
             async fetchTemplatesOnline() {
                 if (!supabaseClient) return;
                 try {
@@ -662,7 +690,7 @@
                     if (error) throw error;
                     if (data && data.length > 0) {
                         data.forEach(row => {
-                            if (this.templates[row.id]) {
+                            if (this.templates[row.id] && row.config) {
                                 this.templates[row.id] = row.config;
                             }
                         });
@@ -670,9 +698,10 @@
                         document.getElementById("supabase-status-badge").className = "text-[10px] px-2 py-0.5 rounded font-medium bg-emerald-900 text-emerald-200";
                     }
                 } catch(err) {
-                    console.warn("Không tải được mẫu từ Supabase:", err.message);
+                    console.warn("Chưa đồng bộ được mẫu Supabase:", err.message);
                 }
             },
+
             setUserFormat(format) {
                 this.activeFormat = format;
                 ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
@@ -684,6 +713,7 @@
                     }
                 });
             },
+
             applyTempFont(font) {
                 this.userTempMods.fontFamily = font || null;
             },
@@ -695,77 +725,419 @@
                 this.userTempMods.sizeDelta = 0;
                 document.getElementById("user-temp-font").value = "";
             },
-            renderPopupHTML(item, config, isPreview = false) {
-                const font = this.userTempMods.fontFamily || config.fontFamily;
+
+            // RENDER RA HTML IN ẤN CHUẨN XÁC DỰA VÀO CÁC LAYER ĐỘC LẬP
+            renderPopupHTML(product, tplConfig) {
+                const isOctagon = tplConfig.isOctagon;
                 const dSize = this.userTempMods.sizeDelta;
-                const today = new Date().toLocaleDateString('vi-VN');
+                const userFont = this.userTempMods.fontFamily;
 
-                let cardClass = "popup-card card-a8";
-                if (this.activeFormat === 'A6') cardClass = "popup-card card-a6";
-                else if (this.activeFormat === 'NGANG') cardClass = "popup-card card-ngang";
-                else if (this.activeFormat === 'TRON') cardClass = "popup-card card-tron justify-center items-center";
+                let layersHTML = "";
+                tplConfig.layers.forEach(layer => {
+                    if (!layer.isVisible) return;
 
-                const labelSize = Math.max(8, config.labelFontSize + dSize);
-                const priceSize = Math.max(12, config.priceFontSize + dSize);
-                const subSize = Math.max(6, config.subFontSize + dSize);
+                    let content = layer.text;
+                    // Ánh xạ dữ liệu sản phẩm tương ứng với từng layer
+                    if (layer.id === 'price') content = product.price;
+                    else if (layer.id === 'orig_price') content = product.originalPrice ? (product.originalPrice + " đ") : "";
+                    else if (layer.id === 'prod_box') content = product.name;
+                    else if (layer.id === 'promo' && product.promo) content = product.promo;
+                    else if (layer.id === 'date_box') content = `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
+
+                    if (!content) return;
+
+                    const finalFont = userFont || layer.fontFamily;
+                    const finalSize = Math.max(6, layer.fontSize + dSize);
+                    const strikeClass = layer.isStrike ? 'price-strike-line' : '';
+                    const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
+
+                    layersHTML += `
+                        <div style="
+                            position: absolute;
+                            left: ${layer.x}mm;
+                            top: ${layer.y}mm;
+                            width: ${layer.w}mm;
+                            height: ${layer.h}mm;
+                            font-family: ${finalFont};
+                            font-size: ${finalSize}px;
+                            font-weight: ${layer.fontWeight};
+                            text-align: ${layer.textAlign};
+                            color: ${layer.color};
+                            line-height: 1.15;
+                            display: flex;
+                            align-items: center;
+                            justify-content: ${layer.textAlign === 'center' ? 'center' : (layer.textAlign === 'right' ? 'flex-end' : 'flex-start')};
+                            overflow: hidden;
+                            word-break: break-word;
+                            ${borderStyle}
+                        ">
+                            <span class="${strikeClass}">${content}</span>
+                        </div>
+                    `;
+                });
+
+                if (isOctagon) {
+                    return `
+                        <div class="popup-card card-tron card-octagon-wrap" style="position: relative;">
+                            <div class="card-octagon-inner">
+                                ${layersHTML}
+                            </div>
+                        </div>
+                    `;
+                }
 
                 return `
-                    <div class="${cardClass}" style="font-family: ${font}; border-width: ${config.cardBorder}px;">
-                        <div class="card-content-wrap">
-                            <div class="uppercase tracking-tight text-black" style="font-size: ${labelSize}px; font-weight: ${config.labelFontWeight}; line-height: 1.1;" contenteditable="true">${config.label}</div>
-                            <div class="tracking-tight text-black my-1" style="font-size: ${priceSize}px; font-weight: ${config.priceFontWeight}; line-height: 1;" contenteditable="true">${item.price}</div>
-                            <div class="font-bold text-black" style="font-size: ${subSize}px; line-height: 1.1;" contenteditable="true">${item.promo || config.subText}</div>
-                        </div>
-
-                        <!-- 2 KHUNG CỐ ĐỊNH KÍCH THƯỚC BỞI ADMIN -->
-                        <div class="bottom-boxes" style="height: ${config.nameBox.height}px;">
-                            <div class="box-product-name" style="flex: ${config.nameBox.flex}; border-width: ${config.nameBox.borderWidth}px; font-size: ${config.nameBox.fontSize}px;" contenteditable="true">
-                                ${item.name}
-                            </div>
-                            <div class="box-print-date font-mono" style="flex: ${config.dateBox.flex}; border-width: ${config.dateBox.borderWidth}px; font-size: ${config.dateBox.fontSize}px;" contenteditable="true">
-                                NGÀY: ${today}
-                            </div>
-                        </div>
+                    <div class="popup-card card-${this.activeFormat.toLowerCase()}" style="
+                        position: relative;
+                        background: #fff;
+                        border: ${tplConfig.borderWidth}px solid #000;
+                    ">
+                        ${layersHTML}
                     </div>
                 `;
             }
         };
 
         /**
-         * 4. PRICE PARSER: QUY CHUẨN XỬ LÝ SỐ TIỀN & PHÁT HIỆN LỖI CHÍNH XÁC
+         * 4. VISUAL DESIGNER: TRÌNH THIẾT KẾ ĐỒ HỌA TRỰC QUAN CHO ADMIN
+         */
+        const VisualDesigner = {
+            currentFormat: 'A8',
+            currentConfig: null,
+            activeLayerId: null,
+            zoom: 1.0,
+            undoStack: [],
+            redoStack: [],
+
+            init() {
+                this.loadConfigForFormat('A8');
+            },
+
+            switchEditingFormat(format) {
+                this.currentFormat = format;
+                ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
+                    const btn = document.getElementById('adm-btn-' + f);
+                    if (btn) {
+                        btn.className = (f === format)
+                            ? "px-3 py-1.5 rounded font-bold border border-blue-600 bg-blue-600 text-white"
+                            : "px-3 py-1.5 rounded font-bold border border-slate-300 text-slate-700";
+                    }
+                });
+                this.loadConfigForFormat(format);
+            },
+
+            loadConfigForFormat(format) {
+                this.currentConfig = JSON.parse(JSON.stringify(TemplateEngine.templates[format]));
+                this.undoStack = [];
+                this.redoStack = [];
+                this.activeLayerId = this.currentConfig.layers[0]?.id || null;
+                this.renderLayersList();
+                this.renderCanvas();
+                this.updateInspectorUI();
+                document.getElementById("canvas-physical-spec").innerText = `${this.currentConfig.widthMm} x ${this.currentConfig.heightMm} mm`;
+            },
+
+            recordSnapshot() {
+                this.undoStack.push(JSON.stringify(this.currentConfig));
+                if (this.undoStack.length > 25) this.undoStack.shift();
+                this.redoStack = [];
+            },
+
+            undo() {
+                if (this.undoStack.length === 0) return;
+                this.redoStack.push(JSON.stringify(this.currentConfig));
+                this.currentConfig = JSON.parse(this.undoStack.pop());
+                this.renderLayersList();
+                this.renderCanvas();
+                this.updateInspectorUI();
+            },
+
+            redo() {
+                if (this.redoStack.length === 0) return;
+                this.undoStack.push(JSON.stringify(this.currentConfig));
+                this.currentConfig = JSON.parse(this.redoStack.pop());
+                this.renderLayersList();
+                this.renderCanvas();
+                this.updateInspectorUI();
+            },
+
+            setZoom(val) {
+                this.zoom = val;
+                const stage = document.getElementById("visual-canvas-stage");
+                stage.style.transform = `scale(${val})`;
+            },
+
+            renderLayersList() {
+                const container = document.getElementById("layer-list-container");
+                container.innerHTML = "";
+
+                this.currentConfig.layers.forEach((layer) => {
+                    const isSelected = layer.id === this.activeLayerId;
+                    const item = document.createElement("div");
+                    item.className = `p-2 rounded-lg flex items-center justify-between text-xs cursor-pointer border ${isSelected ? 'bg-blue-50 border-blue-500 font-bold' : 'bg-white border-slate-200'}`;
+                    item.onclick = () => {
+                        VisualDesigner.activeLayerId = layer.id;
+                        VisualDesigner.renderLayersList();
+                        VisualDesigner.renderCanvas();
+                        VisualDesigner.updateInspectorUI();
+                    };
+
+                    item.innerHTML = `
+                        <div class="flex items-center gap-1.5 truncate">
+                            <span class="text-slate-400 font-mono text-[10px]">${layer.id}</span>
+                            <span class="truncate">${layer.name}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded ${layer.isVisible ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-500'}">${layer.isVisible ? 'Hiện' : 'Ẩn'}</span>
+                            ${layer.isLocked ? '<span class="text-[10px] text-amber-600">🔒</span>' : ''}
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            },
+
+            renderCanvas() {
+                const stage = document.getElementById("visual-canvas-stage");
+                stage.innerHTML = "";
+
+                const wPx = this.currentConfig.widthMm * MM_TO_PX;
+                const hPx = this.currentConfig.heightMm * MM_TO_PX;
+                stage.style.width = `${wPx}px`;
+                stage.style.height = `${hPx}px`;
+                stage.style.border = `${this.currentConfig.borderWidth}px solid #000`;
+
+                if (this.currentConfig.isOctagon) {
+                    stage.style.clipPath = "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)";
+                } else {
+                    stage.style.clipPath = "none";
+                }
+
+                this.currentConfig.layers.forEach(layer => {
+                    if (!layer.isVisible) return;
+
+                    const lDiv = document.createElement("div");
+                    const isSelected = layer.id === this.activeLayerId;
+
+                    const leftPx = layer.x * MM_TO_PX;
+                    const topPx = layer.y * MM_TO_PX;
+                    const widthPx = layer.w * MM_TO_PX;
+                    const heightPx = layer.h * MM_TO_PX;
+
+                    lDiv.style.position = "absolute";
+                    lDiv.style.left = `${leftPx}px`;
+                    lDiv.style.top = `${topPx}px`;
+                    lDiv.style.width = `${widthPx}px`;
+                    lDiv.style.height = `${heightPx}px`;
+                    lDiv.style.fontFamily = layer.fontFamily;
+                    lDiv.style.fontSize = `${layer.fontSize}px`;
+                    lDiv.style.fontWeight = layer.fontWeight;
+                    lDiv.style.textAlign = layer.textAlign;
+                    lDiv.style.color = layer.color;
+                    lDiv.style.display = "flex";
+                    lDiv.style.alignItems = "center";
+                    lDiv.style.justifyContent = layer.textAlign === 'center' ? 'center' : (layer.textAlign === 'right' ? 'flex-end' : 'flex-start');
+                    lDiv.style.overflow = "hidden";
+                    lDiv.style.userSelect = "none";
+                    lDiv.style.lineHeight = "1.15";
+                    if (layer.hasBorder) lDiv.style.border = "2px solid #000";
+
+                    lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''}`;
+
+                    const strikeClass = layer.isStrike ? 'price-strike-line' : '';
+                    lDiv.innerHTML = `<span class="${strikeClass}">${layer.text}</span>`;
+
+                    // KÉO THẢ TƯƠNG TÁC (DRAG AND DROP)
+                    lDiv.onmousedown = (e) => {
+                        e.stopPropagation();
+                        VisualDesigner.activeLayerId = layer.id;
+                        VisualDesigner.renderLayersList();
+                        VisualDesigner.updateInspectorUI();
+                        VisualDesigner.renderCanvas();
+
+                        if (layer.isLocked) return;
+
+                        VisualDesigner.recordSnapshot();
+                        const startMouseX = e.clientX;
+                        const startMouseY = e.clientY;
+                        const startLayerX = layer.x;
+                        const startLayerY = layer.y;
+
+                        const onMouseMove = (moveEvt) => {
+                            const deltaXmm = (moveEvt.clientX - startMouseX) / (MM_TO_PX * VisualDesigner.zoom);
+                            const deltaYmm = (moveEvt.clientY - startMouseY) / (MM_TO_PX * VisualDesigner.zoom);
+
+                            // Giới hạn trong kích thước trang
+                            let newX = Math.round((startLayerX + deltaXmm) * 10) / 10;
+                            let newY = Math.round((startLayerY + deltaYmm) * 10) / 10;
+
+                            newX = Math.max(0, Math.min(newX, VisualDesigner.currentConfig.widthMm - layer.w));
+                            newY = Math.max(0, Math.min(newY, VisualDesigner.currentConfig.heightMm - layer.h));
+
+                            layer.x = newX;
+                            layer.y = newY;
+                            VisualDesigner.renderCanvas();
+                            VisualDesigner.updateInspectorGeometryInputs();
+                        };
+
+                        const onMouseUp = () => {
+                            window.removeEventListener("mousemove", onMouseMove);
+                            window.removeEventListener("mouseup", onMouseUp);
+                        };
+
+                        window.addEventListener("mousemove", onMouseMove);
+                        window.addEventListener("mouseup", onMouseUp);
+                    };
+
+                    stage.appendChild(lDiv);
+                });
+            },
+
+            updateInspectorUI() {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (!layer) return;
+
+                document.getElementById("prop-layer-title").innerText = `Sửa: ${layer.name} (${layer.id})`;
+                document.getElementById("prop-text-content").value = layer.text;
+                document.getElementById("prop-layer-lock").checked = !!layer.isLocked;
+                document.getElementById("prop-layer-visible").checked = !!layer.isVisible;
+                document.getElementById("prop-font-family").value = layer.fontFamily;
+                document.getElementById("prop-font-size").value = layer.fontSize;
+                document.getElementById("prop-font-weight").value = layer.fontWeight;
+                document.getElementById("prop-text-align").value = layer.textAlign;
+                document.getElementById("prop-strikethrough").value = layer.isStrike ? 'yes' : 'no';
+
+                this.updateInspectorGeometryInputs();
+            },
+
+            updateInspectorGeometryInputs() {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (!layer) return;
+                document.getElementById("prop-x").value = layer.x;
+                document.getElementById("prop-y").value = layer.y;
+                document.getElementById("prop-w").value = layer.w;
+                document.getElementById("prop-h").value = layer.h;
+            },
+
+            updateActiveText(val) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (layer) {
+                    this.recordSnapshot();
+                    layer.text = val;
+                    this.renderCanvas();
+                }
+            },
+
+            updateActiveGeometry(prop, val) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (layer) {
+                    this.recordSnapshot();
+                    layer[prop] = val;
+                    this.renderCanvas();
+                }
+            },
+
+            updateActiveStyle(prop, val) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (layer) {
+                    this.recordSnapshot();
+                    layer[prop] = val;
+                    this.renderCanvas();
+                }
+            },
+
+            updateActiveStrike(isStrike) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (layer) {
+                    this.recordSnapshot();
+                    layer.isStrike = isStrike;
+                    this.renderCanvas();
+                }
+            },
+
+            toggleActiveLock(isLocked) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (layer) {
+                    layer.isLocked = isLocked;
+                    this.renderLayersList();
+                    this.renderCanvas();
+                }
+            },
+
+            toggleActiveVisibility(isVisible) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (layer) {
+                    layer.isVisible = isVisible;
+                    this.renderLayersList();
+                    this.renderCanvas();
+                }
+            },
+
+            resetToDefault() {
+                if (confirm(`Khôi phục mẫu ${this.currentFormat} về nguyên bản ban đầu?`)) {
+                    this.recordSnapshot();
+                    this.currentConfig = JSON.parse(JSON.stringify(TemplateEngine.defaultTemplates[this.currentFormat]));
+                    this.activeLayerId = this.currentConfig.layers[0]?.id || null;
+                    this.renderLayersList();
+                    this.renderCanvas();
+                    this.updateInspectorUI();
+                }
+            },
+
+            saveDraft() {
+                TemplateEngine.templates[this.currentFormat] = JSON.parse(JSON.stringify(this.currentConfig));
+                localStorage.setItem(`draft_tpl_${this.currentFormat}`, JSON.stringify(this.currentConfig));
+                alert(`Đã lưu bản nháp mẫu ${this.currentFormat} trên trình duyệt thành công!`);
+            },
+
+            async publishOnline() {
+                if (!supabaseClient || !AuthManager.user) {
+                    alert("Yêu cầu đăng nhập tài khoản Admin Supabase để xuất bản online!");
+                    return;
+                }
+
+                try {
+                    const payload = {
+                        id: this.currentFormat,
+                        name: this.currentConfig.name,
+                        config: this.currentConfig,
+                        updated_at: new Date().toISOString(),
+                        updated_by: AuthManager.user.id
+                    };
+
+                    const { error } = await supabaseClient.from("popup_templates").upsert(payload);
+                    if (error) throw error;
+
+                    TemplateEngine.templates[this.currentFormat] = JSON.parse(JSON.stringify(this.currentConfig));
+                    alert(`Xuất bản online thành công mẫu ${this.currentFormat} lên Supabase! Tất cả người dùng sẽ nhận cấu hình mới này.`);
+                } catch(err) {
+                    alert("Lỗi xuất bản Supabase: " + err.message);
+                }
+            }
+        };
+
+        /**
+         * 5. PARSER XỬ LÝ SỐ TIỀN & NHẬN DIỆN LỖI
          */
         const PriceParser = {
             parse(raw) {
                 if (raw === null || raw === undefined) return { valid: false, error: "Dữ liệu trống" };
-                let str = String(raw).trim();
+                let str = String(raw).trim().replace(/[đĐ\sVNĐvnd]/g, '');
                 if (!str) return { valid: false, error: "Dữ liệu trống" };
 
-                // Loại bỏ đơn vị tiền tệ nếu có
-                str = str.replace(/[đĐ\sVNĐvnd]/g, '');
-
-                // Kiểm tra xung đột cả dấu chấm và dấu phẩy
                 const hasDot = str.includes('.');
                 const hasComma = str.includes(',');
 
                 if (hasDot && hasComma) {
-                    // Dạng: 1.250.000,00 hoặc 1,250,000.00
                     const lastDot = str.lastIndexOf('.');
                     const lastComma = str.lastIndexOf(',');
-                    if (lastComma > lastDot) {
-                        // Dấu phẩy là thập phân
-                        str = str.substring(0, lastComma).replace(/\./g, '');
-                    } else {
-                        // Dấu chấm là thập phân
-                        str = str.substring(0, lastDot).replace(/,/g, '');
-                    }
+                    if (lastComma > lastDot) str = str.substring(0, lastComma).replace(/\./g, '');
+                    else str = str.substring(0, lastDot).replace(/,/g, '');
                 } else if (hasDot) {
                     const parts = str.split('.');
-                    // Nếu sau dấu chấm là đúng 3 chữ số -> phân cách hàng nghìn
                     if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
                         str = str.replace(/\./g, '');
                     } else if (parts.length === 2 && parts[1].length !== 3) {
-                        // Nghi ngờ là số lẻ thập phân
-                        return { valid: false, error: "Dấu chấm không rõ ràng (nghi vấn số thập phân)", raw };
+                        return { valid: false, error: "Dấu chấm không theo chuẩn hàng nghìn", raw };
                     } else {
                         str = str.replace(/\./g, '');
                     }
@@ -779,21 +1151,19 @@
                 }
 
                 const num = Number(str);
-                if (isNaN(num) || num < 0) {
-                    return { valid: false, error: "Không thể chuyển thành số tiền hợp lệ", raw };
-                }
-
+                if (isNaN(num) || num < 0) return { valid: false, error: "Số tiền không hợp lệ", raw };
                 return { valid: true, value: num, formatted: num.toLocaleString('vi-VN') };
             }
         };
 
         /**
-         * 5. EXCEL IMPORTER: QUY TRÌNH 6 BƯỚC AN TOÀN
+         * 6. EXCEL IMPORTER (QUY TRÌNH 6 BƯỚC)
          */
         const ExcelImporter = {
             rawRows: [],
             headers: [],
             errors: [],
+
             handleFileSelected(event) {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -814,44 +1184,34 @@
 
                         this.headers = json[0].map(h => String(h).trim());
                         this.rawRows = json.slice(1).filter(r => r.length > 0);
-
                         this.openMappingModal();
                     } catch(err) {
-                        alert("Lỗi đọc file Excel: " + err.message);
+                        alert("Lỗi đọc file: " + err.message);
                     }
                 };
                 reader.readAsArrayBuffer(file);
             },
+
             openMappingModal() {
                 const modal = document.getElementById("excel-mapping-modal");
-                const selects = ["map-col-name", "map-col-price", "map-col-original-price", "map-col-promo"];
-
-                selects.forEach(selId => {
-                    const sel = document.getElementById(selId);
+                ["map-col-name", "map-col-price", "map-col-original-price", "map-col-promo"].forEach(id => {
+                    const sel = document.getElementById(id);
                     sel.innerHTML = `<option value="">-- Không chọn --</option>` + 
                         this.headers.map((h, idx) => `<option value="${idx}">${h}</option>`).join("");
                 });
 
-                // Tự động nhận diện cột thông minh theo tên
                 this.headers.forEach((h, idx) => {
                     const low = h.toLowerCase();
-                    if (low.includes("tên") || low.includes("name") || low.includes("sản phẩm")) {
-                        document.getElementById("map-col-name").value = idx;
-                    }
-                    if (low.includes("giá giảm") || low.includes("giá bán") || low.includes("giá mới") || low === "giá") {
-                        document.getElementById("map-col-price").value = idx;
-                    }
-                    if (low.includes("giá gốc") || low.includes("giá cũ") || low.includes("niêm yết")) {
-                        document.getElementById("map-col-original-price").value = idx;
-                    }
-                    if (low.includes("khuyến mãi") || low.includes("km") || low.includes("ghi chú") || low.includes("trả góp")) {
-                        document.getElementById("map-col-promo").value = idx;
-                    }
+                    if (low.includes("tên") || low.includes("sản phẩm")) document.getElementById("map-col-name").value = idx;
+                    if (low.includes("giá giảm") || low.includes("giá bán") || low === "giá") document.getElementById("map-col-price").value = idx;
+                    if (low.includes("giá gốc") || low.includes("giá cũ")) document.getElementById("map-col-original-price").value = idx;
+                    if (low.includes("khuyến mãi") || low.includes("km")) document.getElementById("map-col-promo").value = idx;
                 });
 
                 modal.classList.remove("hidden");
                 this.validateExcelData();
             },
+
             validateExcelData() {
                 const priceIdx = document.getElementById("map-col-price").value;
                 const nameIdx = document.getElementById("map-col-name").value;
@@ -865,7 +1225,7 @@
                         if (!res.valid) {
                             this.errors.push({
                                 rowNum: index + 2,
-                                productName: name || "(Trống tên)",
+                                productName: name || "(Trống)",
                                 colName: this.headers[priceIdx],
                                 rawVal: rawPrice !== undefined ? rawPrice : "(Trống)",
                                 reason: res.error
@@ -895,10 +1255,12 @@
                     errBox.classList.add("hidden");
                 }
             },
+
             closeModal() {
                 document.getElementById("excel-mapping-modal").classList.add("hidden");
                 document.getElementById("excel-file-input").value = "";
             },
+
             async confirmImport() {
                 const nameIdx = document.getElementById("map-col-name").value;
                 const priceIdx = document.getElementById("map-col-price").value;
@@ -908,12 +1270,6 @@
                 if (nameIdx === "" || priceIdx === "") {
                     alert("Bắt buộc phải chọn Cột Tên sản phẩm và Cột Giá giảm!");
                     return;
-                }
-
-                if (this.errors.length > 0) {
-                    if (!confirm(`Có ${this.errors.length} dòng gặp lỗi định dạng giá. Các dòng lỗi sẽ bị bỏ qua. Bạn có chắc chắn muốn nạp các dòng hợp lệ?`)) {
-                        return;
-                    }
                 }
 
                 const validProducts = [];
@@ -940,19 +1296,19 @@
                 });
 
                 if (validProducts.length === 0) {
-                    alert("Không có dòng dữ liệu nào hợp lệ để nạp.");
+                    alert("Không có dòng dữ liệu hợp lệ để nạp.");
                     return;
                 }
 
                 await DBManager.addProductsBatch(validProducts);
                 this.closeModal();
                 await ProductController.loadProducts();
-                alert(`Import thành công ${validProducts.length} sản phẩm vào danh sách in!`);
+                alert(`Import thành công ${validProducts.length} sản phẩm!`);
             }
         };
 
         /**
-         * 6. PRODUCT CONTROLLER: QUẢN LÝ DANH SÁCH & CHỈNH SỬA
+         * 7. PRODUCT CONTROLLER: BẢNG SẢN PHẨM & CHỈNH SỬA
          */
         const ProductController = {
             products: [],
@@ -961,12 +1317,13 @@
                 this.renderTable(this.products);
                 this.updateCounters();
             },
+
             renderTable(list) {
                 const tbody = document.getElementById("product-list-tbody");
                 tbody.innerHTML = "";
 
                 if (list.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">Danh sách trống. Vui lòng thêm sản phẩm để in.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">Chưa có sản phẩm. Vui lòng thêm thủ công hoặc import Excel.</td></tr>`;
                     return;
                 }
 
@@ -997,6 +1354,7 @@
                     tbody.appendChild(tr);
                 });
             },
+
             async updateField(id, field, value) {
                 const target = this.products.find(p => p.id === id);
                 if (target) {
@@ -1005,6 +1363,7 @@
                     this.updateCounters();
                 }
             },
+
             async addManualProduct() {
                 const name = document.getElementById("manual-name").value.trim();
                 const priceRaw = document.getElementById("manual-price").value.trim();
@@ -1013,7 +1372,7 @@
                 const qty = parseInt(document.getElementById("manual-quantity").value) || 1;
 
                 if (!name || !priceRaw) {
-                    alert("Vui lòng điền đủ Tên sản phẩm và Giá giảm!");
+                    alert("Vui lòng điền Tên sản phẩm và Giá giảm!");
                     return;
                 }
 
@@ -1030,7 +1389,7 @@
                 }
 
                 await DBManager.addProduct({
-                    name: name,
+                    name,
                     price: priceRes.formatted,
                     originalPrice: origFormatted,
                     promo: promo || "+ TRẢ GÓP 0% LÃI SUẤT",
@@ -1042,21 +1401,25 @@
                 document.getElementById("manual-original-price").value = "";
                 await this.loadProducts();
             },
+
             async deleteProduct(id) {
                 await DBManager.deleteProduct(id);
                 await this.loadProducts();
             },
+
             async clearAllProducts() {
-                if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách sản phẩm?")) {
+                if (confirm("Xác nhận xóa sạch danh sách sản phẩm?")) {
                     await DBManager.clearAll();
                     await this.loadProducts();
                 }
             },
+
             filterTable() {
-                const keyword = document.getElementById("search-product-box").value.toLowerCase().trim();
-                const filtered = this.products.filter(p => p.name.toLowerCase().includes(keyword));
+                const kw = document.getElementById("search-product-box").value.toLowerCase().trim();
+                const filtered = this.products.filter(p => p.name.toLowerCase().includes(kw));
                 this.renderTable(filtered);
             },
+
             updateCounters() {
                 const totalItems = this.products.length;
                 const totalPrints = this.products.reduce((sum, p) => sum + (p.quantity || 1), 0);
@@ -1066,13 +1429,14 @@
         };
 
         /**
-         * 7. PRINT ENGINE: TÍNH TOÁN SỐ LƯỢNG IN CHÍNH XÁC VÀ DÀN TRANG A4 VẬT LÝ
+         * 8. PRINT ENGINE: TÍNH TOÁN DÀN TRANG A4 VẬT LÝ
          */
         const PrintEngine = {
             capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'TRON': 4 },
+
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
-                    alert("Danh sách sản phẩm in đang trống!");
+                    alert("Danh sách in đang trống!");
                     return;
                 }
 
@@ -1080,13 +1444,11 @@
                 const wrapper = document.getElementById("print-sheet-wrapper");
                 wrapper.innerHTML = "";
 
-                // 1. NHÂN BẢN POPUP CHÍNH XÁC THEO SỐ LƯỢNG (QUANTITY) CỦA TỪNG SẢN PHẨM
+                // Nhân bản chính xác theo số lượng in
                 const printList = [];
                 ProductController.products.forEach(p => {
                     const qty = p.quantity || 1;
-                    for (let i = 0; i < qty; i++) {
-                        printList.push(p);
-                    }
+                    for (let i = 0; i < qty; i++) printList.push(p);
                 });
 
                 const format = TemplateEngine.activeFormat;
@@ -1098,14 +1460,13 @@
 
                 const config = TemplateEngine.templates[format];
 
-                // 2. DÀN TRANG A4 VẬT LÝ (KHÔNG CO GIÃN)
                 for (let page = 0; page < totalPages; page++) {
                     const pageItems = printList.slice(page * capacity, (page + 1) * capacity);
                     const pageDiv = document.createElement("div");
-                    pageDiv.className = "print-page screen-page";
+                    pageDiv.className = "print-page bg-white shadow-xl p-2";
 
                     pageItems.forEach(item => {
-                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config, true);
+                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config);
                     });
 
                     wrapper.appendChild(pageDiv);
@@ -1113,13 +1474,14 @@
 
                 modal.classList.remove("hidden");
             },
+
             closeModal() {
                 document.getElementById("print-preview-modal").classList.add("hidden");
             }
         };
 
         /**
-         * 8. AUTH MANAGER: ĐĂNG NHẬP & BẢO VỆ PHÂN QUYỀN ADMIN
+         * 9. AUTH MANAGER: PHÂN QUYỀN ADMIN
          */
         const AuthManager = {
             user: null,
@@ -1133,23 +1495,17 @@
             },
             async login() {
                 if (!supabaseClient) {
-                    alert("Chưa cấu hình SUPABASE_URL và SUPABASE_ANON_KEY trong file script.");
+                    alert("Chưa cấu hình Supabase Client!");
                     return;
                 }
                 const email = document.getElementById("admin-email").value.trim();
                 const password = document.getElementById("admin-password").value.trim();
-                if (!email || !password) {
-                    alert("Vui lòng điền email và mật khẩu Admin.");
-                    return;
-                }
-
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) {
-                    alert("Đăng nhập thất bại: " + error.message);
-                } else {
+                if (error) alert("Đăng nhập thất bại: " + error.message);
+                else {
                     this.user = data.user;
                     this.updateUI();
-                    AdminManager.loadTemplateToEdit('A8');
+                    VisualDesigner.init();
                 }
             },
             async logout() {
@@ -1179,89 +1535,11 @@
         };
 
         /**
-         * 9. ADMIN MANAGER: CHỈNH SỬA & XUẤT BẢN CẤU HÌNH ONLINE
-         */
-        const AdminManager = {
-            editingFormat: 'A8',
-            tempConfig: null,
-            loadTemplateToEdit(format) {
-                this.editingFormat = format;
-                ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
-                    const btn = document.getElementById('adm-btn-' + f);
-                    if (btn) {
-                        btn.className = (f === format)
-                            ? "px-3 py-1 rounded font-bold border border-blue-600 bg-blue-600 text-white"
-                            : "px-3 py-1 rounded font-bold border border-slate-300 text-slate-700";
-                    }
-                });
-
-                this.tempConfig = JSON.parse(JSON.stringify(TemplateEngine.templates[format]));
-                
-                document.getElementById("cfg-label").value = this.tempConfig.label;
-                document.getElementById("cfg-label-size").value = this.tempConfig.labelFontSize;
-                document.getElementById("cfg-price-size").value = this.tempConfig.priceFontSize;
-                document.getElementById("cfg-font-family").value = this.tempConfig.fontFamily;
-                
-                // 2 khung độc lập
-                document.getElementById("cfg-namebox-flex").value = parseInt(this.tempConfig.nameBox.flex.split(" ")[2]) || 65;
-                document.getElementById("cfg-datebox-flex").value = parseInt(this.tempConfig.dateBox.flex.split(" ")[2]) || 32;
-                document.getElementById("cfg-boxes-height").value = this.tempConfig.nameBox.height;
-                document.getElementById("cfg-boxes-border").value = this.tempConfig.nameBox.borderWidth;
-
-                this.previewLive();
-            },
-            previewLive() {
-                this.tempConfig.label = document.getElementById("cfg-label").value;
-                this.tempConfig.labelFontSize = parseInt(document.getElementById("cfg-label-size").value) || 12;
-                this.tempConfig.priceFontSize = parseInt(document.getElementById("cfg-price-size").value) || 24;
-                this.tempConfig.fontFamily = document.getElementById("cfg-font-family").value;
-
-                const nameFlex = document.getElementById("cfg-namebox-flex").value;
-                const dateFlex = document.getElementById("cfg-datebox-flex").value;
-                const bHeight = parseInt(document.getElementById("cfg-boxes-height").value) || 20;
-                const bBorder = parseFloat(document.getElementById("cfg-boxes-border").value) || 2;
-
-                this.tempConfig.nameBox = { flex: `0 0 ${nameFlex}%`, height: bHeight, borderWidth: bBorder, fontSize: Math.max(6, bHeight * 0.4) };
-                this.tempConfig.dateBox = { flex: `0 0 ${dateFlex}%`, height: bHeight, borderWidth: bBorder, fontSize: Math.max(6, bHeight * 0.4) };
-
-                const target = document.getElementById("admin-preview-render-target");
-                const sampleItem = { name: "CHẢO INOX GREEN COOK 20CM", price: "250.000", promo: "+ TRẢ GÓP 0% LÃI SUẤT" };
-                
-                // Mượn hàm render
-                const oldActive = TemplateEngine.activeFormat;
-                TemplateEngine.activeFormat = this.editingFormat;
-                target.innerHTML = TemplateEngine.renderPopupHTML(sampleItem, this.tempConfig, true);
-                TemplateEngine.activeFormat = oldActive;
-            },
-            async publishTemplateOnline() {
-                if (!supabaseClient || !AuthManager.user) {
-                    alert("Chỉ tài khoản Admin đã đăng nhập mới có quyền xuất bản online!");
-                    return;
-                }
-
-                try {
-                    const { error } = await supabaseClient.from("popup_templates").upsert({
-                        id: this.editingFormat,
-                        name: `Mẫu ${this.editingFormat}`,
-                        config: this.tempConfig,
-                        updated_at: new Date().toISOString(),
-                        updated_by: AuthManager.user.id
-                    });
-
-                    if (error) throw error;
-                    TemplateEngine.templates[this.editingFormat] = JSON.parse(JSON.stringify(this.tempConfig));
-                    alert(`Xuất bản thành công mẫu ${this.editingFormat} lên Supabase! Mọi người dùng sẽ nhận được mẫu này.`);
-                } catch(err) {
-                    alert("Lỗi xuất bản mẫu lên Supabase: " + err.message);
-                }
-            }
-        };
-
-        /**
-         * 10. APP CONTROLLER: BỘ KHỞI ĐỘNG HỆ THỐNG
+         * 10. APP CONTROLLER: ĐIỀU PHỐI VÀ KHỞI TẠO
          */
         const App = {
             async init() {
+                TemplateEngine.init();
                 await DBManager.init();
                 await TemplateEngine.fetchTemplatesOnline();
                 await ProductController.loadProducts();
@@ -1284,7 +1562,7 @@
                     btnAdmin.className = "px-3 py-1.5 rounded text-xs font-bold bg-amber-600 text-white";
                     btnUser.className = "px-3 py-1.5 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800";
                     if (AuthManager.user) {
-                        AdminManager.loadTemplateToEdit(AdminManager.editingFormat);
+                        VisualDesigner.init();
                     }
                 }
             }
