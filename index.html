@@ -92,20 +92,11 @@
             cursor: not-allowed !important;
         }
 
-        /* GẠCH NGANG CHUYÊN DỤNG CHO GIÁ CŨ */
+        /* GẠCH NGANG CHUYÊN DỤNG CHO GIÁ CŨ (ĐÃ FIX LỖI ĐƯỜNG DÀI) */
         .price-strike-line {
-            position: relative;
-            display: inline-block;
-        }
-        .price-strike-line::after {
-            content: '';
-            position: absolute;
-            left: -2px;
-            right: -2px;
-            top: 50%;
-            height: var(--strike-thick, 2px);
-            background-color: var(--strike-color, #475569);
-            transform: translateY(-50%);
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: #475569;
         }
         
         /* CHỮ TỰ ĐỘNG IN HOA (UPPERCASE) CHO TẤT CẢ LAYER */
