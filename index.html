@@ -104,7 +104,7 @@
             right: -2px;
             top: 50%;
             height: var(--strike-thick, 2px);
-            background-color: var(--strike-color, #000);
+            background-color: var(--strike-color, #475569);
             transform: translateY(-50%);
         }
     </style>
@@ -174,7 +174,7 @@
                     </div>
                     <input type="text" id="manual-name" placeholder="Tên sản phẩm (*)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="manual-original-price" placeholder="Giá gốc (VD: 450.000)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
+                        <input type="text" id="manual-original-price" placeholder="Giá gốc (để trống nếu không có)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
                         <input type="text" id="manual-price" placeholder="Giá giảm (*) (VD: 250.000)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
                     </div>
                     <div class="grid grid-cols-3 gap-2">
@@ -637,7 +637,7 @@
                     borderWidth: 4,
                     isOctagon: false,
                     layers: [
-                        { id: "lbl", name: "Tiêu đề", text: "GIẢM NGAY", x: 5, y: 8, w: 85, h: 12, fontSize: 26, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá gốc", text: "680.000 đ", x: 5, y: 8, w: 85, h: 12, fontSize: 22, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
                         { id: "price", name: "Giá giảm", text: "250.000", x: 5, y: 24, w: 85, h: 22, fontSize: 46, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 52, w: 85, h: 8, fontSize: 13, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 92, w: 56, h: 9, fontSize: 12, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
@@ -651,7 +651,7 @@
                     borderWidth: 3,
                     isOctagon: false,
                     layers: [
-                        { id: "lbl", name: "Tiêu đề", text: "GIẢM NGAY", x: 5, y: 4, w: 110, h: 8, fontSize: 14, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá gốc", text: "680.000 đ", x: 5, y: 4, w: 110, h: 8, fontSize: 14, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
                         { id: "price", name: "Giá giảm", text: "250.000", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 32, w: 110, h: 6, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 50, w: 75, h: 7, fontSize: 9.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
@@ -735,11 +735,21 @@
                     if (!layer.isVisible) return;
 
                     let content = layer.text;
-                    if (layer.id === 'price') content = product.price;
-                    else if (layer.id === 'orig_price') content = product.originalPrice ? (product.originalPrice + " đ") : "";
-                    else if (layer.id === 'prod_box') content = product.name;
-                    else if (layer.id === 'promo' && product.promo) content = product.promo;
-                    else if (layer.id === 'date_box') content = `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
+                    if (layer.id === 'price') {
+                        content = product.price;
+                    } else if (layer.id === 'orig_price') {
+                        // NẾU KHÔNG CÓ GIÁ GỐC THÌ ĐỂ TRỐNG (ẨN LAYER NÀY)
+                        if (!product.originalPrice || String(product.originalPrice).trim() === "") {
+                            return;
+                        }
+                        content = String(product.originalPrice).trim() + " đ";
+                    } else if (layer.id === 'prod_box') {
+                        content = product.name;
+                    } else if (layer.id === 'promo') {
+                        content = product.promo || layer.text;
+                    } else if (layer.id === 'date_box') {
+                        content = `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
+                    }
 
                     if (!content) return;
 
