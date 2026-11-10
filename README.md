@@ -1,0 +1,1 @@
+# avakids-popup-manager
