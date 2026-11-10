@@ -65,10 +65,10 @@
             background: #94a3b8; 
         }
 
-        /* --- BẢO TOÀN CSS IN ẤN (KHÔNG CHẠM VÀO LOGIC IN) --- */
+        /* --- BẢO TOÀN CSS IN ẤN --- */
         @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 8mm; /* Lề vật lý chuẩn 8mm */
         }
 
         @media print {
@@ -77,21 +77,40 @@
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                overflow: visible !important;
             }
             .print-page {
-                width: 194mm !important;
-                height: 281mm !important;
+                width: 194mm !important; /* Lấy 210mm trừ lề 2 bên (8mm x 2 = 16mm) */
+                height: 281mm !important; /* Lấy 297mm trừ lề 2 bên (8mm x 2 = 16mm) */
                 margin: 0 auto !important;
                 page-break-after: always;
                 display: flex !important;
                 flex-wrap: wrap !important;
                 align-content: flex-start !important;
-                gap: 4mm !important;
+                justify-content: center !important; /* Dàn đều các item vào giữa để tránh sát lề phải */
+                gap: 2mm !important; 
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
             }
             .popup-card {
                 box-shadow: none !important;
                 break-inside: avoid;
                 page-break-inside: avoid;
+                flex-shrink: 0 !important;
+            }
+            /* Reset modal styles for printing */
+            #print-preview-modal {
+                position: static !important;
+                background: none !important;
+                display: block !important;
+                padding: 0 !important;
+            }
+            #print-sheet-wrapper {
+                overflow: visible !important;
+                height: auto !important;
+                gap: 0 !important;
+                padding: 0 !important;
             }
         }
 
@@ -375,7 +394,7 @@
                 <div class="flex items-center gap-4">
                     <h2 class="text-lg font-bold text-slate-800">Cấu hình In</h2>
                     
-                    <!-- Segmented Control Chọn Mẫu (Thay thế cho các nút cũ, GIỮ NGUYÊN ID) -->
+                    <!-- Segmented Control Chọn Mẫu -->
                     <div class="segmented-control" id="template-selector">
                         <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active">A8 Nhỏ</button>
                         <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn">A6 Chuẩn</button>
