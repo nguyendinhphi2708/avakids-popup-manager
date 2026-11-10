@@ -524,6 +524,7 @@
          * 1. CẤU HÌNH SUPABASE & CLIENT
          */
         const SUPABASE_URL = "https://anknaltyafulhkoaupyc.supabase.co";
+        // Thay chuỗi eyJ... anon key của bạn vào đây
         const SUPABASE_ANON_KEY = "sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz";
         
         let supabaseClient = null;
@@ -614,7 +615,6 @@
          */
         const TemplateEngine = {
             activeFormat: 'A8',
-            // Bộ mẫu mặc định dựa trên hệ tọa độ mm và từng đối tượng độc lập
             defaultTemplates: {
                 A8: {
                     name: "Popup A8 Nhỏ",
@@ -623,7 +623,7 @@
                     borderWidth: 2.5,
                     isOctagon: false,
                     layers: [
-                        { id: "orig_price", name: "Giá gốc", text: "450.000 đ", x: 2, y: 3, w: 48, h: 6, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true }
+                        { id: "orig_price", name: "Giá gốc", text: "450.000 đ", x: 2, y: 3, w: 48, h: 6, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
                         { id: "price", name: "Giá giảm", text: "250.000", x: 2, y: 10, w: 48, h: 10, fontSize: 19, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 2, y: 22, w: 48, h: 5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 2, y: 44, w: 30, h: 6.5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
@@ -679,7 +679,6 @@
             userTempMods: { fontFamily: null, sizeDelta: 0 },
 
             init() {
-                // Nạp bản sao mặc định vào bộ nhớ hoạt động
                 this.templates = JSON.parse(JSON.stringify(this.defaultTemplates));
             },
 
@@ -726,7 +725,6 @@
                 document.getElementById("user-temp-font").value = "";
             },
 
-            // RENDER RA HTML IN ẤN CHUẨN XÁC DỰA VÀO CÁC LAYER ĐỘC LẬP
             renderPopupHTML(product, tplConfig) {
                 const isOctagon = tplConfig.isOctagon;
                 const dSize = this.userTempMods.sizeDelta;
@@ -737,7 +735,6 @@
                     if (!layer.isVisible) return;
 
                     let content = layer.text;
-                    // Ánh xạ dữ liệu sản phẩm tương ứng với từng layer
                     if (layer.id === 'price') content = product.price;
                     else if (layer.id === 'orig_price') content = product.originalPrice ? (product.originalPrice + " đ") : "";
                     else if (layer.id === 'prod_box') content = product.name;
@@ -946,7 +943,6 @@
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
                     lDiv.innerHTML = `<span class="${strikeClass}">${layer.text}</span>`;
 
-                    // KÉO THẢ TƯƠNG TÁC (DRAG AND DROP)
                     lDiv.onmousedown = (e) => {
                         e.stopPropagation();
                         VisualDesigner.activeLayerId = layer.id;
@@ -966,7 +962,6 @@
                             const deltaXmm = (moveEvt.clientX - startMouseX) / (MM_TO_PX * VisualDesigner.zoom);
                             const deltaYmm = (moveEvt.clientY - startMouseY) / (MM_TO_PX * VisualDesigner.zoom);
 
-                            // Giới hạn trong kích thước trang
                             let newX = Math.round((startLayerX + deltaXmm) * 10) / 10;
                             let newY = Math.round((startLayerY + deltaYmm) * 10) / 10;
 
@@ -1444,7 +1439,6 @@
                 const wrapper = document.getElementById("print-sheet-wrapper");
                 wrapper.innerHTML = "";
 
-                // Nhân bản chính xác theo số lượng in
                 const printList = [];
                 ProductController.products.forEach(p => {
                     const qty = p.quantity || 1;
