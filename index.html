@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVAKids Popup Print Manager - Professional Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS để đọc file Excel chính xác -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* THIẾT LẬP KHỔ IN A4 VẬT LÝ */
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .print-page {
+                width: 194mm !important;
+                height: 281mm !important;
+                margin: 0 auto !important;
+                page-break-after: always;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-content: flex-start !important;
+                gap: 4mm !important;
+            }
+            .popup-card {
+                box-shadow: none !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            [contenteditable="true"] { outline: none !important; }
+        }
+
+        /* BẢO TOÀN KÍCH THƯỚC VẬT LÝ VÀ BỐ CỤC CHUẨN MIENTAY2 */
+        .popup-card {
+            background-color: #ffffff !important;
+            border: 4px solid #000000;
+            border-radius: 0px !important;
+            box-sizing: border-box;
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            color: #000000;
+            overflow: hidden !important;
+        }
+
+        /* 1. A8: Ngang 52mm x Dọc 53mm */
+        .card-a8 {
+            width: 52mm !important;
+            height: 53mm !important;
+            max-width: 52mm !important;
+            max-height: 53mm !important;
+            padding: 2.5mm 2.5mm 2mm 2.5mm;
+        }
+
+        /* 2. A6: Ngang 95mm x Dọc 105mm (Vừa 2 cột trên A4 có lề) */
+        .card-a6 {
+            width: 95mm !important;
+            height: 105mm !important;
+            max-width: 95mm !important;
+            max-height: 105mm !important;
+            padding: 4mm;
+        }
+
+        /* 3. NGANG: Ngang 120mm x Dọc 60mm */
+        .card-ngang {
+            width: 120mm !important;
+            height: 60mm !important;
+            max-width: 120mm !important;
+            max-height: 60mm !important;
+            padding: 3mm 4mm;
+        }
+
+        /* 4. TRÒN: Đường kính 95mm */
+        .card-tron {
+            width: 95mm !important;
+            height: 95mm !important;
+            max-width: 95mm !important;
+            max-height: 95mm !important;
+            border-radius: 50% !important;
+            padding: 6mm 4mm;
+        }
+
+        .card-content-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1 1 auto;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* 2 KHUNG ĐỘC LẬP TÁCH RỜI CHUẨN MẪU: ĐƯỢC ADMIN CẤU HÌNH KÍCH THƯỚC */
+        .bottom-boxes {
+            display: flex;
+            width: 100%;
+            gap: 4px;
+            align-items: stretch;
+            flex-shrink: 0;
+            justify-content: space-between;
+        }
+
+        .box-product-name {
+            border: 2px solid #000;
+            background: #fff;
+            padding: 1px 4px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .box-print-date {
+            border: 2px solid #000;
+            background: #fff;
+            padding: 1px 4px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        [contenteditable="true"]:focus {
+            background-color: rgba(59, 130, 246, 0.12);
+            outline: none;
+        }
+
+        .screen-page {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 0 auto 20px auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-start;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 720px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 text-xs flex flex-col min-h-screen">
+
+    <!-- HEADER / NAVIGATION (NO-PRINT) -->
+    <header class="no-print bg-slate-900 text-white shadow sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-lg font-black tracking-wider text-amber-400">AVAKIDS</span>
+                <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-700">POPUP PRO</span>
+                <span id="supabase-status-badge" class="text-[10px] px-2 py-0.5 rounded font-medium bg-rose-900 text-rose-200">Supabase: Ngoại tuyến</span>
+            </div>
+
+            <!-- CHUYỂN ĐỔI CHẾ ĐỘ NGƯỜI DÙNG / ADMIN -->
+            <div class="flex items-center gap-2">
+                <button onclick="App.switchView('user')" id="btn-view-user" class="px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white">Chế độ In ấn</button>
+                <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-3 py-1.5 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800">Quản trị (Admin)</button>
+                <div id="admin-user-info" class="hidden items-center gap-2 border-l border-slate-700 pl-2">
+                    <span id="admin-email-display" class="text-[11px] text-amber-300 font-mono"></span>
+                    <button onclick="AuthManager.logout()" class="text-[11px] text-rose-400 hover:underline">Thoát</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTAINER NỘI DUNG CHÍNH -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3">
+
+        <!-- ========================================== -->
+        <!-- KHU VỰC 1: GIAO DIỆN NGƯỜI DÙNG (USER VIEW) -->
+        <!-- ========================================== -->
+        <section id="user-view" class="space-y-3">
+            
+            <!-- 1. BƯỚC 1: CHỌN MẪU IN & ĐỊNH DẠNG TẠM THỜI -->
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-700 mr-1">1. Loại mẫu in:</span>
+                    <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="px-3 py-1.5 rounded-lg font-bold border border-blue-600 bg-blue-600 text-white">A8 (5.2x5.3cm)</button>
+                    <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">A6 (9.5x10.5cm)</button>
+                    <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">NGANG (12x6cm)</button>
+                    <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50">TRÒN (Ø 9.5cm)</button>
+                </div>
+
+                <!-- TÙY CHỈNH TẠM THỜI (PHIÊN HIỆN TẠI - KHÔNG ĐỔI MẪU GỐC ADMIN) -->
+                <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+                    <span class="text-slate-400 text-[10px] font-bold">Tùy biến tạm:</span>
+                    <select id="user-temp-font" onchange="TemplateEngine.applyTempFont(this.value)" class="bg-white border border-slate-300 rounded px-2 py-1 text-xs">
+                        <option value="">Font mặc định</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Impact', sans-serif">Impact (Chữ đậm)</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                    </select>
+                    <button onclick="TemplateEngine.adjustTempSize(1)" class="bg-white border border-slate-300 px-2 py-1 rounded font-bold hover:bg-slate-100">A+</button>
+                    <button onclick="TemplateEngine.adjustTempSize(-1)" class="bg-white border border-slate-300 px-2 py-1 rounded font-bold hover:bg-slate-100">A-</button>
+                    <button onclick="document.execCommand('strikeThrough', false, null)" class="bg-white border border-slate-300 px-2 py-1 rounded hover:bg-slate-100 font-bold" title="Bôi đen chữ rồi bấm"><s>Gạch</s></button>
+                    <button onclick="TemplateEngine.resetTempSettings()" class="text-slate-400 hover:text-slate-700 ml-1 text-[11px]" title="Khôi phục chuẩn Admin">↺ Mặc định</button>
+                </div>
+            </div>
+
+            <!-- 2. BƯỚC 2: NHẬP SẢN PHẨM & IMPORT EXCEL -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- FORM NHẬP THỦ CÔNG -->
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm md:col-span-1 space-y-2">
+                    <div class="font-bold text-slate-800 flex justify-between items-center">
+                        <span>✍️ Thêm sản phẩm thủ công</span>
+                        <span class="text-[10px] text-slate-400">Lưu vào IndexedDB</span>
+                    </div>
+                    <input type="text" id="manual-name" placeholder="Tên sản phẩm (*)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="manual-original-price" placeholder="Giá gốc (VD: 450.000)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
+                        <input type="text" id="manual-price" placeholder="Giá giảm (*) (VD: 250.000)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="manual-promo" placeholder="Khuyến mãi" value="+ TRẢ GÓP 0% LÃI SUẤT" class="col-span-2 px-2.5 py-1.5 border border-slate-300 rounded text-xs">
+                        <input type="number" id="manual-quantity" placeholder="SL in" value="1" min="1" class="col-span-1 px-2.5 py-1.5 border border-slate-300 rounded text-xs font-bold text-center">
+                    </div>
+                    <button onclick="ProductController.addManualProduct()" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-1.5 rounded font-bold transition">
+                        + Thêm vào danh sách in
+                    </button>
+                </div>
+
+                <!-- IMPORT FILE EXCEL & QUY TRÌNH KIỂM CHUẨN 6 BƯỚC -->
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm md:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="font-bold text-slate-800 flex items-center justify-between">
+                            <span>📁 Import từ file Excel (.xlsx, .xls)</span>
+                            <span class="text-[10px] text-blue-600 font-semibold">Quy trình kiểm chuẩn 6 bước</span>
+                        </div>
+                        <p class="text-slate-500 text-[11px] mt-0.5">Hỗ trợ tự động phân tích dấu chấm/phẩy, chuẩn hóa số tiền và báo cáo dòng dữ liệu lỗi.</p>
+                        
+                        <div class="mt-3 border-2 border-dashed border-slate-300 rounded-lg p-3 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="document.getElementById('excel-file-input').click()">
+                            <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
+                            <div class="text-slate-600 font-medium text-xs">Nhấp để chọn file Excel hoặc kéo thả vào đây</div>
+                            <div id="excel-filename-display" class="text-blue-600 font-mono text-[11px] mt-1 font-bold">Chưa chọn file</div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-2">
+                        <span class="text-[10px] text-slate-400">Dữ liệu lưu an toàn trong trình duyệt (IndexedDB)</span>
+                        <button onclick="ProductController.clearAllProducts()" class="text-rose-600 hover:text-rose-800 text-[11px] font-bold">Xóa trắng danh sách</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. BƯỚC 3: BẢNG DANH SÁCH SẢN PHẨM & CHỈNH SỬA TRỰC TIẾP -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-800">Danh sách sản phẩm in</span>
+                        <span id="badge-total-items" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-black text-[10px]">0 SP</span>
+                        <span id="badge-total-prints" class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-black text-[10px]">0 Bản popup</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="🔍 Tìm kiếm sản phẩm..." class="px-2 py-1 border border-slate-300 rounded text-xs w-44">
+                        <button onclick="PrintEngine.openPreviewModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-lg flex items-center gap-1 shadow">
+                            <span>🖨️</span> Xem trước & In A4
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BẢNG DỮ LIỆU ĐƯỢC PHÉP CHỈNH SỬA TRỰC TIẾP -->
+                <div class="overflow-x-auto max-h-80">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="p-2 text-center w-10">STT</th>
+                                <th class="p-2">Tên sản phẩm</th>
+                                <th class="p-2 w-24 text-right">Giá gốc</th>
+                                <th class="p-2 w-28 text-right">Giá giảm</th>
+                                <th class="p-2">Khuyến mãi / Ghi chú</th>
+                                <th class="p-2 w-20 text-center">SL In</th>
+                                <th class="p-2 w-16 text-center">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list-tbody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="7" class="text-center p-8 text-slate-400">Chưa có sản phẩm nào. Vui lòng nhập thủ công hoặc import file Excel.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- KHU VỰC 2: GIAO DIỆN ADMIN (QUẢN TRỊ VIÊN) -->
+        <!-- ========================================== -->
+        <section id="admin-view" class="hidden space-y-3">
+            
+            <!-- MÀN HÌNH ĐĂNG NHẬP NẾU CHƯA XÁC THỰC -->
+            <div id="admin-login-box" class="max-w-md mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-md space-y-4 my-8">
+                <div class="text-center">
+                    <h2 class="text-lg font-black text-slate-800 tracking-wide">ĐĂNG NHẬP ADMIN AVAKIDS</h2>
+                    <p class="text-slate-500 text-xs mt-1">Xác thực quyền qua Supabase để cập nhật cấu hình mẫu online</p>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Email quản trị</label>
+                        <input type="email" id="admin-email" placeholder="admin@avakids.vn" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Mật khẩu</label>
+                        <input type="password" id="admin-password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button onclick="AuthManager.login()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg transition">Đăng nhập</button>
+                </div>
+            </div>
+
+            <!-- BẢNG ĐIỀU KHIỂN QUẢN TRỊ SAU KHI ĐĂNG NHẬP THÀNH CÔNG -->
+            <div id="admin-panel-box" class="hidden space-y-3">
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-800">Chọn mẫu cấu hình:</span>
+                        <button onclick="AdminManager.loadTemplateToEdit('A8')" id="adm-btn-A8" class="px-3 py-1 rounded font-bold border border-blue-600 bg-blue-600 text-white">Mẫu A8</button>
+                        <button onclick="AdminManager.loadTemplateToEdit('A6')" id="adm-btn-A6" class="px-3 py-1 rounded font-bold border border-slate-300 text-slate-700">Mẫu A6</button>
+                        <button onclick="AdminManager.loadTemplateToEdit('NGANG')" id="adm-btn-NGANG" class="px-3 py-1 rounded font-bold border border-slate-300 text-slate-700">Mẫu NGANG</button>
+                        <button onclick="AdminManager.loadTemplateToEdit('TRON')" id="adm-btn-TRON" class="px-3 py-1 rounded font-bold border border-slate-300 text-slate-700">Mẫu TRÒN</button>
+                    </div>
+
+                    <button onclick="AdminManager.publishTemplateOnline()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-lg shadow flex items-center gap-1">
+                        <span>🚀</span> Xuất bản Online lên Supabase
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- BẢNG THÔNG SỐ CẤU HÌNH ADMIN -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-2">Thông số thiết kế & Giới hạn 2 khung</h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="font-bold text-slate-700 block mb-1">Tiêu đề (VD: GIẢM NGAY)</label>
+                                <input type="text" id="cfg-label" class="w-full px-2 py-1.5 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-700 block mb-1">Cỡ chữ tiêu đề (px)</label>
+                                <input type="number" id="cfg-label-size" class="w-full px-2 py-1.5 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="font-bold text-slate-700 block mb-1">Cỡ chữ giá tiền (px)</label>
+                                <input type="number" id="cfg-price-size" class="w-full px-2 py-1.5 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-700 block mb-1">Font chữ mặc định</label>
+                                <select id="cfg-font-family" class="w-full px-2 py-1.5 border border-slate-300 rounded" onchange="AdminManager.previewLive()">
+                                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                                    <option value="'Impact', sans-serif">Impact</option>
+                                    <option value="'Roboto', sans-serif">Roboto</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- ĐẶC TẢ NGHIỆP VỤ: ĐIỀU CHỈNH KÍCH THƯỚC 2 KHUNG TÊN SP VÀ NGÀY IN -->
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+                            <span class="font-bold text-slate-800 text-[11px] block text-blue-700">★ Cấu hình 2 Khung: Tên Sản Phẩm & Ngày In</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[11px] text-slate-600 block">Tỷ lệ chiều rộng ô Tên (%)</label>
+                                    <input type="number" id="cfg-namebox-flex" min="30" max="80" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-slate-600 block">Tỷ lệ chiều rộng ô Ngày (%)</label>
+                                    <input type="number" id="cfg-datebox-flex" min="20" max="70" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[11px] text-slate-600 block">Chiều cao 2 khung (px)</label>
+                                    <input type="number" id="cfg-boxes-height" min="15" max="60" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] text-slate-600 block">Độ dày viền khung (px)</label>
+                                    <input type="number" id="cfg-boxes-border" min="1" max="4" step="0.5" class="w-full px-2 py-1 border border-slate-300 rounded" oninput="AdminManager.previewLive()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MÀN HÌNH XEM TRƯỚC THAY ĐỔI LIVE CỦA ADMIN -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                        <span class="text-xs font-bold text-slate-500 mb-3">Xem trước trực quan thời gian thực</span>
+                        <div id="admin-preview-render-target"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODAL 1: QUY TRÌNH ÁNH XẠ CỘT & CHECK LỖI EXCEL -->
+    <!-- ========================================== -->
+    <div id="excel-mapping-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-4 py-3 bg-slate-900 text-white flex justify-between items-center">
+                <span class="font-bold text-sm">Xác nhận ánh xạ cột & Kiểm định dữ liệu Excel</span>
+                <button onclick="ExcelImporter.closeModal()" class="text-slate-400 hover:text-white text-base">✕</button>
+            </div>
+
+            <div class="p-4 overflow-y-auto space-y-3 flex-1 text-xs">
+                <p class="text-slate-600">Hệ thống đã đọc dữ liệu từ file Excel. Vui lòng xác nhận đúng 4 cột nghiệp vụ bên dưới trước khi import:</p>
+
+                <!-- ÁNH XẠ CỘT -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">1. Cột Tên sản phẩm (*)</label>
+                        <select id="map-col-name" class="w-full p-1.5 border border-slate-300 rounded bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">2. Cột Giá giảm/Giá bán (*)</label>
+                        <select id="map-col-price" class="w-full p-1.5 border border-slate-300 rounded bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">3. Cột Giá gốc (Gạch ngang)</label>
+                        <select id="map-col-original-price" class="w-full p-1.5 border border-slate-300 rounded bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">4. Cột Khuyến mãi / Trả góp</label>
+                        <select id="map-col-promo" class="w-full p-1.5 border border-slate-300 rounded bg-white"></select>
+                    </div>
+                </div>
+
+                <!-- BẢNG BÁO LỖI NẾU PHÁT HIỆN DÒNG BỊ LỖI CHUẨN HÓA GIÁ -->
+                <div id="excel-error-report" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+                    <span class="font-bold text-rose-800 text-[11px] block">⚠️ Phát hiện dòng dữ liệu không rõ ràng hoặc sai định dạng:</span>
+                    <div class="max-h-36 overflow-y-auto">
+                        <table class="w-full text-[10px] text-left border-collapse">
+                            <thead>
+                                <tr class="text-rose-900 border-b border-rose-200 font-bold">
+                                    <th class="p-1">Dòng</th>
+                                    <th class="p-1">Tên SP</th>
+                                    <th class="p-1">Cột lỗi</th>
+                                    <th class="p-1">Giá trị gốc</th>
+                                    <th class="p-1">Nguyên nhân</th>
+                                </tr>
+                            </thead>
+                            <tbody id="excel-error-tbody" class="divide-y divide-rose-100 font-mono"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+                <button onclick="ExcelImporter.closeModal()" class="px-3 py-1.5 rounded-lg border border-slate-300 font-bold text-slate-600 hover:bg-slate-100">Hủy bỏ</button>
+                <button onclick="ExcelImporter.confirmImport()" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 font-bold text-white shadow">Xác nhận nạp dữ liệu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL 2: XEM TRƯỚC BẢN IN A4 & IN / XUẤT PDF -->
+    <!-- ========================================== -->
+    <div id="print-preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex flex-col items-center p-3">
+        <div class="no-print bg-white max-w-4xl w-full p-3 rounded-xl shadow-lg flex items-center justify-between mb-3">
+            <div>
+                <span class="font-bold text-sm text-slate-800">Xem trước bản in A4 (Kích thước vật lý 1:1)</span>
+                <span id="preview-stat-summary" class="text-xs text-slate-500 block"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="PrintEngine.closeModal()" class="px-3 py-1.5 border border-slate-300 rounded-lg font-bold hover:bg-slate-50">Đóng</button>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-lg shadow flex items-center gap-1">
+                    <span>🖨️</span> In trực tiếp / Xuất PDF
+                </button>
+            </div>
+        </div>
+
+        <div id="print-sheet-wrapper" class="w-full flex-1 overflow-y-auto flex flex-col items-center gap-4 pb-12">
+            <!-- Render các trang A4 -->
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- LOGIC HỆ THỐNG TOÀN DIỆN (JAVASCRIPT MODULES ĐỘC LẬP) -->
+    <!-- ======================================================= -->
+    <script>
+        /**
+         * 1. CẤU HÌNH SUPABASE & LOCAL STORAGE
+         */
+        const SUPABASE_URL = "https://anknaltyafulhkoaupyc.supabase.co"; // Thay URL dự án của bạn
+        const SUPABASE_ANON_KEY = "sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz"; // Thay Anon Key của bạn
+        
+        let supabaseClient = null;
+        try {
+            if (SUPABASE_URL.indexOf("your-project") === -1) {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch(e) { console.warn("Supabase chưa được cấu hình."); }
+
+        /**
+         * 2. INDEXEDDB REPOSITORY: LƯU TRỮ DỮ LIỆU RIÊNG TRÊN MÁY NGƯỜI DÙNG
+         */
+        const DBManager = {
+            dbName: "AvakidsPopupDB",
+            version: 1,
+            db: null,
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(this.dbName, this.version);
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains("products")) {
+                            db.createObjectStore("products", { keyPath: "id", autoIncrement: true });
+                        }
+                    };
+                    req.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(this.db);
+                    };
+                    req.onerror = (e) => reject(e);
+                });
+            },
+            async getAllProducts() {
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction("products", "readonly");
+                    const store = tx.objectStore("products");
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result || []);
+                });
+            },
+            async addProduct(product) {
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction("products", "readwrite");
+                    const store = tx.objectStore("products");
+                    const req = store.add(product);
+                    req.onsuccess = () => resolve(req.result);
+                });
+            },
+            async addProductsBatch(list) {
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction("products", "readwrite");
+                    const store = tx.objectStore("products");
+                    list.forEach(p => store.add(p));
+                    tx.oncomplete = () => resolve();
+                });
+            },
+            async updateProduct(product) {
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction("products", "readwrite");
+                    const store = tx.objectStore("products");
+                    const req = store.put(product);
+                    req.onsuccess = () => resolve();
+                });
+            },
+            async deleteProduct(id) {
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction("products", "readwrite");
+                    const store = tx.objectStore("products");
+                    const req = store.delete(id);
+                    req.onsuccess = () => resolve();
+                });
+            },
+            async clearAll() {
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction("products", "readwrite");
+                    const store = tx.objectStore("products");
+                    const req = store.clear();
+                    req.onsuccess = () => resolve();
+                });
+            }
+        };
+
+        /**
+         * 3. TEMPLATE ENGINE: QUẢN LÝ 4 LOẠI MẪU & ĐỒNG BỘ ONLINE VỚI SUPABASE
+         */
+        const TemplateEngine = {
+            activeFormat: 'A8',
+            // Dữ liệu mẫu chuẩn mặc định
+            templates: {
+                A8: {
+                    cardBorder: 2.5,
+                    label: "GIẢM NGAY",
+                    labelFontSize: 10,
+                    labelFontWeight: "900",
+                    priceFontSize: 18,
+                    priceFontWeight: "900",
+                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
+                    subFontSize: 6.5,
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    nameBox: { flex: "0 0 62%", height: 18, borderWidth: 1.5, fontSize: 6.5 },
+                    dateBox: { flex: "0 0 35%", height: 18, borderWidth: 1.5, fontSize: 6.5 }
+                },
+                A6: {
+                    cardBorder: 4,
+                    label: "GIẢM NGAY",
+                    labelFontSize: 26,
+                    labelFontWeight: "900",
+                    priceFontSize: 46,
+                    priceFontWeight: "900",
+                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
+                    subFontSize: 13,
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    nameBox: { flex: "0 0 65%", height: 30, borderWidth: 2, fontSize: 12 },
+                    dateBox: { flex: "0 0 32%", height: 30, borderWidth: 2, fontSize: 12 }
+                },
+                NGANG: {
+                    cardBorder: 3,
+                    label: "GIẢM NGAY",
+                    labelFontSize: 13,
+                    labelFontWeight: "900",
+                    priceFontSize: 28,
+                    priceFontWeight: "900",
+                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
+                    subFontSize: 9.5,
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    nameBox: { flex: "0 0 65%", height: 22, borderWidth: 1.5, fontSize: 9 },
+                    dateBox: { flex: "0 0 32%", height: 22, borderWidth: 1.5, fontSize: 9 }
+                },
+                TRON: {
+                    cardBorder: 3.5,
+                    label: "GIẢM NGAY",
+                    labelFontSize: 12,
+                    labelFontWeight: "900",
+                    priceFontSize: 26,
+                    priceFontWeight: "900",
+                    subText: "+ TRẢ GÓP 0% LÃI SUẤT",
+                    subFontSize: 8.5,
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    nameBox: { flex: "0 0 60%", height: 20, borderWidth: 1, fontSize: 7.5 },
+                    dateBox: { flex: "0 0 36%", height: 20, borderWidth: 1, fontSize: 7.5 }
+                }
+            },
+            // Tùy biến tạm thời của người dùng trong phiên làm việc
+            userTempMods: {
+                fontFamily: null,
+                sizeDelta: 0
+            },
+            async fetchTemplatesOnline() {
+                if (!supabaseClient) return;
+                try {
+                    const { data, error } = await supabaseClient.from("popup_templates").select("id, config");
+                    if (error) throw error;
+                    if (data && data.length > 0) {
+                        data.forEach(row => {
+                            if (this.templates[row.id]) {
+                                this.templates[row.id] = row.config;
+                            }
+                        });
+                        document.getElementById("supabase-status-badge").innerText = "Supabase: Trực tuyến";
+                        document.getElementById("supabase-status-badge").className = "text-[10px] px-2 py-0.5 rounded font-medium bg-emerald-900 text-emerald-200";
+                    }
+                } catch(err) {
+                    console.warn("Không tải được mẫu từ Supabase:", err.message);
+                }
+            },
+            setUserFormat(format) {
+                this.activeFormat = format;
+                ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
+                    const btn = document.getElementById('u-tab-' + f);
+                    if (btn) {
+                        btn.className = (f === format)
+                            ? "px-3 py-1.5 rounded-lg font-bold border border-blue-600 bg-blue-600 text-white"
+                            : "px-3 py-1.5 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50";
+                    }
+                });
+            },
+            applyTempFont(font) {
+                this.userTempMods.fontFamily = font || null;
+            },
+            adjustTempSize(delta) {
+                this.userTempMods.sizeDelta += delta;
+            },
+            resetTempSettings() {
+                this.userTempMods.fontFamily = null;
+                this.userTempMods.sizeDelta = 0;
+                document.getElementById("user-temp-font").value = "";
+            },
+            renderPopupHTML(item, config, isPreview = false) {
+                const font = this.userTempMods.fontFamily || config.fontFamily;
+                const dSize = this.userTempMods.sizeDelta;
+                const today = new Date().toLocaleDateString('vi-VN');
+
+                let cardClass = "popup-card card-a8";
+                if (this.activeFormat === 'A6') cardClass = "popup-card card-a6";
+                else if (this.activeFormat === 'NGANG') cardClass = "popup-card card-ngang";
+                else if (this.activeFormat === 'TRON') cardClass = "popup-card card-tron justify-center items-center";
+
+                const labelSize = Math.max(8, config.labelFontSize + dSize);
+                const priceSize = Math.max(12, config.priceFontSize + dSize);
+                const subSize = Math.max(6, config.subFontSize + dSize);
+
+                return `
+                    <div class="${cardClass}" style="font-family: ${font}; border-width: ${config.cardBorder}px;">
+                        <div class="card-content-wrap">
+                            <div class="uppercase tracking-tight text-black" style="font-size: ${labelSize}px; font-weight: ${config.labelFontWeight}; line-height: 1.1;" contenteditable="true">${config.label}</div>
+                            <div class="tracking-tight text-black my-1" style="font-size: ${priceSize}px; font-weight: ${config.priceFontWeight}; line-height: 1;" contenteditable="true">${item.price}</div>
+                            <div class="font-bold text-black" style="font-size: ${subSize}px; line-height: 1.1;" contenteditable="true">${item.promo || config.subText}</div>
+                        </div>
+
+                        <!-- 2 KHUNG CỐ ĐỊNH KÍCH THƯỚC BỞI ADMIN -->
+                        <div class="bottom-boxes" style="height: ${config.nameBox.height}px;">
+                            <div class="box-product-name" style="flex: ${config.nameBox.flex}; border-width: ${config.nameBox.borderWidth}px; font-size: ${config.nameBox.fontSize}px;" contenteditable="true">
+                                ${item.name}
+                            </div>
+                            <div class="box-print-date font-mono" style="flex: ${config.dateBox.flex}; border-width: ${config.dateBox.borderWidth}px; font-size: ${config.dateBox.fontSize}px;" contenteditable="true">
+                                NGÀY: ${today}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        /**
+         * 4. PRICE PARSER: QUY CHUẨN XỬ LÝ SỐ TIỀN & PHÁT HIỆN LỖI CHÍNH XÁC
+         */
+        const PriceParser = {
+            parse(raw) {
+                if (raw === null || raw === undefined) return { valid: false, error: "Dữ liệu trống" };
+                let str = String(raw).trim();
+                if (!str) return { valid: false, error: "Dữ liệu trống" };
+
+                // Loại bỏ đơn vị tiền tệ nếu có
+                str = str.replace(/[đĐ\sVNĐvnd]/g, '');
+
+                // Kiểm tra xung đột cả dấu chấm và dấu phẩy
+                const hasDot = str.includes('.');
+                const hasComma = str.includes(',');
+
+                if (hasDot && hasComma) {
+                    // Dạng: 1.250.000,00 hoặc 1,250,000.00
+                    const lastDot = str.lastIndexOf('.');
+                    const lastComma = str.lastIndexOf(',');
+                    if (lastComma > lastDot) {
+                        // Dấu phẩy là thập phân
+                        str = str.substring(0, lastComma).replace(/\./g, '');
+                    } else {
+                        // Dấu chấm là thập phân
+                        str = str.substring(0, lastDot).replace(/,/g, '');
+                    }
+                } else if (hasDot) {
+                    const parts = str.split('.');
+                    // Nếu sau dấu chấm là đúng 3 chữ số -> phân cách hàng nghìn
+                    if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
+                        str = str.replace(/\./g, '');
+                    } else if (parts.length === 2 && parts[1].length !== 3) {
+                        // Nghi ngờ là số lẻ thập phân
+                        return { valid: false, error: "Dấu chấm không rõ ràng (nghi vấn số thập phân)", raw };
+                    } else {
+                        str = str.replace(/\./g, '');
+                    }
+                } else if (hasComma) {
+                    const parts = str.split(',');
+                    if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
+                        str = str.replace(/,/g, '');
+                    } else {
+                        return { valid: false, error: "Dấu phẩy không theo chuẩn hàng nghìn", raw };
+                    }
+                }
+
+                const num = Number(str);
+                if (isNaN(num) || num < 0) {
+                    return { valid: false, error: "Không thể chuyển thành số tiền hợp lệ", raw };
+                }
+
+                return { valid: true, value: num, formatted: num.toLocaleString('vi-VN') };
+            }
+        };
+
+        /**
+         * 5. EXCEL IMPORTER: QUY TRÌNH 6 BƯỚC AN TOÀN
+         */
+        const ExcelImporter = {
+            rawRows: [],
+            headers: [],
+            errors: [],
+            handleFileSelected(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                document.getElementById("excel-filename-display").innerText = file.name;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: "array" });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                        if (json.length < 2) {
+                            alert("File Excel không có dữ liệu!");
+                            return;
+                        }
+
+                        this.headers = json[0].map(h => String(h).trim());
+                        this.rawRows = json.slice(1).filter(r => r.length > 0);
+
+                        this.openMappingModal();
+                    } catch(err) {
+                        alert("Lỗi đọc file Excel: " + err.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            },
+            openMappingModal() {
+                const modal = document.getElementById("excel-mapping-modal");
+                const selects = ["map-col-name", "map-col-price", "map-col-original-price", "map-col-promo"];
+
+                selects.forEach(selId => {
+                    const sel = document.getElementById(selId);
+                    sel.innerHTML = `<option value="">-- Không chọn --</option>` + 
+                        this.headers.map((h, idx) => `<option value="${idx}">${h}</option>`).join("");
+                });
+
+                // Tự động nhận diện cột thông minh theo tên
+                this.headers.forEach((h, idx) => {
+                    const low = h.toLowerCase();
+                    if (low.includes("tên") || low.includes("name") || low.includes("sản phẩm")) {
+                        document.getElementById("map-col-name").value = idx;
+                    }
+                    if (low.includes("giá giảm") || low.includes("giá bán") || low.includes("giá mới") || low === "giá") {
+                        document.getElementById("map-col-price").value = idx;
+                    }
+                    if (low.includes("giá gốc") || low.includes("giá cũ") || low.includes("niêm yết")) {
+                        document.getElementById("map-col-original-price").value = idx;
+                    }
+                    if (low.includes("khuyến mãi") || low.includes("km") || low.includes("ghi chú") || low.includes("trả góp")) {
+                        document.getElementById("map-col-promo").value = idx;
+                    }
+                });
+
+                modal.classList.remove("hidden");
+                this.validateExcelData();
+            },
+            validateExcelData() {
+                const priceIdx = document.getElementById("map-col-price").value;
+                const nameIdx = document.getElementById("map-col-name").value;
+                this.errors = [];
+
+                if (priceIdx !== "") {
+                    this.rawRows.forEach((row, index) => {
+                        const rawPrice = row[priceIdx];
+                        const name = nameIdx !== "" ? row[nameIdx] : `Dòng ${index+2}`;
+                        const res = PriceParser.parse(rawPrice);
+                        if (!res.valid) {
+                            this.errors.push({
+                                rowNum: index + 2,
+                                productName: name || "(Trống tên)",
+                                colName: this.headers[priceIdx],
+                                rawVal: rawPrice !== undefined ? rawPrice : "(Trống)",
+                                reason: res.error
+                            });
+                        }
+                    });
+                }
+
+                const errBox = document.getElementById("excel-error-report");
+                const tbody = document.getElementById("excel-error-tbody");
+                tbody.innerHTML = "";
+
+                if (this.errors.length > 0) {
+                    errBox.classList.remove("hidden");
+                    this.errors.slice(0, 50).forEach(e => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="p-1">${e.rowNum}</td>
+                                <td class="p-1 truncate max-w-[120px]">${e.productName}</td>
+                                <td class="p-1">${e.colName}</td>
+                                <td class="p-1 text-rose-600 font-bold">${e.rawVal}</td>
+                                <td class="p-1">${e.reason}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    errBox.classList.add("hidden");
+                }
+            },
+            closeModal() {
+                document.getElementById("excel-mapping-modal").classList.add("hidden");
+                document.getElementById("excel-file-input").value = "";
+            },
+            async confirmImport() {
+                const nameIdx = document.getElementById("map-col-name").value;
+                const priceIdx = document.getElementById("map-col-price").value;
+                const origIdx = document.getElementById("map-col-original-price").value;
+                const promoIdx = document.getElementById("map-col-promo").value;
+
+                if (nameIdx === "" || priceIdx === "") {
+                    alert("Bắt buộc phải chọn Cột Tên sản phẩm và Cột Giá giảm!");
+                    return;
+                }
+
+                if (this.errors.length > 0) {
+                    if (!confirm(`Có ${this.errors.length} dòng gặp lỗi định dạng giá. Các dòng lỗi sẽ bị bỏ qua. Bạn có chắc chắn muốn nạp các dòng hợp lệ?`)) {
+                        return;
+                    }
+                }
+
+                const validProducts = [];
+                this.rawRows.forEach((row) => {
+                    const rawPrice = row[priceIdx];
+                    const priceRes = PriceParser.parse(rawPrice);
+                    const name = String(row[nameIdx] || "").trim();
+
+                    if (name && priceRes.valid) {
+                        let originalPriceFormatted = "";
+                        if (origIdx !== "" && row[origIdx]) {
+                            const origRes = PriceParser.parse(row[origIdx]);
+                            if (origRes.valid) originalPriceFormatted = origRes.formatted;
+                        }
+
+                        validProducts.push({
+                            name: name,
+                            price: priceRes.formatted,
+                            originalPrice: originalPriceFormatted,
+                            promo: promoIdx !== "" && row[promoIdx] ? String(row[promoIdx]).trim() : "+ TRẢ GÓP 0% LÃI SUẤT",
+                            quantity: 1
+                        });
+                    }
+                });
+
+                if (validProducts.length === 0) {
+                    alert("Không có dòng dữ liệu nào hợp lệ để nạp.");
+                    return;
+                }
+
+                await DBManager.addProductsBatch(validProducts);
+                this.closeModal();
+                await ProductController.loadProducts();
+                alert(`Import thành công ${validProducts.length} sản phẩm vào danh sách in!`);
+            }
+        };
+
+        /**
+         * 6. PRODUCT CONTROLLER: QUẢN LÝ DANH SÁCH & CHỈNH SỬA
+         */
+        const ProductController = {
+            products: [],
+            async loadProducts() {
+                this.products = await DBManager.getAllProducts();
+                this.renderTable(this.products);
+                this.updateCounters();
+            },
+            renderTable(list) {
+                const tbody = document.getElementById("product-list-tbody");
+                tbody.innerHTML = "";
+
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">Danh sách trống. Vui lòng thêm sản phẩm để in.</td></tr>`;
+                    return;
+                }
+
+                list.forEach((p, idx) => {
+                    const tr = document.createElement("tr");
+                    tr.className = "hover:bg-slate-50";
+                    tr.innerHTML = `
+                        <td class="p-2 text-center text-slate-400">${idx + 1}</td>
+                        <td class="p-2">
+                            <input type="text" value="${p.name}" onchange="ProductController.updateField(${p.id}, 'name', this.value)" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 font-bold text-slate-800">
+                        </td>
+                        <td class="p-2 text-right">
+                            <input type="text" value="${p.originalPrice || ''}" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="w-full text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 line-through text-slate-400">
+                        </td>
+                        <td class="p-2 text-right">
+                            <input type="text" value="${p.price}" onchange="ProductController.updateField(${p.id}, 'price', this.value)" class="w-full text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 font-black text-blue-600">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" value="${p.promo || ''}" onchange="ProductController.updateField(${p.id}, 'promo', this.value)" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 text-slate-600">
+                        </td>
+                        <td class="p-2 text-center">
+                            <input type="number" min="1" max="99" value="${p.quantity || 1}" onchange="ProductController.updateField(${p.id}, 'quantity', parseInt(this.value)||1)" class="w-14 text-center border border-slate-300 rounded font-bold text-slate-900 py-0.5">
+                        </td>
+                        <td class="p-2 text-center">
+                            <button onclick="ProductController.deleteProduct(${p.id})" class="text-rose-600 hover:text-rose-800 font-bold">✕</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+            async updateField(id, field, value) {
+                const target = this.products.find(p => p.id === id);
+                if (target) {
+                    target[field] = value;
+                    await DBManager.updateProduct(target);
+                    this.updateCounters();
+                }
+            },
+            async addManualProduct() {
+                const name = document.getElementById("manual-name").value.trim();
+                const priceRaw = document.getElementById("manual-price").value.trim();
+                const origRaw = document.getElementById("manual-original-price").value.trim();
+                const promo = document.getElementById("manual-promo").value.trim();
+                const qty = parseInt(document.getElementById("manual-quantity").value) || 1;
+
+                if (!name || !priceRaw) {
+                    alert("Vui lòng điền đủ Tên sản phẩm và Giá giảm!");
+                    return;
+                }
+
+                const priceRes = PriceParser.parse(priceRaw);
+                if (!priceRes.valid) {
+                    alert("Giá giảm không hợp lệ: " + priceRes.error);
+                    return;
+                }
+
+                let origFormatted = "";
+                if (origRaw) {
+                    const origRes = PriceParser.parse(origRaw);
+                    if (origRes.valid) origFormatted = origRes.formatted;
+                }
+
+                await DBManager.addProduct({
+                    name: name,
+                    price: priceRes.formatted,
+                    originalPrice: origFormatted,
+                    promo: promo || "+ TRẢ GÓP 0% LÃI SUẤT",
+                    quantity: qty
+                });
+
+                document.getElementById("manual-name").value = "";
+                document.getElementById("manual-price").value = "";
+                document.getElementById("manual-original-price").value = "";
+                await this.loadProducts();
+            },
+            async deleteProduct(id) {
+                await DBManager.deleteProduct(id);
+                await this.loadProducts();
+            },
+            async clearAllProducts() {
+                if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách sản phẩm?")) {
+                    await DBManager.clearAll();
+                    await this.loadProducts();
+                }
+            },
+            filterTable() {
+                const keyword = document.getElementById("search-product-box").value.toLowerCase().trim();
+                const filtered = this.products.filter(p => p.name.toLowerCase().includes(keyword));
+                this.renderTable(filtered);
+            },
+            updateCounters() {
+                const totalItems = this.products.length;
+                const totalPrints = this.products.reduce((sum, p) => sum + (p.quantity || 1), 0);
+                document.getElementById("badge-total-items").innerText = `${totalItems} SP`;
+                document.getElementById("badge-total-prints").innerText = `${totalPrints} Bản in`;
+            }
+        };
+
+        /**
+         * 7. PRINT ENGINE: TÍNH TOÁN SỐ LƯỢNG IN CHÍNH XÁC VÀ DÀN TRANG A4 VẬT LÝ
+         */
+        const PrintEngine = {
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'TRON': 4 },
+            openPreviewModal() {
+                if (ProductController.products.length === 0) {
+                    alert("Danh sách sản phẩm in đang trống!");
+                    return;
+                }
+
+                const modal = document.getElementById("print-preview-modal");
+                const wrapper = document.getElementById("print-sheet-wrapper");
+                wrapper.innerHTML = "";
+
+                // 1. NHÂN BẢN POPUP CHÍNH XÁC THEO SỐ LƯỢNG (QUANTITY) CỦA TỪNG SẢN PHẨM
+                const printList = [];
+                ProductController.products.forEach(p => {
+                    const qty = p.quantity || 1;
+                    for (let i = 0; i < qty; i++) {
+                        printList.push(p);
+                    }
+                });
+
+                const format = TemplateEngine.activeFormat;
+                const capacity = this.capacityMap[format] || 4;
+                const totalPages = Math.ceil(printList.length / capacity);
+
+                document.getElementById("preview-stat-summary").innerText = 
+                    `Tổng cộng: ${printList.length} popup (${format}) dàn trên ${totalPages} trang A4.`;
+
+                const config = TemplateEngine.templates[format];
+
+                // 2. DÀN TRANG A4 VẬT LÝ (KHÔNG CO GIÃN)
+                for (let page = 0; page < totalPages; page++) {
+                    const pageItems = printList.slice(page * capacity, (page + 1) * capacity);
+                    const pageDiv = document.createElement("div");
+                    pageDiv.className = "print-page screen-page";
+
+                    pageItems.forEach(item => {
+                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config, true);
+                    });
+
+                    wrapper.appendChild(pageDiv);
+                }
+
+                modal.classList.remove("hidden");
+            },
+            closeModal() {
+                document.getElementById("print-preview-modal").classList.add("hidden");
+            }
+        };
+
+        /**
+         * 8. AUTH MANAGER: ĐĂNG NHẬP & BẢO VỆ PHÂN QUYỀN ADMIN
+         */
+        const AuthManager = {
+            user: null,
+            async checkSession() {
+                if (!supabaseClient) return;
+                const { data } = await supabaseClient.auth.getSession();
+                if (data && data.session) {
+                    this.user = data.session.user;
+                    this.updateUI();
+                }
+            },
+            async login() {
+                if (!supabaseClient) {
+                    alert("Chưa cấu hình SUPABASE_URL và SUPABASE_ANON_KEY trong file script.");
+                    return;
+                }
+                const email = document.getElementById("admin-email").value.trim();
+                const password = document.getElementById("admin-password").value.trim();
+                if (!email || !password) {
+                    alert("Vui lòng điền email và mật khẩu Admin.");
+                    return;
+                }
+
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert("Đăng nhập thất bại: " + error.message);
+                } else {
+                    this.user = data.user;
+                    this.updateUI();
+                    AdminManager.loadTemplateToEdit('A8');
+                }
+            },
+            async logout() {
+                if (supabaseClient) await supabaseClient.auth.signOut();
+                this.user = null;
+                this.updateUI();
+                App.switchView('user');
+            },
+            updateUI() {
+                const loginBox = document.getElementById("admin-login-box");
+                const panelBox = document.getElementById("admin-panel-box");
+                const userInfo = document.getElementById("admin-user-info");
+
+                if (this.user) {
+                    loginBox.classList.add("hidden");
+                    panelBox.classList.remove("hidden");
+                    userInfo.classList.remove("hidden");
+                    userInfo.classList.add("flex");
+                    document.getElementById("admin-email-display").innerText = this.user.email;
+                } else {
+                    loginBox.classList.remove("hidden");
+                    panelBox.classList.add("hidden");
+                    userInfo.classList.add("hidden");
+                    userInfo.classList.remove("flex");
+                }
+            }
+        };
+
+        /**
+         * 9. ADMIN MANAGER: CHỈNH SỬA & XUẤT BẢN CẤU HÌNH ONLINE
+         */
+        const AdminManager = {
+            editingFormat: 'A8',
+            tempConfig: null,
+            loadTemplateToEdit(format) {
+                this.editingFormat = format;
+                ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
+                    const btn = document.getElementById('adm-btn-' + f);
+                    if (btn) {
+                        btn.className = (f === format)
+                            ? "px-3 py-1 rounded font-bold border border-blue-600 bg-blue-600 text-white"
+                            : "px-3 py-1 rounded font-bold border border-slate-300 text-slate-700";
+                    }
+                });
+
+                this.tempConfig = JSON.parse(JSON.stringify(TemplateEngine.templates[format]));
+                
+                document.getElementById("cfg-label").value = this.tempConfig.label;
+                document.getElementById("cfg-label-size").value = this.tempConfig.labelFontSize;
+                document.getElementById("cfg-price-size").value = this.tempConfig.priceFontSize;
+                document.getElementById("cfg-font-family").value = this.tempConfig.fontFamily;
+                
+                // 2 khung độc lập
+                document.getElementById("cfg-namebox-flex").value = parseInt(this.tempConfig.nameBox.flex.split(" ")[2]) || 65;
+                document.getElementById("cfg-datebox-flex").value = parseInt(this.tempConfig.dateBox.flex.split(" ")[2]) || 32;
+                document.getElementById("cfg-boxes-height").value = this.tempConfig.nameBox.height;
+                document.getElementById("cfg-boxes-border").value = this.tempConfig.nameBox.borderWidth;
+
+                this.previewLive();
+            },
+            previewLive() {
+                this.tempConfig.label = document.getElementById("cfg-label").value;
+                this.tempConfig.labelFontSize = parseInt(document.getElementById("cfg-label-size").value) || 12;
+                this.tempConfig.priceFontSize = parseInt(document.getElementById("cfg-price-size").value) || 24;
+                this.tempConfig.fontFamily = document.getElementById("cfg-font-family").value;
+
+                const nameFlex = document.getElementById("cfg-namebox-flex").value;
+                const dateFlex = document.getElementById("cfg-datebox-flex").value;
+                const bHeight = parseInt(document.getElementById("cfg-boxes-height").value) || 20;
+                const bBorder = parseFloat(document.getElementById("cfg-boxes-border").value) || 2;
+
+                this.tempConfig.nameBox = { flex: `0 0 ${nameFlex}%`, height: bHeight, borderWidth: bBorder, fontSize: Math.max(6, bHeight * 0.4) };
+                this.tempConfig.dateBox = { flex: `0 0 ${dateFlex}%`, height: bHeight, borderWidth: bBorder, fontSize: Math.max(6, bHeight * 0.4) };
+
+                const target = document.getElementById("admin-preview-render-target");
+                const sampleItem = { name: "CHẢO INOX GREEN COOK 20CM", price: "250.000", promo: "+ TRẢ GÓP 0% LÃI SUẤT" };
+                
+                // Mượn hàm render
+                const oldActive = TemplateEngine.activeFormat;
+                TemplateEngine.activeFormat = this.editingFormat;
+                target.innerHTML = TemplateEngine.renderPopupHTML(sampleItem, this.tempConfig, true);
+                TemplateEngine.activeFormat = oldActive;
+            },
+            async publishTemplateOnline() {
+                if (!supabaseClient || !AuthManager.user) {
+                    alert("Chỉ tài khoản Admin đã đăng nhập mới có quyền xuất bản online!");
+                    return;
+                }
+
+                try {
+                    const { error } = await supabaseClient.from("popup_templates").upsert({
+                        id: this.editingFormat,
+                        name: `Mẫu ${this.editingFormat}`,
+                        config: this.tempConfig,
+                        updated_at: new Date().toISOString(),
+                        updated_by: AuthManager.user.id
+                    });
+
+                    if (error) throw error;
+                    TemplateEngine.templates[this.editingFormat] = JSON.parse(JSON.stringify(this.tempConfig));
+                    alert(`Xuất bản thành công mẫu ${this.editingFormat} lên Supabase! Mọi người dùng sẽ nhận được mẫu này.`);
+                } catch(err) {
+                    alert("Lỗi xuất bản mẫu lên Supabase: " + err.message);
+                }
+            }
+        };
+
+        /**
+         * 10. APP CONTROLLER: BỘ KHỞI ĐỘNG HỆ THỐNG
+         */
+        const App = {
+            async init() {
+                await DBManager.init();
+                await TemplateEngine.fetchTemplatesOnline();
+                await ProductController.loadProducts();
+                await AuthManager.checkSession();
+            },
+            switchView(viewName) {
+                const userView = document.getElementById("user-view");
+                const adminView = document.getElementById("admin-view");
+                const btnUser = document.getElementById("btn-view-user");
+                const btnAdmin = document.getElementById("btn-view-admin");
+
+                if (viewName === 'user') {
+                    userView.classList.remove("hidden");
+                    adminView.classList.add("hidden");
+                    btnUser.className = "px-3 py-1.5 rounded text-xs font-bold bg-blue-600 text-white";
+                    btnAdmin.className = "px-3 py-1.5 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800";
+                } else {
+                    userView.classList.add("hidden");
+                    adminView.classList.remove("hidden");
+                    btnAdmin.className = "px-3 py-1.5 rounded text-xs font-bold bg-amber-600 text-white";
+                    btnUser.className = "px-3 py-1.5 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800";
+                    if (AuthManager.user) {
+                        AdminManager.loadTemplateToEdit(AdminManager.editingFormat);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener("DOMContentLoaded", () => App.init());
+    </script>
+</body>
+</html>
