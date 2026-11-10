@@ -107,6 +107,33 @@
             background-color: var(--strike-color, #475569);
             transform: translateY(-50%);
         }
+        
+        /* CHỮ TỰ ĐỘNG IN HOA (UPPERCASE) CHO TẤT CẢ LAYER */
+        .layer-uppercase {
+            text-transform: uppercase;
+        }
+        
+        /* CÔNG CỤ CHỈNH SỬA NHANH TẠI BẢN XEM TRƯỚC */
+        .preview-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* HIỂU CHỈNH HOẠT ẢNH CHO CONTENTEDITABLE */
+        [contenteditable="true"]:focus {
+            background-color: rgba(59, 130, 246, 0.1);
+            outline: 1px dashed #3b82f6 !important;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 text-xs flex flex-col min-h-screen">
@@ -190,9 +217,9 @@
                     <div>
                         <div class="font-bold text-slate-800 flex items-center justify-between">
                             <span>📁 Import từ file Excel (.xlsx, .xls)</span>
-                            <span class="text-[10px] text-blue-600 font-semibold">Quy trình kiểm định 6 bước</span>
+                            <span class="text-[10px] text-blue-600 font-semibold">Quy trình kiểm định tự động giá bị sai số (VD: 498.99)</span>
                         </div>
-                        <p class="text-slate-500 text-[11px] mt-0.5">Tự động nhận diện cột giá, phân tích dấu chấm/phẩy và báo lỗi dòng.</p>
+                        <p class="text-slate-500 text-[11px] mt-0.5">Tự động nhận diện cột giá, làm tròn số lẻ cực đoan (999.999), chuẩn hóa dấu chấm/phẩy và báo lỗi.</p>
                         
                         <div class="mt-2.5 border-2 border-dashed border-slate-300 rounded-lg p-3 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="document.getElementById('excel-file-input').click()">
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
@@ -327,7 +354,7 @@
 
                             <!-- NỘI DUNG VĂN BẢN -->
                             <div>
-                                <label class="text-[11px] font-bold text-slate-600 block mb-1">Nội dung mẫu</label>
+                                <label class="text-[11px] font-bold text-slate-600 block mb-1">Nội dung mẫu (Tất cả sẽ được IN HOA)</label>
                                 <textarea id="prop-text-content" rows="2" class="w-full p-1.5 border border-slate-300 rounded text-xs" oninput="VisualDesigner.updateActiveText(this.value)"></textarea>
                             </div>
 
@@ -500,7 +527,22 @@
     <!-- MODAL 2: XEM TRƯỚC VÀ THỰC HIỆN IN TRỰC TIẾP / PDF -->
     <!-- ======================================================= -->
     <div id="print-preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex flex-col items-center p-3">
-        <div class="no-print bg-white max-w-4xl w-full p-3 rounded-xl shadow-lg flex items-center justify-between mb-3">
+        <!-- THANH CÔNG CỤ CHỈNH SỬA NHANH TẠI BẢN IN (YÊU CẦU MỚI) -->
+        <div class="preview-toolbar no-print">
+            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs">
+                <option value="">-- Đổi Font chữ --</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Oswald', sans-serif">Oswald</option>
+            </select>
+            <button onclick="document.execCommand('bold', false, null)" class="bg-slate-50 border border-slate-300 px-2 py-1 rounded hover:bg-slate-100 font-black" title="In đậm (Bôi đen chữ rồi bấm)">B</button>
+            <button onclick="document.execCommand('italic', false, null)" class="bg-slate-50 border border-slate-300 px-2 py-1 rounded hover:bg-slate-100 font-serif italic" title="In nghiêng">I</button>
+            <button onclick="document.execCommand('strikeThrough', false, null)" class="bg-slate-50 border border-slate-300 px-2 py-1 rounded hover:bg-slate-100" title="Gạch ngang chữ"><s>Gạch</s></button>
+            <span class="text-slate-400 flex items-center px-1">|</span>
+            <span class="text-slate-500 text-[10px] flex items-center">Bôi đen chữ bên dưới để sửa nhanh trước khi in. Mọi chữ sẽ tự động IN HOA.</span>
+        </div>
+
+        <div class="no-print bg-white max-w-4xl w-full p-3 rounded-xl shadow-lg flex items-center justify-between mb-3 mt-12 relative z-10">
             <div>
                 <span class="font-bold text-sm text-slate-800">Xem trước bản in A4 (Tỷ lệ 1:1 chuẩn xác)</span>
                 <span id="preview-stat-summary" class="text-xs text-slate-500 block"></span>
@@ -513,7 +555,7 @@
             </div>
         </div>
 
-        <div id="print-sheet-wrapper" class="w-full flex-1 overflow-y-auto flex flex-col items-center gap-4 pb-12"></div>
+        <div id="print-sheet-wrapper" class="w-full flex-1 overflow-y-auto flex flex-col items-center gap-4 pb-12 relative z-0"></div>
     </div>
 
     <!-- ======================================================= -->
@@ -623,8 +665,8 @@
                     borderWidth: 2.5,
                     isOctagon: false,
                     layers: [
-                        { id: "orig_price", name: "Giá gốc", text: "450.000 đ", x: 2, y: 3, w: 48, h: 6, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
-                        { id: "price", name: "Giá giảm", text: "250.000", x: 2, y: 10, w: 48, h: 10, fontSize: 19, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá gốc", text: "450.000 Đ", x: 2, y: 3, w: 48, h: 6, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 2, y: 10, w: 48, h: 10, fontSize: 19, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 2, y: 22, w: 48, h: 5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 2, y: 44, w: 30, h: 6.5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
                         { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 33, y: 44, w: 17, h: 6.5, fontSize: 6, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
@@ -637,8 +679,8 @@
                     borderWidth: 4,
                     isOctagon: false,
                     layers: [
-                        { id: "orig_price", name: "Giá gốc", text: "680.000 đ", x: 5, y: 8, w: 85, h: 12, fontSize: 22, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
-                        { id: "price", name: "Giá giảm", text: "250.000", x: 5, y: 24, w: 85, h: 22, fontSize: 46, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá gốc", text: "680.000 Đ", x: 5, y: 8, w: 85, h: 12, fontSize: 22, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 5, y: 24, w: 85, h: 22, fontSize: 46, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 52, w: 85, h: 8, fontSize: 13, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 92, w: 56, h: 9, fontSize: 12, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
                         { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 63, y: 92, w: 27, h: 9, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
@@ -651,8 +693,8 @@
                     borderWidth: 3,
                     isOctagon: false,
                     layers: [
-                        { id: "orig_price", name: "Giá gốc", text: "680.000 đ", x: 5, y: 4, w: 110, h: 8, fontSize: 14, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
-                        { id: "price", name: "Giá giảm", text: "250.000", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá gốc", text: "680.000 Đ", x: 5, y: 4, w: 110, h: 8, fontSize: 14, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 32, w: 110, h: 6, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 50, w: 75, h: 7, fontSize: 9.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
                         { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
@@ -667,8 +709,8 @@
                     layers: [
                         { id: "star", name: "Ngôi sao đỉnh", text: "★ ★ ★", x: 20, y: 4, w: 55, h: 6, fontSize: 13, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#e11d48", isStrike: false, isLocked: false, isVisible: true },
                         { id: "lbl", name: "Tiêu đề", text: "GIẢM SỐC", x: 15, y: 11, w: 65, h: 10, fontSize: 22, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
-                        { id: "orig_price", name: "Giá cũ gạch", text: "450.000 đ", x: 15, y: 23, w: 65, h: 7, fontSize: 15, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
-                        { id: "price", name: "Giá giảm lớn", text: "250.000 đ", x: 10, y: 31, w: 75, h: 16, fontSize: 34, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá cũ gạch", text: "450.000 Đ", x: 15, y: 23, w: 65, h: 7, fontSize: 15, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm lớn", text: "250.000 Đ", x: 10, y: 31, w: 75, h: 16, fontSize: 34, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "TẶNG 1 QUÀ CÙNG LOẠI", x: 15, y: 50, w: 65, h: 7, fontSize: 10.5, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Tên sản phẩm", text: "CHẢO INOX GREEN COOK 20CM", x: 12, y: 60, w: 71, h: 14, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
                         { id: "date_box", name: "Thời gian áp dụng", text: "Áp dụng: 10/11 - 30/11/2026", x: 15, y: 77, w: 65, h: 6, fontSize: 8.5, fontWeight: "600", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#334155", isStrike: false, isLocked: false, isVisible: true }
@@ -737,12 +779,19 @@
                     let content = layer.text;
                     if (layer.id === 'price') {
                         content = product.price;
+                        // YÊU CẦU: GIÁ GIẢM PHẢI CÓ CHỮ Đ
+                        if (!content.includes('Đ') && !content.includes('đ')) {
+                            content += " Đ";
+                        }
                     } else if (layer.id === 'orig_price') {
-                        // NẾU KHÔNG CÓ GIÁ GỐC THÌ ĐỂ TRỐNG (ẨN LAYER NÀY)
                         if (!product.originalPrice || String(product.originalPrice).trim() === "") {
                             return;
                         }
-                        content = String(product.originalPrice).trim() + " đ";
+                        content = String(product.originalPrice).trim();
+                        // YÊU CẦU: GIÁ GỐC PHẢI CÓ CHỮ Đ
+                        if (!content.includes('Đ') && !content.includes('đ')) {
+                            content += " Đ";
+                        }
                     } else if (layer.id === 'prod_box') {
                         content = product.name;
                     } else if (layer.id === 'promo') {
@@ -759,7 +808,7 @@
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
 
                     layersHTML += `
-                        <div style="
+                        <div class="layer-uppercase" style="
                             position: absolute;
                             left: ${layer.x}mm;
                             top: ${layer.y}mm;
@@ -778,7 +827,7 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text;">${content}</span>
+                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%;">${content}</span>
                         </div>
                     `;
                 });
@@ -948,7 +997,7 @@
                     lDiv.style.lineHeight = "1.15";
                     if (layer.hasBorder) lDiv.style.border = "2px solid #000";
 
-                    lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''}`;
+                    lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''} layer-uppercase`;
 
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
                     lDiv.innerHTML = `<span class="${strikeClass}">${layer.text}</span>`;
@@ -1121,7 +1170,7 @@
         };
 
         /**
-         * 5. PARSER XỬ LÝ SỐ TIỀN & NHẬN DIỆN LỖI
+         * 5. PARSER XỬ LÝ SỐ TIỀN & NHẬN DIỆN LỖI (FIX TÌNH TRẠNG 498.9999)
          */
         const PriceParser = {
             parse(raw) {
@@ -1129,6 +1178,29 @@
                 let str = String(raw).trim().replace(/[đĐ\sVNĐvnd]/g, '');
                 if (!str) return { valid: false, error: "Dữ liệu trống" };
 
+                // YÊU CẦU: Xử lý triệt để số lẻ cực đoan (Ví dụ: 498999.99996 -> 499000)
+                // Phát hiện xem file Excel đang để dạng số thực (float) hay chuỗi
+                let isFloatDetected = false;
+                if (!isNaN(raw) && String(raw).includes('.')) {
+                    isFloatDetected = true;
+                } else if (str.includes('.') && !str.includes(',')) {
+                    const parts = str.split('.');
+                    // Nếu phần đuôi không phải 3 chữ số (VD: .99996) -> Nó là số thập phân, không phải dấu hàng nghìn
+                    if (parts[parts.length - 1].length !== 3) {
+                        isFloatDetected = true;
+                    }
+                }
+
+                if (isFloatDetected) {
+                    // Xử lý làm tròn số float
+                    const numFloat = parseFloat(str);
+                    if (!isNaN(numFloat)) {
+                        const roundedNum = Math.round(numFloat);
+                        return { valid: true, value: roundedNum, formatted: roundedNum.toLocaleString('vi-VN') };
+                    }
+                }
+
+                // Xử lý chuỗi thông thường (Dấu chấm/phẩy)
                 const hasDot = str.includes('.');
                 const hasComma = str.includes(',');
 
