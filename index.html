@@ -68,7 +68,7 @@
         /* --- BẢO TOÀN CSS IN ẤN --- */
         @page {
             size: A4 portrait;
-            margin: 8mm; /* Lề vật lý chuẩn 8mm */
+            margin: 8mm;
         }
 
         @media print {
@@ -80,14 +80,14 @@
                 overflow: visible !important;
             }
             .print-page {
-                width: 194mm !important; /* Lấy 210mm trừ lề 2 bên (8mm x 2 = 16mm) */
-                height: 281mm !important; /* Lấy 297mm trừ lề 2 bên (8mm x 2 = 16mm) */
+                width: 194mm !important;
+                height: 281mm !important;
                 margin: 0 auto !important;
                 page-break-after: always;
                 display: flex !important;
                 flex-wrap: wrap !important;
                 align-content: flex-start !important;
-                justify-content: center !important; /* Dàn đều các item vào giữa để tránh sát lề phải */
+                justify-content: center !important;
                 gap: 2mm !important; 
                 box-shadow: none !important;
                 border: none !important;
@@ -99,7 +99,6 @@
                 page-break-inside: avoid;
                 flex-shrink: 0 !important;
             }
-            /* Reset modal styles for printing */
             #print-preview-modal {
                 position: static !important;
                 background: none !important;
@@ -120,7 +119,6 @@
         .card-ngang { width: 120mm !important; height: 60mm !important; }
         .card-tron { width: 95mm !important; height: 95mm !important; }
 
-        /* MẪU BÁT GIÁC (CLIP-PATH CHO MẪU TRÒN CŨ) */
         .card-octagon-wrap {
             clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
             background: #000;
@@ -154,19 +152,16 @@
             cursor: not-allowed !important;
         }
 
-        /* GẠCH NGANG CHUYÊN DỤNG CHO GIÁ CŨ */
         .price-strike-line {
             text-decoration: line-through;
             text-decoration-thickness: 2px;
             text-decoration-color: #475569;
         }
         
-        /* CHỮ TỰ ĐỘNG IN HOA (UPPERCASE) CHO TẤT CẢ LAYER */
         .layer-uppercase {
             text-transform: uppercase;
         }
         
-        /* CÔNG CỤ CHỈNH SỬA NHANH TẠI BẢN XEM TRƯỚC */
         .preview-toolbar {
             position: absolute;
             top: 16px;
@@ -184,7 +179,7 @@
         }
         
         [contenteditable="true"]:focus {
-            background-color: rgba(240, 90, 157, 0.05); /* Ava Pink siêu nhạt */
+            background-color: rgba(240, 90, 157, 0.05);
             outline: 1px dashed #F05A9D !important;
             border-radius: 2px;
         }
@@ -248,10 +243,9 @@
             border-color: #D1D5DB;
         }
 
-        /* Custom Segmented Control cho Mẫu in */
         .segmented-control {
             display: flex;
-            background-color: #FCE7F1; /* Nền light pink */
+            background-color: #FCE7F1;
             border-radius: 10px;
             padding: 4px;
             gap: 4px;
@@ -279,7 +273,6 @@
             background-color: rgba(240, 90, 157, 0.05);
         }
 
-        /* Style Table */
         .ava-table th {
             background-color: #F8F9FA;
             color: #9299A3;
@@ -296,7 +289,7 @@
             vertical-align: middle;
         }
         .ava-table tr:hover td {
-            background-color: #FDF2F7; /* Rất nhẹ hover pink */
+            background-color: #FDF2F7;
         }
         .ava-table input[type="text"], .ava-table input[type="number"] {
             border: 1px solid transparent;
@@ -317,7 +310,6 @@
             outline: none;
         }
 
-        /* Tabs UI (Thủ công / Excel) */
         .tab-btn {
             padding: 10px 16px;
             font-weight: 600;
@@ -352,16 +344,14 @@
     <!-- TOPBAR / NAVIGATION (NO-PRINT) -->
     <header class="no-print bg-white border-b border-[#E9E9EF] sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <!-- Brand / Logo Area -->
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.1</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.2</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
 
-            <!-- View Switcher & User Profile -->
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 p-1 rounded-lg flex">
                     <button onclick="App.switchView('user')" id="btn-view-user" class="px-4 py-1.5 rounded-md text-xs font-bold bg-white text-ava-pink shadow-sm transition">In ấn</button>
@@ -384,17 +374,11 @@
     <!-- CONTAINER NỘI DUNG CHÍNH -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
 
-        <!-- ======================================================= -->
-        <!-- 1. GIAO DIỆN NGƯỜI DÙNG: CHỌN MẪU, NHẬP EXCEL & IN A4 -->
-        <!-- ======================================================= -->
         <section id="user-view" class="space-y-6">
             
-            <!-- VÙNG TRÊN: CHỌN MẪU & TÙY CHỈNH TẠM -->
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div class="flex items-center gap-4">
                     <h2 class="text-lg font-bold text-slate-800">Cấu hình In</h2>
-                    
-                    <!-- Segmented Control Chọn Mẫu -->
                     <div class="segmented-control" id="template-selector">
                         <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active">A8 Nhỏ</button>
                         <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn">A6 Chuẩn</button>
@@ -406,7 +390,6 @@
                 <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-[#E9E9EF] shadow-sm">
                     <i data-feather="sliders" class="w-4 h-4 text-slate-400"></i>
                     <span class="text-slate-500 font-medium mr-1 text-xs">Tùy biến nhanh:</span>
-                    <!-- Giữ nguyên ID -->
                     <select id="user-temp-font" onchange="TemplateEngine.applyTempFont(this.value)" class="ava-input py-1 px-2 !w-32 text-xs">
                         <option value="">Font mặc định</option>
                         <option value="Arial, sans-serif">Arial</option>
@@ -425,9 +408,7 @@
                 </div>
             </div>
 
-            <!-- VÙNG GIỮA: KHU VỰC NHẬP LIỆU CHÍNH (Đưa 2 chức năng vào Tabs) -->
             <div class="ava-card overflow-hidden">
-                <!-- Tab Headers -->
                 <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
                     <button class="tab-btn active" onclick="UITabs.switchTab('manual-input-tab', this)">
                         <span class="flex items-center gap-2"><i data-feather="edit-3" class="w-4 h-4"></i> Nhập thủ công</span>
@@ -437,7 +418,6 @@
                     </button>
                 </div>
 
-                <!-- Tab 1: Nhập thủ công (GIỮ NGUYÊN ID INPUT) -->
                 <div id="manual-input-tab" class="tab-content active p-6">
                     <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
                         <div class="md:col-span-12">
@@ -457,31 +437,33 @@
                             <input type="text" id="manual-promo" placeholder="+ TRẢ GÓP 0% LÃI SUẤT" value="+ TRẢ GÓP 0% LÃI SUẤT" class="ava-input">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="ava-label">SL In</label>
-                            <div class="flex gap-2">
-                                <input type="number" id="manual-quantity" value="1" min="1" class="ava-input font-bold text-center !px-1">
-                                <!-- Nút gọi hàm ProductController.addManualProduct() -->
-                                <button onclick="ProductController.addManualProduct()" class="ava-btn-primary w-12 h-[38px] flex items-center justify-center shrink-0" title="Thêm vào danh sách">
-                                    <i data-feather="plus" class="w-5 h-5"></i>
-                                </button>
+                            <label class="ava-label">Ngày In / Thời gian</label>
+                            <input type="text" id="manual-date" placeholder="AVAKIDS" value="AVAKIDS" class="ava-input font-medium text-slate-600">
+                        </div>
+                        <div class="md:col-span-12 flex justify-end items-end gap-3 mt-2">
+                            <div class="w-24">
+                                <label class="ava-label">SL In</label>
+                                <input type="number" id="manual-quantity" value="1" min="1" class="ava-input font-bold text-center">
                             </div>
+                            <button onclick="ProductController.addManualProduct()" class="ava-btn-primary px-6 h-[38px] flex items-center justify-center shrink-0 shadow-md shadow-ava-pink/20" title="Thêm vào danh sách">
+                                <i data-feather="plus" class="w-5 h-5 mr-1"></i> Thêm Sản Phẩm
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab 2: Import Excel (GIỮ NGUYÊN INPUT FILE & ONCHANGE) -->
+                <!-- Fix ID issue for Excel Import: Ensure map-col-date is properly initialized in openMappingModal -->
                 <div id="excel-import-tab" class="tab-content p-6">
                     <div class="max-w-3xl mx-auto flex flex-col items-center">
                         <div class="text-center mb-4">
                             <h3 class="font-bold text-slate-800 text-base">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
                             <p class="text-slate-500 text-xs mt-1">Hệ thống tự động chuẩn hóa giá, làm tròn số lẻ cực đoan và nhận diện cột.</p>
+                            <!-- YÊU CẦU: Hiển thị thêm thông báo fallback AVAKIDS -->
+                            <p class="text-ava-pink font-semibold text-xs mt-1 bg-ava-light/50 px-3 py-1 rounded inline-block">Mặc định cột Ngày In sẽ hiển thị "AVAKIDS" nếu file Excel không có.</p>
                         </div>
                         
-                        <!-- Wrapper gọi click cho file input ẩn -->
                         <div class="w-full border-2 border-dashed border-[#cbd5e1] hover:border-ava-pink hover:bg-ava-light/20 rounded-xl p-8 text-center transition cursor-pointer flex flex-col items-center justify-center gap-3" onclick="document.getElementById('excel-file-input').click()">
-                            <!-- INPUT FILE GỐC ẨN -->
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
-                            
                             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
                                 <i data-feather="upload-cloud" class="w-6 h-6"></i>
                             </div>
@@ -496,9 +478,7 @@
                 </div>
             </div>
 
-            <!-- VÙNG DƯỚI: DANH SÁCH & HÀNH ĐỘNG IN -->
             <div class="ava-card overflow-hidden flex flex-col">
-                <!-- Toolbar Danh sách -->
                 <div class="p-4 border-b border-[#E9E9EF] bg-white flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <h3 class="font-bold text-base">Sản phẩm chờ in</h3>
@@ -514,7 +494,6 @@
                             <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="Tìm kiếm..." class="ava-input pl-9 w-48 lg:w-64 !py-1.5">
                         </div>
                         <button onclick="ProductController.clearAllProducts()" class="text-xs font-semibold text-slate-400 hover:text-rose-500 transition px-2">Xóa tất cả</button>
-                        <!-- NÚT IN (Primary Action) -->
                         <button onclick="PrintEngine.openPreviewModal()" class="ava-btn-primary px-5 py-2 flex items-center gap-2 shadow-lg shadow-ava-pink/20 hover:-translate-y-0.5 transform">
                             <i data-feather="printer" class="w-4 h-4"></i>
                             <span>Xem trước & In A4</span>
@@ -522,7 +501,6 @@
                     </div>
                 </div>
 
-                <!-- Bảng Dữ Liệu (GIỮ NGUYÊN ID TBODY) -->
                 <div class="overflow-x-auto min-h-[300px] max-h-[500px]">
                     <table class="w-full text-left ava-table">
                         <thead class="sticky top-0 z-10 shadow-sm">
@@ -532,12 +510,12 @@
                                 <th class="w-28 text-right">Giá gốc</th>
                                 <th class="w-32 text-right">Giá giảm</th>
                                 <th>Ghi chú / KM</th>
+                                <th class="w-28">Ngày In</th>
                                 <th class="w-20 text-center">SL</th>
                                 <th class="w-12 text-center">Xóa</th>
                             </tr>
                         </thead>
                         <tbody id="product-list-tbody" class="bg-white">
-                            <!-- JS sẽ điền dữ liệu vào đây -->
                         </tbody>
                     </table>
                 </div>
@@ -549,7 +527,6 @@
         <!-- ======================================================= -->
         <section id="admin-view" class="hidden space-y-6">
             
-            <!-- ĐĂNG NHẬP ADMIN -->
             <div id="admin-login-box" class="max-w-sm mx-auto ava-card p-8 mt-12 text-center">
                 <div class="w-16 h-16 bg-ava-light rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-feather="lock" class="w-7 h-7 text-ava-pink"></i>
@@ -570,15 +547,12 @@
                 </div>
             </div>
 
-            <!-- BẢNG BIÊN TẬP THIẾT KẾ VISUAL CANVAS -->
             <div id="admin-panel-box" class="hidden space-y-4">
                 
-                <!-- THANH TÁC VỤ QUẢN TRỊ TRÊN CÙNG -->
                 <div class="ava-card p-4 flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <span class="font-bold text-slate-800 text-sm">Chỉnh sửa mẫu:</span>
                         <div class="segmented-control">
-                            <!-- GIỮ NGUYÊN ID VÀ HÀM GỌI -->
                             <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="segmented-btn active">A8 Nhỏ</button>
                             <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="segmented-btn">A6 Chuẩn</button>
                             <button onclick="VisualDesigner.switchEditingFormat('NGANG')" id="adm-btn-NGANG" class="segmented-btn">Ngang</button>
@@ -598,13 +572,10 @@
                     </div>
                 </div>
 
-                <!-- BỐ CỤC: BÊN TRÁI THUỘC TÍNH - BÊN PHẢI VÙNG CANVAS KÉO THẢ -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                     
-                    <!-- CỘT TRÁI: DANH SÁCH LAYER VÀ THUỘC TÍNH CHI TIẾT (4 CỘT) -->
                     <div class="lg:col-span-4 space-y-4">
                         
-                        <!-- DANH SÁCH LỚP (LAYERS) -->
                         <div class="ava-card p-4">
                             <div class="flex justify-between items-center mb-3">
                                 <span class="font-bold text-sm text-slate-800">Cấu trúc Đối tượng</span>
@@ -612,7 +583,6 @@
                             <div id="layer-list-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
 
-                        <!-- BẢNG ĐIỀU KHIỂN THUỘC TÍNH (GIỮ NGUYÊN ID) -->
                         <div id="property-inspector-box" class="ava-card p-4 space-y-4">
                             <div class="flex justify-between items-center border-b border-[#E9E9EF] pb-3">
                                 <span class="font-bold text-sm text-slate-800" id="prop-layer-title">Thuộc tính</span>
@@ -703,7 +673,7 @@
                         </div>
                     </div>
 
-                    <!-- CỘT PHẢI: VÙNG CANVAS THIẾT KẾ TRỰC QUAN (8 CỘT) -->
+                    <!-- CỘT PHẢI: VÙNG CANVAS THIẾT KẾ TRỰC QUAN -->
                     <div class="lg:col-span-8 ava-card p-0 flex flex-col min-h-[600px] overflow-hidden bg-[#FAFAFA]">
                         
                         <!-- Header Canvas -->
@@ -721,7 +691,7 @@
                             </div>
                         </div>
 
-                        <!-- Vùng vẽ chính (Giữ ID) -->
+                        <!-- Vùng vẽ chính -->
                         <div class="flex-1 overflow-auto p-8 flex items-center justify-center">
                             <div id="visual-canvas-stage" class="editor-canvas-stage bg-white transition-transform origin-center">
                                 <!-- Render động -->
@@ -740,7 +710,6 @@
 
     <!-- ======================================================= -->
     <!-- MODAL 1: ÁNH XẠ CỘT & KIỂM TRA LỖI DỮ LIỆU EXCEL -->
-    <!-- (Chỉnh CSS theo Style Mới, giữ nguyên cấu trúc ID) -->
     <!-- ======================================================= -->
     <div id="excel-mapping-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
@@ -755,6 +724,7 @@
             <div class="p-5 overflow-y-auto space-y-4 flex-1">
                 <p class="text-slate-500 text-sm">Khớp tên cột trong file tải lên với chuẩn của hệ thống:</p>
 
+                <!-- Đã FIX thêm cột NGÀY IN VÀO ĐÂY ĐỂ TRÁNH LỖI NULL INNER HTML -->
                 <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-[#E9E9EF]">
                     <div>
                         <label class="ava-label">1. Tên sản phẩm (*)</label>
@@ -771,6 +741,10 @@
                     <div>
                         <label class="ava-label">4. Khuyến mãi / Trả góp</label>
                         <select id="map-col-promo" class="ava-input bg-white"></select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="ava-label text-ava-pink">5. Ngày In (Mặc định sẽ là "AVAKIDS" nếu không chọn)</label>
+                        <select id="map-col-date" class="ava-input bg-white border-ava-pink"></select>
                     </div>
                 </div>
 
@@ -803,7 +777,6 @@
     <!-- MODAL 2: XEM TRƯỚC VÀ THỰC HIỆN IN TRỰC TIẾP / PDF -->
     <!-- ======================================================= -->
     <div id="print-preview-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col items-center p-4">
-        <!-- THANH CÔNG CỤ CHỈNH SỬA NHANH TẠI BẢN IN (Giữ nguyên ID, làm đẹp UI) -->
         <div class="preview-toolbar no-print">
             <div class="flex items-center border-r border-[#E9E9EF] pr-3 mr-1">
                 <i data-feather="edit-2" class="w-4 h-4 text-ava-pink mr-2"></i>
@@ -841,27 +814,19 @@
 
     <!-- ======================================================= -->
     <!-- LOGIC TOÀN DIỆN CỦA HỆ THỐNG (JAVASCRIPT MODULES) -->
-    <!-- GIỮ NGUYÊN 100% NHƯ YÊU CẦU -->
     <!-- ======================================================= -->
     <script>
-        // Khởi tạo icon Feather
         feather.replace();
 
-        // JS điều hướng Tab UI (Bổ sung mới cho UI, không phá vỡ logic cũ)
         const UITabs = {
             switchTab(tabId, btnElement) {
-                // Reset content
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-                // Reset buttons
                 document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-                
-                // Set active
                 document.getElementById(tabId).classList.add('active');
                 btnElement.classList.add('active');
             }
         };
 
-        // Ghi đè hàm setup format của UI cũ để đổi style Segmented Control
         const oldSetUserFormat = function(format) {
             TemplateEngine.activeFormat = format;
             ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
@@ -890,13 +855,7 @@
             VisualDesigner.loadConfigForFormat(format);
         };
 
-        // --- BẮT ĐẦU BLOCK LOGIC GỐC (ĐÃ SỬA CÁC LỖI TỪ CÁC PHIÊN TRƯỚC) ---
-
-        /**
-         * 1. CẤU HÌNH SUPABASE & CLIENT
-         */
         const SUPABASE_URL = "https://anknaltyafulhkoaupyc.supabase.co";
-        // Thay chuỗi eyJ... anon key của bạn vào đây
         const SUPABASE_ANON_KEY = "sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz";
         
         let supabaseClient = null;
@@ -908,9 +867,6 @@
 
         const MM_TO_PX = 3.779528;
 
-        /**
-         * 2. INDEXEDDB DATABASE (LƯU TRỮ OFFLINE)
-         */
         const DBManager = {
             dbName: "AvakidsPopupDB",
             version: 2,
@@ -981,9 +937,6 @@
             }
         };
 
-        /**
-         * 3. TEMPLATE ENGINE: CẤU HÌNH VẬT LÝ VÀ LAYER ĐỘC LẬP TỪNG MẪU
-         */
         const TemplateEngine = {
             activeFormat: 'A8',
             defaultTemplates: {
@@ -998,7 +951,7 @@
                         { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 2, y: 10, w: 48, h: 10, fontSize: 19, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 2, y: 22, w: 48, h: 5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 2, y: 44, w: 30, h: 6.5, fontSize: 6.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
-                        { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 33, y: 44, w: 17, h: 6.5, fontSize: 6, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                        { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 33, y: 44, w: 17, h: 6.5, fontSize: 6, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 },
                 A6: {
@@ -1011,8 +964,8 @@
                         { id: "orig_price", name: "Giá gốc", text: "680.000 Đ", x: 5, y: 8, w: 85, h: 12, fontSize: 22, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, isLocked: false, isVisible: true },
                         { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 5, y: 24, w: 85, h: 22, fontSize: 46, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 52, w: 85, h: 8, fontSize: 13, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
-                        { id: "prod_box", name: "Ô Tên SP", text: "CHẢO IN GREEN COOK 20CM", x: 5, y: 92, w: 56, h: 9, fontSize: 12, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
-                        { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 63, y: 92, w: 27, h: 9, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                        { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 92, w: 56, h: 9, fontSize: 12, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 63, y: 92, w: 27, h: 9, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 },
                 NGANG: {
@@ -1026,7 +979,7 @@
                         { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 32, w: 110, h: 6, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 50, w: 75, h: 7, fontSize: 9.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
-                        { id: "date_box", name: "Ô Ngày In", text: "NGÀY: 10/11/2026", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                        { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 },
                 TRON: {
@@ -1042,7 +995,7 @@
                         { id: "price", name: "Giá giảm lớn", text: "250.000 Đ", x: 10, y: 31, w: 75, h: 16, fontSize: 34, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "TẶNG 1 QUÀ CÙNG LOẠI", x: 15, y: 50, w: 65, h: 7, fontSize: 10.5, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Tên sản phẩm", text: "CHẢO INOX GREEN COOK 20CM", x: 12, y: 60, w: 71, h: 14, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
-                        { id: "date_box", name: "Thời gian áp dụng", text: "Áp dụng: 10/11 - 30/11/2026", x: 15, y: 77, w: 65, h: 6, fontSize: 8.5, fontWeight: "600", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#334155", isStrike: false, isLocked: false, isVisible: true }
+                        { id: "date_box", name: "Thời gian áp dụng", text: "AVAKIDS", x: 15, y: 77, w: 65, h: 6, fontSize: 8.5, fontWeight: "600", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#334155", isStrike: false, isLocked: false, isVisible: true }
                     ]
                 }
             },
@@ -1114,8 +1067,8 @@
                     } else if (layer.id === 'promo') {
                         content = product.promo || layer.text;
                     } else if (layer.id === 'date_box') {
-                        // FIX: Sử dụng thuộc tính 'date' của đối tượng product (nếu có)
-                        content = product.date || `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
+                        // FIX: AVAKIDS Fallback
+                        content = product.date || `AVAKIDS`;
                     }
 
                     if (!content) return;
@@ -1172,9 +1125,6 @@
             }
         };
 
-        /**
-         * 4. VISUAL DESIGNER: TRÌNH THIẾT KẾ ĐỒ HỌA TRỰC QUAN CHO ADMIN
-         */
         const VisualDesigner = {
             currentFormat: 'A8',
             currentConfig: null,
@@ -1460,7 +1410,6 @@
                 try {
                     const payload = {
                         id: this.currentFormat,
-                        // Fix: explicitly pass the name and enforce not null
                         name: this.currentConfig.name || `Mẫu ${this.currentFormat}`,
                         config: this.currentConfig,
                         updated_at: new Date().toISOString(),
@@ -1478,9 +1427,6 @@
             }
         };
 
-        /**
-         * 5. PARSER XỬ LÝ SỐ TIỀN & NHẬN DIỆN LỖI
-         */
         const PriceParser = {
             parse(raw) {
                 if (raw === null || raw === undefined) return { valid: false, error: "Dữ liệu trống" };
@@ -1537,9 +1483,6 @@
             }
         };
 
-        /**
-         * 6. EXCEL IMPORTER
-         */
         const ExcelImporter = {
             rawRows: [],
             headers: [],
@@ -1565,6 +1508,13 @@
 
                         this.headers = json[0].map(h => String(h).trim());
                         this.rawRows = json.slice(1).filter(r => r.length > 0);
+                        
+                        // FIX: Ensure Modal HTML structure exists before opening
+                        const mapColDate = document.getElementById("map-col-date");
+                        if (!mapColDate) {
+                            console.error("Missing map-col-date in HTML structure");
+                        }
+                        
                         this.openMappingModal();
                     } catch(err) {
                         alert("Lỗi đọc file: " + err.message);
@@ -1577,9 +1527,10 @@
                 const modal = document.getElementById("excel-mapping-modal");
                 ["map-col-name", "map-col-price", "map-col-original-price", "map-col-promo", "map-col-date"].forEach(id => {
                     const sel = document.getElementById(id);
-                    // Add date selector for mapping
-                    sel.innerHTML = `<option value="">-- Không chọn --</option>` + 
-                        this.headers.map((h, idx) => `<option value="${idx}">${h}</option>`).join("");
+                    if(sel) {
+                        sel.innerHTML = `<option value="">-- Không chọn --</option>` + 
+                            this.headers.map((h, idx) => `<option value="${idx}">${h}</option>`).join("");
+                    }
                 });
 
                 this.headers.forEach((h, idx) => {
@@ -1589,7 +1540,7 @@
                     if (low.includes("giá gốc") || low.includes("giá cũ")) document.getElementById("map-col-original-price").value = idx;
                     if (low.includes("khuyến mãi") || low.includes("km")) document.getElementById("map-col-promo").value = idx;
                     // FIX: Auto-detect date column
-                    if (low.includes("ngày") || low.includes("thời gian") || low.includes("date")) document.getElementById("map-col-date").value = idx;
+                    if (document.getElementById("map-col-date") && (low.includes("ngày") || low.includes("thời gian") || low.includes("date"))) document.getElementById("map-col-date").value = idx;
                 });
 
                 modal.classList.remove("hidden");
@@ -1650,7 +1601,8 @@
                 const priceIdx = document.getElementById("map-col-price").value;
                 const origIdx = document.getElementById("map-col-original-price").value;
                 const promoIdx = document.getElementById("map-col-promo").value;
-                const dateIdx = document.getElementById("map-col-date").value;
+                const mapColDateElement = document.getElementById("map-col-date");
+                const dateIdx = mapColDateElement ? mapColDateElement.value : "";
 
                 if (nameIdx === "" || priceIdx === "") {
                     alert("Bắt buộc phải chọn Cột Tên sản phẩm và Cột Giá giảm!");
@@ -1675,8 +1627,8 @@
                             price: priceRes.formatted,
                             originalPrice: originalPriceFormatted,
                             promo: promoIdx !== "" && row[promoIdx] ? String(row[promoIdx]).trim() : "+ TRẢ GÓP 0% LÃI SUẤT",
-                            // FIX: Append date mapped field
-                            date: dateIdx !== "" && row[dateIdx] ? String(row[dateIdx]).trim() : `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`,
+                            // FIX: Append date mapped field with AVAKIDS fallback
+                            date: dateIdx !== "" && row[dateIdx] ? String(row[dateIdx]).trim() : `AVAKIDS`,
                             quantity: 1
                         });
                     }
@@ -1690,13 +1642,9 @@
                 await DBManager.addProductsBatch(validProducts);
                 this.closeModal();
                 await ProductController.loadProducts();
-                // alert(`Import thành công ${validProducts.length} sản phẩm!`);
             }
         };
 
-        /**
-         * 7. PRODUCT CONTROLLER: BẢNG SẢN PHẨM & CHỈNH SỬA
-         */
         const ProductController = {
             products: [],
             async loadProducts() {
@@ -1724,7 +1672,7 @@
                     const tr = document.createElement("tr");
                     tr.className = "hover:bg-slate-50 transition";
                     // FIX: Ensure backward compatibility if date is missing
-                    const pDate = p.date || `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
+                    const pDate = p.date || `AVAKIDS`;
                     tr.innerHTML = `
                         <td class="text-center text-slate-400 font-mono">${idx + 1}</td>
                         <td>
@@ -1771,7 +1719,7 @@
                 const priceRaw = document.getElementById("manual-price").value.trim();
                 const origRaw = document.getElementById("manual-original-price").value.trim();
                 const promo = document.getElementById("manual-promo").value.trim();
-                const dateVal = document.getElementById("manual-date").value.trim(); // Get Date value
+                const dateVal = document.getElementById("manual-date").value.trim(); 
                 const qty = parseInt(document.getElementById("manual-quantity").value) || 1;
 
                 if (!name || !priceRaw) {
@@ -1796,14 +1744,14 @@
                     price: priceRes.formatted,
                     originalPrice: origFormatted,
                     promo: promo || "+ TRẢ GÓP 0% LÃI SUẤT",
-                    date: dateVal || `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`, // Add Date property
+                    date: dateVal || `AVAKIDS`,
                     quantity: qty
                 });
 
                 document.getElementById("manual-name").value = "";
                 document.getElementById("manual-price").value = "";
                 document.getElementById("manual-original-price").value = "";
-                document.getElementById("manual-date").value = "";
+                document.getElementById("manual-date").value = "AVAKIDS"; // Reset to AVAKIDS
                 await this.loadProducts();
             },
 
@@ -1833,9 +1781,6 @@
             }
         };
 
-        /**
-         * 8. PRINT ENGINE: TÍNH TOÁN DÀN TRANG A4 VẬT LÝ
-         */
         const PrintEngine = {
             capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'TRON': 4 },
 
@@ -1884,9 +1829,6 @@
             }
         };
 
-        /**
-         * 9. AUTH MANAGER: PHÂN QUYỀN ADMIN
-         */
         const AuthManager = {
             user: null,
             async checkSession() {
@@ -1938,9 +1880,6 @@
             }
         };
 
-        /**
-         * 10. APP CONTROLLER: ĐIỀU PHỐI VÀ KHỞI TẠO
-         */
         const App = {
             async init() {
                 TemplateEngine.init();
