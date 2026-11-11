@@ -273,6 +273,11 @@
             background-color: rgba(240, 90, 157, 0.05);
         }
 
+        .ava-table {
+            width: 100%;
+            text-align: left;
+            border-collapse: collapse;
+        }
         .ava-table th {
             background-color: #F8F9FA;
             color: #9299A3;
@@ -310,6 +315,35 @@
             outline: none;
         }
 
+        /* TỐI ƯU MOBILE RESPONSIVE CHO BẢNG */
+        @media (max-width: 768px) {
+            .ava-table thead { display: none; }
+            .ava-table tr { 
+                display: flex; flex-direction: column; 
+                padding: 12px; border: 1px solid #E9E9EF; 
+                border-radius: 8px; margin-bottom: 12px; 
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                background-color: #FFFFFF;
+            }
+            .ava-table td { 
+                border-bottom: none; padding: 6px 0; 
+                display: flex; align-items: center; justify-content: space-between; 
+            }
+            .ava-table td::before { 
+                content: attr(data-label); 
+                font-weight: 600; color: #9299A3; 
+                font-size: 11px; text-transform: uppercase; 
+                margin-right: 12px; white-space: nowrap;
+            }
+            .ava-table td:first-child { 
+                padding-bottom: 12px; border-bottom: 1px dashed #E9E9EF; margin-bottom: 6px;
+                justify-content: flex-start; gap: 8px;
+            }
+            .ava-table input[type="text"], .ava-table input[type="number"] {
+                text-align: right; border: 1px solid #E9E9EF; background: #FAFAFA;
+            }
+        }
+
         .tab-btn {
             padding: 10px 16px;
             font-weight: 600;
@@ -337,9 +371,22 @@
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* HỆ THỐNG TOAST THÔNG BÁO UX */
+        #ava-toast { 
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); 
+            background: #10B981; color: white; padding: 10px 20px; border-radius: 30px; 
+            font-size: 13px; font-weight: 600; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            z-index: 9999; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+            display: flex; align-items: center; gap: 8px; pointer-events: none;
+        }
+        #ava-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="text-[13px] flex flex-col min-h-screen font-sans">
+
+    <!-- HỆ THỐNG TOAST -->
+    <div id="ava-toast"><i data-feather="check-circle" class="w-4 h-4"></i> <span id="ava-toast-msg">Đã lưu thay đổi</span></div>
 
     <!-- TOPBAR / NAVIGATION (NO-PRINT) -->
     <header class="no-print bg-white border-b border-[#E9E9EF] sticky top-0 z-50">
@@ -347,7 +394,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.2</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.3</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -372,37 +419,37 @@
     </header>
 
     <!-- CONTAINER NỘI DUNG CHÍNH -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
 
         <section id="user-view" class="space-y-6">
             
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div class="flex items-center gap-4">
-                    <h2 class="text-lg font-bold text-slate-800">Cấu hình In</h2>
-                    <div class="segmented-control" id="template-selector">
-                        <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active">A8 Nhỏ</button>
-                        <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn">A6 Chuẩn</button>
-                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn">Ngang</button>
-                        <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn">Bát Giác</button>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
+                    <h2 class="text-lg font-bold text-slate-800 shrink-0">Cấu hình In</h2>
+                    <div class="segmented-control w-full sm:w-auto overflow-x-auto" id="template-selector">
+                        <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">A8 Nhỏ</button>
+                        <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">A6 Chuẩn</button>
+                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">Ngang</button>
+                        <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-[#E9E9EF] shadow-sm">
-                    <i data-feather="sliders" class="w-4 h-4 text-slate-400"></i>
-                    <span class="text-slate-500 font-medium mr-1 text-xs">Tùy biến nhanh:</span>
-                    <select id="user-temp-font" onchange="TemplateEngine.applyTempFont(this.value)" class="ava-input py-1 px-2 !w-32 text-xs">
+                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-[#E9E9EF] shadow-sm w-full lg:w-auto overflow-x-auto">
+                    <i data-feather="sliders" class="w-4 h-4 text-slate-400 shrink-0"></i>
+                    <span class="text-slate-500 font-medium mr-1 text-xs shrink-0">Tùy biến nhanh:</span>
+                    <select id="user-temp-font" onchange="TemplateEngine.applyTempFont(this.value)" class="ava-input py-1 px-2 !w-32 text-xs shrink-0">
                         <option value="">Font mặc định</option>
                         <option value="Arial, sans-serif">Arial</option>
                         <option value="'Roboto', sans-serif">Roboto</option>
                         <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
                         <option value="'Oswald', sans-serif">Oswald</option>
                     </select>
-                    <div class="flex bg-slate-100 rounded-lg p-0.5 ml-1">
+                    <div class="flex bg-slate-100 rounded-lg p-0.5 ml-1 shrink-0">
                         <button onclick="TemplateEngine.adjustTempSize(-1)" class="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-sm rounded-md font-bold transition">-</button>
                         <div class="w-px bg-slate-200 mx-0.5 my-1"></div>
                         <button onclick="TemplateEngine.adjustTempSize(1)" class="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-sm rounded-md font-bold transition">+</button>
                     </div>
-                    <button onclick="TemplateEngine.resetTempSettings()" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-ava-pink transition ml-1" title="Khôi phục chuẩn">
+                    <button onclick="TemplateEngine.resetTempSettings()" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-ava-pink transition ml-1 shrink-0" title="Khôi phục chuẩn">
                         <i data-feather="refresh-ccw" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
@@ -419,7 +466,7 @@
                 </div>
 
                 <div id="manual-input-tab" class="tab-content active p-6">
-                    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+                    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                         <div class="md:col-span-12">
                             <label class="ava-label">Tên sản phẩm <span class="text-rose-500">*</span></label>
                             <input type="text" id="manual-name" placeholder="Ví dụ: Sữa non AVAKids 800g" class="ava-input text-sm">
@@ -440,25 +487,23 @@
                             <label class="ava-label">Ngày In / Thời gian</label>
                             <input type="text" id="manual-date" placeholder="AVAKIDS" value="AVAKIDS" class="ava-input font-medium text-slate-600">
                         </div>
-                        <div class="md:col-span-12 flex justify-end items-end gap-3 mt-2">
+                        <div class="md:col-span-12 flex flex-wrap justify-end items-end gap-3 mt-2">
                             <div class="w-24">
                                 <label class="ava-label">SL In</label>
                                 <input type="number" id="manual-quantity" value="1" min="1" class="ava-input font-bold text-center">
                             </div>
-                            <button onclick="ProductController.addManualProduct()" class="ava-btn-primary px-6 h-[38px] flex items-center justify-center shrink-0 shadow-md shadow-ava-pink/20" title="Thêm vào danh sách">
-                                <i data-feather="plus" class="w-5 h-5 mr-1"></i> Thêm Sản Phẩm
+                            <button onclick="ProductController.addManualProduct()" class="ava-btn-primary px-6 h-[38px] flex items-center justify-center shrink-0 shadow-md shadow-ava-pink/20 w-full md:w-auto" title="Thêm vào danh sách">
+                                <i data-feather="plus" class="w-5 h-5 mr-1"></i> Thêm Sản Phẩm (Enter)
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Fix ID issue for Excel Import: Ensure map-col-date is properly initialized in openMappingModal -->
                 <div id="excel-import-tab" class="tab-content p-6">
                     <div class="max-w-3xl mx-auto flex flex-col items-center">
                         <div class="text-center mb-4">
                             <h3 class="font-bold text-slate-800 text-base">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
                             <p class="text-slate-500 text-xs mt-1">Hệ thống tự động chuẩn hóa giá, làm tròn số lẻ cực đoan và nhận diện cột.</p>
-                            <!-- YÊU CẦU: Hiển thị thêm thông báo fallback AVAKIDS -->
                             <p class="text-ava-pink font-semibold text-xs mt-1 bg-ava-light/50 px-3 py-1 rounded inline-block">Mặc định cột Ngày In sẽ hiển thị "AVAKIDS" nếu file Excel không có.</p>
                         </div>
                         
@@ -479,7 +524,7 @@
             </div>
 
             <div class="ava-card overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-[#E9E9EF] bg-white flex flex-wrap items-center justify-between gap-4">
+                <div class="p-4 border-b border-[#E9E9EF] bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <h3 class="font-bold text-base">Sản phẩm chờ in</h3>
                         <div class="flex gap-1.5">
@@ -488,21 +533,21 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <div class="relative">
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <div class="relative flex-1 sm:flex-none">
                             <i data-feather="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                            <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="Tìm kiếm..." class="ava-input pl-9 w-48 lg:w-64 !py-1.5">
+                            <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="Tìm kiếm..." class="ava-input pl-9 w-full sm:w-48 lg:w-64 !py-1.5">
                         </div>
                         <button onclick="ProductController.clearAllProducts()" class="text-xs font-semibold text-slate-400 hover:text-rose-500 transition px-2">Xóa tất cả</button>
-                        <button onclick="PrintEngine.openPreviewModal()" class="ava-btn-primary px-5 py-2 flex items-center gap-2 shadow-lg shadow-ava-pink/20 hover:-translate-y-0.5 transform">
+                        <button onclick="PrintEngine.openPreviewModal()" class="ava-btn-primary px-5 py-2 flex items-center gap-2 shadow-lg shadow-ava-pink/20 hover:-translate-y-0.5 transform w-full sm:w-auto justify-center">
                             <i data-feather="printer" class="w-4 h-4"></i>
                             <span>Xem trước & In A4</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto min-h-[300px] max-h-[500px]">
-                    <table class="w-full text-left ava-table">
+                <div class="overflow-x-hidden md:overflow-x-auto min-h-[300px] max-h-[500px] bg-slate-50 md:bg-white p-2 md:p-0 custom-scrollbar">
+                    <table class="ava-table">
                         <thead class="sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="w-12 text-center">#</th>
@@ -515,7 +560,7 @@
                                 <th class="w-12 text-center">Xóa</th>
                             </tr>
                         </thead>
-                        <tbody id="product-list-tbody" class="bg-white">
+                        <tbody id="product-list-tbody" class="bg-slate-50 md:bg-white">
                         </tbody>
                     </table>
                 </div>
@@ -549,25 +594,25 @@
 
             <div id="admin-panel-box" class="hidden space-y-4">
                 
-                <div class="ava-card p-4 flex flex-wrap items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
+                <div class="ava-card p-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
                         <span class="font-bold text-slate-800 text-sm">Chỉnh sửa mẫu:</span>
-                        <div class="segmented-control">
-                            <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="segmented-btn active">A8 Nhỏ</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="segmented-btn">A6 Chuẩn</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('NGANG')" id="adm-btn-NGANG" class="segmented-btn">Ngang</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('TRON')" id="adm-btn-TRON" class="segmented-btn">Bát Giác</button>
+                        <div class="segmented-control w-full sm:w-auto overflow-x-auto">
+                            <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="segmented-btn active whitespace-nowrap">A8 Nhỏ</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="segmented-btn whitespace-nowrap">A6 Chuẩn</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('NGANG')" id="adm-btn-NGANG" class="segmented-btn whitespace-nowrap">Ngang</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('TRON')" id="adm-btn-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
                         <button onclick="VisualDesigner.undo()" class="w-9 h-9 flex items-center justify-center ava-btn-secondary !p-0" title="Hoàn tác (Ctrl+Z)"><i data-feather="corner-up-left" class="w-4 h-4"></i></button>
                         <button onclick="VisualDesigner.redo()" class="w-9 h-9 flex items-center justify-center ava-btn-secondary !p-0 mr-2" title="Làm lại (Ctrl+Y)"><i data-feather="corner-up-right" class="w-4 h-4"></i></button>
                         
                         <button onclick="VisualDesigner.resetToDefault()" class="ava-btn-secondary px-3 py-1.5 text-xs text-slate-500">Khôi phục gốc</button>
                         <button onclick="VisualDesigner.saveDraft()" class="ava-btn-secondary px-3 py-1.5 text-xs border-slate-300">Lưu nháp</button>
                         <button onclick="VisualDesigner.publishOnline()" class="ava-btn-primary px-4 py-1.5 text-xs flex items-center gap-1.5 shadow-md shadow-ava-pink/20">
-                            <i data-feather="upload-cloud" class="w-3.5 h-3.5"></i> Xuất bản Online
+                            <i data-feather="upload-cloud" class="w-3.5 h-3.5"></i> Xuất bản
                         </button>
                     </div>
                 </div>
@@ -580,7 +625,7 @@
                             <div class="flex justify-between items-center mb-3">
                                 <span class="font-bold text-sm text-slate-800">Cấu trúc Đối tượng</span>
                             </div>
-                            <div id="layer-list-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+                            <div id="layer-list-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar"></div>
                         </div>
 
                         <div id="property-inspector-box" class="ava-card p-4 space-y-4">
@@ -674,10 +719,10 @@
                     </div>
 
                     <!-- CỘT PHẢI: VÙNG CANVAS THIẾT KẾ TRỰC QUAN -->
-                    <div class="lg:col-span-8 ava-card p-0 flex flex-col min-h-[600px] overflow-hidden bg-[#FAFAFA]">
+                    <div class="lg:col-span-8 ava-card p-0 flex flex-col min-h-[500px] lg:min-h-[600px] overflow-hidden bg-[#FAFAFA]">
                         
                         <!-- Header Canvas -->
-                        <div class="bg-white border-b border-[#E9E9EF] px-4 py-3 flex items-center justify-between">
+                        <div class="bg-white border-b border-[#E9E9EF] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
                             <div class="flex items-center gap-2">
                                 <i data-feather="layout" class="w-4 h-4 text-slate-400"></i>
                                 <span class="font-bold text-slate-700 text-sm">Vùng thiết kế</span>
@@ -692,7 +737,7 @@
                         </div>
 
                         <!-- Vùng vẽ chính -->
-                        <div class="flex-1 overflow-auto p-8 flex items-center justify-center">
+                        <div class="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center custom-scrollbar">
                             <div id="visual-canvas-stage" class="editor-canvas-stage bg-white transition-transform origin-center">
                                 <!-- Render động -->
                             </div>
@@ -721,11 +766,10 @@
                 <button onclick="ExcelImporter.closeModal()" class="text-slate-400 hover:text-slate-700 transition"><i data-feather="x" class="w-5 h-5"></i></button>
             </div>
 
-            <div class="p-5 overflow-y-auto space-y-4 flex-1">
+            <div class="p-5 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
                 <p class="text-slate-500 text-sm">Khớp tên cột trong file tải lên với chuẩn của hệ thống:</p>
 
-                <!-- Đã FIX thêm cột NGÀY IN VÀO ĐÂY ĐỂ TRÁNH LỖI NULL INNER HTML -->
-                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-[#E9E9EF]">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-[#E9E9EF]">
                     <div>
                         <label class="ava-label">1. Tên sản phẩm (*)</label>
                         <select id="map-col-name" class="ava-input bg-white"></select>
@@ -742,7 +786,7 @@
                         <label class="ava-label">4. Khuyến mãi / Trả góp</label>
                         <select id="map-col-promo" class="ava-input bg-white"></select>
                     </div>
-                    <div class="col-span-2">
+                    <div class="sm:col-span-2">
                         <label class="ava-label text-ava-pink">5. Ngày In (Mặc định sẽ là "AVAKIDS" nếu không chọn)</label>
                         <select id="map-col-date" class="ava-input bg-white border-ava-pink"></select>
                     </div>
@@ -750,7 +794,7 @@
 
                 <div id="excel-error-report" class="hidden p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
                     <span class="font-bold text-rose-700 text-xs flex items-center gap-1.5"><i data-feather="alert-triangle" class="w-4 h-4"></i> Phát hiện sai định dạng giá (sẽ bị loại bỏ):</span>
-                    <div class="max-h-36 overflow-y-auto border border-rose-100 rounded bg-white">
+                    <div class="max-h-36 overflow-y-auto border border-rose-100 rounded bg-white custom-scrollbar">
                         <table class="w-full text-[11px] text-left">
                             <thead class="bg-rose-50 text-rose-800">
                                 <tr>
@@ -777,12 +821,12 @@
     <!-- MODAL 2: XEM TRƯỚC VÀ THỰC HIỆN IN TRỰC TIẾP / PDF -->
     <!-- ======================================================= -->
     <div id="print-preview-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col items-center p-4">
-        <div class="preview-toolbar no-print">
+        <div class="preview-toolbar no-print flex-wrap justify-center w-full max-w-lg text-center top-4 left-1/2">
             <div class="flex items-center border-r border-[#E9E9EF] pr-3 mr-1">
                 <i data-feather="edit-2" class="w-4 h-4 text-ava-pink mr-2"></i>
                 <span class="text-xs font-bold text-slate-700">Công cụ Sửa nhanh</span>
             </div>
-            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-32 text-xs">
+            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-28 text-xs">
                 <option value="">Đổi Font</option>
                 <option value="Arial, sans-serif">Arial</option>
                 <option value="'Roboto', sans-serif">Roboto</option>
@@ -793,10 +837,10 @@
                 <button onclick="document.execCommand('italic', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-serif italic text-slate-700 transition" title="In nghiêng">I</button>
                 <button onclick="document.execCommand('strikeThrough', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm line-through text-slate-700 transition" title="Gạch ngang">S</button>
             </div>
-            <span class="text-slate-400 text-[10px] ml-2 hidden md:inline">Bôi đen chữ bên dưới để sửa. Mọi chữ sẽ in hoa khi ra giấy.</span>
+            <span class="text-slate-400 text-[10px] w-full mt-1 md:inline">Bôi đen chữ bên dưới để sửa. Mọi chữ sẽ in hoa khi ra giấy.</span>
         </div>
 
-        <div class="no-print bg-white max-w-4xl w-full p-4 rounded-xl shadow-xl flex items-center justify-between mt-[72px] mb-4 relative z-10 border border-[#E9E9EF]">
+        <div class="no-print bg-white max-w-4xl w-full p-4 rounded-xl shadow-xl flex flex-wrap items-center justify-between mt-[120px] md:mt-[72px] mb-4 relative z-10 border border-[#E9E9EF] gap-4">
             <div>
                 <span class="font-black text-slate-800 text-base">Xem trước bản in A4</span>
                 <span id="preview-stat-summary" class="text-xs text-ava-pink font-semibold block mt-0.5"></span>
@@ -804,7 +848,7 @@
             <div class="flex items-center gap-3">
                 <button onclick="PrintEngine.closeModal()" class="ava-btn-secondary px-4 py-2">Đóng lại</button>
                 <button onclick="window.print()" class="ava-btn-primary px-5 py-2 shadow-lg shadow-ava-pink/20 flex items-center gap-2">
-                    <i data-feather="printer" class="w-4 h-4"></i> Mở hộp thoại In
+                    <i data-feather="printer" class="w-4 h-4"></i> In Ngay
                 </button>
             </div>
         </div>
@@ -817,6 +861,30 @@
     <!-- ======================================================= -->
     <script>
         feather.replace();
+
+        // 1. SECURITY & UTILS MODULE (Bảo mật XSS & UX)
+        const Utils = {
+            escapeHTML(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            },
+            showToast(msg) {
+                const toast = document.getElementById('ava-toast');
+                const toastMsg = document.getElementById('ava-toast-msg');
+                if (toast && toastMsg) {
+                    toastMsg.innerText = msg;
+                    toast.classList.add('show');
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 2000);
+                }
+            }
+        };
 
         const UITabs = {
             switchTab(tabId, btnElement) {
@@ -1073,6 +1141,9 @@
 
                     if (!content) return;
 
+                    // FIX BẢO MẬT: Escape toàn bộ nội dung HTML
+                    content = Utils.escapeHTML(content);
+
                     const finalFont = userFont || layer.fontFamily;
                     const finalSize = Math.max(6, layer.fontSize + dSize);
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
@@ -1258,7 +1329,8 @@
                     lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''} layer-uppercase`;
 
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
-                    lDiv.innerHTML = `<span class="${strikeClass}">${layer.text}</span>`;
+                    // FIX XSS TRÊN CANVAS
+                    lDiv.innerHTML = `<span class="${strikeClass}">${Utils.escapeHTML(layer.text)}</span>`;
 
                     lDiv.onmousedown = (e) => {
                         e.stopPropagation();
@@ -1270,17 +1342,20 @@
                         if (layer.isLocked) return;
 
                         VisualDesigner.recordSnapshot();
-                        const startMouseX = e.clientX;
-                        const startMouseY = e.clientY;
-                        const startLayerX = layer.x;
-                        const startLayerY = layer.y;
+                        
+                        // FIX LỖI GIẬT ZOOM CANVAS BẰNG DELTA CHUẨN
+                        let lastMouseX = e.clientX;
+                        let lastMouseY = e.clientY;
 
                         const onMouseMove = (moveEvt) => {
-                            const deltaXmm = (moveEvt.clientX - startMouseX) / (MM_TO_PX * VisualDesigner.zoom);
-                            const deltaYmm = (moveEvt.clientY - startMouseY) / (MM_TO_PX * VisualDesigner.zoom);
+                            const deltaXmm = (moveEvt.clientX - lastMouseX) / (MM_TO_PX * VisualDesigner.zoom);
+                            const deltaYmm = (moveEvt.clientY - lastMouseY) / (MM_TO_PX * VisualDesigner.zoom);
 
-                            let newX = Math.round((startLayerX + deltaXmm) * 10) / 10;
-                            let newY = Math.round((startLayerY + deltaYmm) * 10) / 10;
+                            lastMouseX = moveEvt.clientX;
+                            lastMouseY = moveEvt.clientY;
+
+                            let newX = Math.round((layer.x + deltaXmm) * 10) / 10;
+                            let newY = Math.round((layer.y + deltaYmm) * 10) / 10;
 
                             newX = Math.max(0, Math.min(newX, VisualDesigner.currentConfig.widthMm - layer.w));
                             newY = Math.max(0, Math.min(newY, VisualDesigner.currentConfig.heightMm - layer.h));
@@ -1398,7 +1473,7 @@
             saveDraft() {
                 TemplateEngine.templates[this.currentFormat] = JSON.parse(JSON.stringify(this.currentConfig));
                 localStorage.setItem(`draft_tpl_${this.currentFormat}`, JSON.stringify(this.currentConfig));
-                alert(`Đã lưu bản nháp mẫu ${this.currentFormat} thành công!`);
+                Utils.showToast(`Đã lưu nháp mẫu ${this.currentFormat}!`);
             },
 
             async publishOnline() {
@@ -1464,7 +1539,7 @@
                     if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
                         str = str.replace(/\./g, '');
                     } else if (parts.length === 2 && parts[1].length !== 3) {
-                        return { valid: false, error: "Dấu chấm không theo chuẩn hàng nghìn", raw };
+                        return { valid: false, error: "Dấu chấm không chuẩn", raw };
                     } else {
                         str = str.replace(/\./g, '');
                     }
@@ -1473,12 +1548,12 @@
                     if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
                         str = str.replace(/,/g, '');
                     } else {
-                        return { valid: false, error: "Dấu phẩy không theo chuẩn hàng nghìn", raw };
+                        return { valid: false, error: "Dấu phẩy không chuẩn", raw };
                     }
                 }
 
                 const num = Number(str);
-                if (isNaN(num) || num < 0) return { valid: false, error: "Số tiền không hợp lệ", raw };
+                if (isNaN(num) || num < 0) return { valid: false, error: "Số không hợp lệ", raw };
                 return { valid: true, value: num, formatted: num.toLocaleString('vi-VN') };
             }
         };
@@ -1508,13 +1583,6 @@
 
                         this.headers = json[0].map(h => String(h).trim());
                         this.rawRows = json.slice(1).filter(r => r.length > 0);
-                        
-                        // FIX: Ensure Modal HTML structure exists before opening
-                        const mapColDate = document.getElementById("map-col-date");
-                        if (!mapColDate) {
-                            console.error("Missing map-col-date in HTML structure");
-                        }
-                        
                         this.openMappingModal();
                     } catch(err) {
                         alert("Lỗi đọc file: " + err.message);
@@ -1529,7 +1597,7 @@
                     const sel = document.getElementById(id);
                     if(sel) {
                         sel.innerHTML = `<option value="">-- Không chọn --</option>` + 
-                            this.headers.map((h, idx) => `<option value="${idx}">${h}</option>`).join("");
+                            this.headers.map((h, idx) => `<option value="${idx}">${Utils.escapeHTML(h)}</option>`).join("");
                     }
                 });
 
@@ -1539,7 +1607,6 @@
                     if (low.includes("giá giảm") || low.includes("giá bán") || low === "giá") document.getElementById("map-col-price").value = idx;
                     if (low.includes("giá gốc") || low.includes("giá cũ")) document.getElementById("map-col-original-price").value = idx;
                     if (low.includes("khuyến mãi") || low.includes("km")) document.getElementById("map-col-promo").value = idx;
-                    // FIX: Auto-detect date column
                     if (document.getElementById("map-col-date") && (low.includes("ngày") || low.includes("thời gian") || low.includes("date"))) document.getElementById("map-col-date").value = idx;
                 });
 
@@ -1579,8 +1646,8 @@
                         tbody.innerHTML += `
                             <tr>
                                 <td class="p-2 border-b border-rose-50">${e.rowNum}</td>
-                                <td class="p-2 border-b border-rose-50 truncate max-w-[120px]" title="${e.productName}">${e.productName}</td>
-                                <td class="p-2 border-b border-rose-50 text-rose-500 font-bold">${e.rawVal}</td>
+                                <td class="p-2 border-b border-rose-50 truncate max-w-[120px]" title="${Utils.escapeHTML(e.productName)}">${Utils.escapeHTML(e.productName)}</td>
+                                <td class="p-2 border-b border-rose-50 text-rose-500 font-bold">${Utils.escapeHTML(e.rawVal)}</td>
                                 <td class="p-2 border-b border-rose-50">${e.reason}</td>
                             </tr>
                         `;
@@ -1627,7 +1694,6 @@
                             price: priceRes.formatted,
                             originalPrice: originalPriceFormatted,
                             promo: promoIdx !== "" && row[promoIdx] ? String(row[promoIdx]).trim() : "+ TRẢ GÓP 0% LÃI SUẤT",
-                            // FIX: Append date mapped field with AVAKIDS fallback
                             date: dateIdx !== "" && row[dateIdx] ? String(row[dateIdx]).trim() : `AVAKIDS`,
                             quantity: 1
                         });
@@ -1642,6 +1708,7 @@
                 await DBManager.addProductsBatch(validProducts);
                 this.closeModal();
                 await ProductController.loadProducts();
+                Utils.showToast(`Đã import thành công ${validProducts.length} sản phẩm!`);
             }
         };
 
@@ -1668,35 +1735,35 @@
                     return;
                 }
 
+                // FIX BẢO MẬT & UI RESPONSIVE
                 list.forEach((p, idx) => {
                     const tr = document.createElement("tr");
                     tr.className = "hover:bg-slate-50 transition";
-                    // FIX: Ensure backward compatibility if date is missing
                     const pDate = p.date || `AVAKIDS`;
+                    
                     tr.innerHTML = `
-                        <td class="text-center text-slate-400 font-mono">${idx + 1}</td>
-                        <td>
-                            <input type="text" value="${p.name}" onchange="ProductController.updateField(${p.id}, 'name', this.value)" class="font-bold text-slate-700">
+                        <td class="text-center text-slate-400 font-mono" data-label="#">${idx + 1}</td>
+                        <td data-label="Tên sản phẩm">
+                            <input type="text" value="${Utils.escapeHTML(p.name)}" onchange="ProductController.updateField(${p.id}, 'name', this.value)" class="font-bold text-slate-700 w-full">
                         </td>
-                        <td class="text-right">
-                            <input type="text" value="${p.originalPrice || ''}" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="text-right line-through text-slate-400">
+                        <td class="text-right" data-label="Giá gốc">
+                            <input type="text" value="${Utils.escapeHTML(p.originalPrice || '')}" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="text-right line-through text-slate-400 w-full">
                         </td>
-                        <td class="text-right">
-                            <input type="text" value="${p.price}" onchange="ProductController.updateField(${p.id}, 'price', this.value)" class="text-right font-black text-ava-pink">
+                        <td class="text-right" data-label="Giá giảm">
+                            <input type="text" value="${Utils.escapeHTML(p.price)}" onchange="ProductController.updateField(${p.id}, 'price', this.value)" class="text-right font-black text-ava-pink w-full">
                         </td>
-                        <td>
-                            <input type="text" value="${p.promo || ''}" onchange="ProductController.updateField(${p.id}, 'promo', this.value)" class="text-slate-600">
+                        <td data-label="Ghi chú / KM">
+                            <input type="text" value="${Utils.escapeHTML(p.promo || '')}" onchange="ProductController.updateField(${p.id}, 'promo', this.value)" class="text-slate-600 w-full">
                         </td>
-                        <!-- Cột Ngày In Mới -->
-                        <td>
-                            <input type="text" value="${pDate}" onchange="ProductController.updateField(${p.id}, 'date', this.value)" class="text-slate-500 text-xs">
+                        <td data-label="Ngày in">
+                            <input type="text" value="${Utils.escapeHTML(pDate)}" onchange="ProductController.updateField(${p.id}, 'date', this.value)" class="text-slate-500 text-xs w-full">
                         </td>
-                        <td class="text-center">
-                            <input type="number" min="1" max="99" value="${p.quantity || 1}" onchange="ProductController.updateField(${p.id}, 'quantity', parseInt(this.value)||1)" class="text-center font-bold text-slate-800 bg-slate-50 border border-slate-200 !py-1">
+                        <td class="text-center" data-label="Số lượng">
+                            <input type="number" min="1" max="99" value="${p.quantity || 1}" onchange="ProductController.updateField(${p.id}, 'quantity', parseInt(this.value)||1)" class="text-center font-bold text-slate-800 bg-slate-50 border border-slate-200 !py-1 w-full md:w-auto">
                         </td>
-                        <td class="text-center">
-                            <button onclick="ProductController.deleteProduct(${p.id})" class="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded transition">
-                                <i data-feather="trash-2" class="w-4 h-4"></i>
+                        <td class="text-center" data-label="Xóa">
+                            <button onclick="ProductController.deleteProduct(${p.id})" class="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded transition w-full md:w-auto text-right md:text-center">
+                                <i data-feather="trash-2" class="w-4 h-4 inline"></i>
                             </button>
                         </td>
                     `;
@@ -1711,6 +1778,7 @@
                     target[field] = value;
                     await DBManager.updateProduct(target);
                     this.updateCounters();
+                    Utils.showToast("Đã lưu thay đổi"); // FIX UX
                 }
             },
 
@@ -1751,19 +1819,24 @@
                 document.getElementById("manual-name").value = "";
                 document.getElementById("manual-price").value = "";
                 document.getElementById("manual-original-price").value = "";
-                document.getElementById("manual-date").value = "AVAKIDS"; // Reset to AVAKIDS
+                document.getElementById("manual-date").value = "AVAKIDS";
+                document.getElementById("manual-name").focus();
+                
                 await this.loadProducts();
+                Utils.showToast("Đã thêm sản phẩm thành công!");
             },
 
             async deleteProduct(id) {
                 await DBManager.deleteProduct(id);
                 await this.loadProducts();
+                Utils.showToast("Đã xóa sản phẩm");
             },
 
             async clearAllProducts() {
                 if (confirm("Bạn có chắc muốn xóa sạch danh sách chờ in?")) {
                     await DBManager.clearAll();
                     await this.loadProducts();
+                    Utils.showToast("Đã dọn dẹp danh sách");
                 }
             },
 
@@ -1887,6 +1960,18 @@
                 await TemplateEngine.fetchTemplatesOnline();
                 await ProductController.loadProducts();
                 await AuthManager.checkSession();
+                this.bindEvents();
+            },
+            bindEvents() {
+                // Hỗ trợ nút Enter thêm sản phẩm nhanh
+                const manualTab = document.getElementById('manual-input-tab');
+                if(manualTab) {
+                    manualTab.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            ProductController.addManualProduct();
+                        }
+                    });
+                }
             },
             switchView(viewName) {
                 const userView = document.getElementById("user-view");
