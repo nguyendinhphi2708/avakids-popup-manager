@@ -1114,7 +1114,8 @@
                     } else if (layer.id === 'promo') {
                         content = product.promo || layer.text;
                     } else if (layer.id === 'date_box') {
-                        content = `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
+                        // FIX: Sử dụng thuộc tính 'date' của đối tượng product (nếu có)
+                        content = product.date || `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
                     }
 
                     if (!content) return;
@@ -1459,7 +1460,8 @@
                 try {
                     const payload = {
                         id: this.currentFormat,
-                        name: this.currentConfig.name,
+                        // Fix: explicitly pass the name and enforce not null
+                        name: this.currentConfig.name || `Mẫu ${this.currentFormat}`,
                         config: this.currentConfig,
                         updated_at: new Date().toISOString(),
                         updated_by: AuthManager.user.id
@@ -1573,8 +1575,9 @@
 
             openMappingModal() {
                 const modal = document.getElementById("excel-mapping-modal");
-                ["map-col-name", "map-col-price", "map-col-original-price", "map-col-promo"].forEach(id => {
+                ["map-col-name", "map-col-price", "map-col-original-price", "map-col-promo", "map-col-date"].forEach(id => {
                     const sel = document.getElementById(id);
+                    // Add date selector for mapping
                     sel.innerHTML = `<option value="">-- Không chọn --</option>` + 
                         this.headers.map((h, idx) => `<option value="${idx}">${h}</option>`).join("");
                 });
@@ -1585,6 +1588,8 @@
                     if (low.includes("giá giảm") || low.includes("giá bán") || low === "giá") document.getElementById("map-col-price").value = idx;
                     if (low.includes("giá gốc") || low.includes("giá cũ")) document.getElementById("map-col-original-price").value = idx;
                     if (low.includes("khuyến mãi") || low.includes("km")) document.getElementById("map-col-promo").value = idx;
+                    // FIX: Auto-detect date column
+                    if (low.includes("ngày") || low.includes("thời gian") || low.includes("date")) document.getElementById("map-col-date").value = idx;
                 });
 
                 modal.classList.remove("hidden");
@@ -1645,6 +1650,7 @@
                 const priceIdx = document.getElementById("map-col-price").value;
                 const origIdx = document.getElementById("map-col-original-price").value;
                 const promoIdx = document.getElementById("map-col-promo").value;
+                const dateIdx = document.getElementById("map-col-date").value;
 
                 if (nameIdx === "" || priceIdx === "") {
                     alert("Bắt buộc phải chọn Cột Tên sản phẩm và Cột Giá giảm!");
@@ -1669,6 +1675,8 @@
                             price: priceRes.formatted,
                             originalPrice: originalPriceFormatted,
                             promo: promoIdx !== "" && row[promoIdx] ? String(row[promoIdx]).trim() : "+ TRẢ GÓP 0% LÃI SUẤT",
+                            // FIX: Append date mapped field
+                            date: dateIdx !== "" && row[dateIdx] ? String(row[dateIdx]).trim() : `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`,
                             quantity: 1
                         });
                     }
@@ -1702,7 +1710,7 @@
                 tbody.innerHTML = "";
 
                 if (list.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-12 text-slate-400">
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center p-12 text-slate-400">
                         <div class="flex flex-col items-center justify-center gap-3">
                             <i data-feather="inbox" class="w-8 h-8 text-slate-300"></i>
                             <span>Chưa có sản phẩm. Thêm thủ công hoặc import Excel.</span>
@@ -1715,6 +1723,8 @@
                 list.forEach((p, idx) => {
                     const tr = document.createElement("tr");
                     tr.className = "hover:bg-slate-50 transition";
+                    // FIX: Ensure backward compatibility if date is missing
+                    const pDate = p.date || `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`;
                     tr.innerHTML = `
                         <td class="text-center text-slate-400 font-mono">${idx + 1}</td>
                         <td>
@@ -1728,6 +1738,10 @@
                         </td>
                         <td>
                             <input type="text" value="${p.promo || ''}" onchange="ProductController.updateField(${p.id}, 'promo', this.value)" class="text-slate-600">
+                        </td>
+                        <!-- Cột Ngày In Mới -->
+                        <td>
+                            <input type="text" value="${pDate}" onchange="ProductController.updateField(${p.id}, 'date', this.value)" class="text-slate-500 text-xs">
                         </td>
                         <td class="text-center">
                             <input type="number" min="1" max="99" value="${p.quantity || 1}" onchange="ProductController.updateField(${p.id}, 'quantity', parseInt(this.value)||1)" class="text-center font-bold text-slate-800 bg-slate-50 border border-slate-200 !py-1">
@@ -1757,6 +1771,7 @@
                 const priceRaw = document.getElementById("manual-price").value.trim();
                 const origRaw = document.getElementById("manual-original-price").value.trim();
                 const promo = document.getElementById("manual-promo").value.trim();
+                const dateVal = document.getElementById("manual-date").value.trim(); // Get Date value
                 const qty = parseInt(document.getElementById("manual-quantity").value) || 1;
 
                 if (!name || !priceRaw) {
@@ -1781,12 +1796,14 @@
                     price: priceRes.formatted,
                     originalPrice: origFormatted,
                     promo: promo || "+ TRẢ GÓP 0% LÃI SUẤT",
+                    date: dateVal || `NGÀY: ${new Date().toLocaleDateString('vi-VN')}`, // Add Date property
                     quantity: qty
                 });
 
                 document.getElementById("manual-name").value = "";
                 document.getElementById("manual-price").value = "";
                 document.getElementById("manual-original-price").value = "";
+                document.getElementById("manual-date").value = "";
                 await this.loadProducts();
             },
 
