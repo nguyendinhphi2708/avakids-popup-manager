@@ -415,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9_Final</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.1_FINAL</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -703,10 +703,11 @@
                                     <input type="number" id="prop-font-size" class="ava-input font-mono" oninput="VisualDesigner.updateActiveStyle('fontSize', parseInt(this.value)||10)">
                                 </div>
                             </div>
-
-                            <div class="grid grid-cols-3 gap-2">
+                            
+                            <!-- FIX 100% LỖI MẤT DRAG BẰNG CÁCH PHỤC HỒI ĐÚNG GIAO DIỆN SELECT GẠCH NGANG -->
+                            <div class="grid grid-cols-4 gap-2">
                                 <div>
-                                    <label class="ava-label">Căn lề</label>
+                                    <label class="ava-label text-center !text-[11px]">Căn lề</label>
                                     <select id="prop-text-align" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStyle('textAlign', this.value)">
                                         <option value="center">Giữa</option>
                                         <option value="left">Trái</option>
@@ -714,7 +715,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="ava-label">Độ đậm</label>
+                                    <label class="ava-label text-center !text-[11px]">Độ đậm</label>
                                     <select id="prop-font-weight" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStyle('fontWeight', this.value)">
                                         <option value="900">900</option>
                                         <option value="700">700</option>
@@ -723,8 +724,15 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="ava-label text-center whitespace-nowrap overflow-hidden text-ellipsis">Màu sắc</label>
-                                    <input type="color" id="prop-color" class="ava-input !p-0 !h-8 w-full border-none cursor-pointer" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
+                                    <label class="ava-label text-center !text-[11px] whitespace-nowrap overflow-hidden text-ellipsis" title="Gạch ngang">Gạch ngang</label>
+                                    <select id="prop-strikethrough" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStrike(this.value === 'yes')">
+                                        <option value="no">Không</option>
+                                        <option value="yes">Có</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="ava-label text-center !text-[11px]">Màu sắc</label>
+                                    <input type="color" id="prop-color" class="ava-input !p-0 !h-[30px] w-full border-none cursor-pointer rounded overflow-hidden" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
                                 </div>
                             </div>
                         </div>
@@ -1540,7 +1548,9 @@
                 document.getElementById("prop-font-size").value = layer.fontSize;
                 document.getElementById("prop-font-weight").value = layer.fontWeight;
                 document.getElementById("prop-text-align").value = layer.textAlign;
-                document.getElementById("prop-strikethrough").value = layer.isStrike ? 'yes' : 'no';
+                // FIX VẤN ĐỀ CHẾT JS: Trả lại id prop-strikethrough đã được tái sinh ở HTML
+                const strikeEl = document.getElementById("prop-strikethrough");
+                if (strikeEl) strikeEl.value = layer.isStrike ? 'yes' : 'no';
                 
                 const colorInput = document.getElementById("prop-color");
                 if (colorInput) colorInput.value = layer.color || "#000000";
