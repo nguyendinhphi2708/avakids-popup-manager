@@ -394,7 +394,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.5</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.6</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -434,26 +434,8 @@
                         <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                     </div>
                 </div>
-
-                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-[#E9E9EF] shadow-sm w-full lg:w-auto overflow-x-auto">
-                    <i data-feather="sliders" class="w-4 h-4 text-slate-400 shrink-0"></i>
-                    <span class="text-slate-500 font-medium mr-1 text-xs shrink-0">Tùy biến nhanh:</span>
-                    <select id="user-temp-font" onchange="TemplateEngine.applyTempFont(this.value)" class="ava-input py-1 px-2 !w-32 text-xs shrink-0">
-                        <option value="">Font mặc định</option>
-                        <option value="Arial, sans-serif">Arial</option>
-                        <option value="'Roboto', sans-serif">Roboto</option>
-                        <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
-                        <option value="'Oswald', sans-serif">Oswald</option>
-                    </select>
-                    <div class="flex bg-slate-100 rounded-lg p-0.5 ml-1 shrink-0">
-                        <button onclick="TemplateEngine.adjustTempSize(-1)" class="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-sm rounded-md font-bold transition">-</button>
-                        <div class="w-px bg-slate-200 mx-0.5 my-1"></div>
-                        <button onclick="TemplateEngine.adjustTempSize(1)" class="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-sm rounded-md font-bold transition">+</button>
-                    </div>
-                    <button onclick="TemplateEngine.resetTempSettings()" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-ava-pink transition ml-1 shrink-0" title="Khôi phục chuẩn">
-                        <i data-feather="refresh-ccw" class="w-3.5 h-3.5"></i>
-                    </button>
-                </div>
+                
+                <!-- FIX YÊU CẦU 4: Đã xóa cụm "Tùy biến nhanh" -->
             </div>
 
             <div class="ava-card overflow-hidden">
@@ -683,6 +665,9 @@
                                         <option value="'Inter', sans-serif">Inter</option>
                                         <option value="'Noto Sans', sans-serif">Noto Sans</option>
                                         <option value="'Lato', sans-serif">Lato</option>
+                                        <option value="'Tahoma', sans-serif">Tahoma</option>
+                                        <option value="'Times New Roman', serif">Times New Roman</option>
+                                        <option value="'Verdana', sans-serif">Verdana</option>
                                     </select>
                                 </div>
                                 <div>
@@ -710,11 +695,9 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="ava-label text-center whitespace-nowrap overflow-hidden text-ellipsis">Gạch ngang</label>
-                                    <select id="prop-strikethrough" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStrike(this.value === 'yes')">
-                                        <option value="no">Không</option>
-                                        <option value="yes">Có</option>
-                                    </select>
+                                    <label class="ava-label text-center whitespace-nowrap overflow-hidden text-ellipsis">Màu sắc</label>
+                                    <!-- FIX YÊU CẦU 5: COLOR PICKER CHO ADMIN -->
+                                    <input type="color" id="prop-color" class="ava-input !p-0 !h-8 w-full border-none cursor-pointer" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
                                 </div>
                             </div>
                         </div>
@@ -793,7 +776,6 @@
                         <select id="map-col-date" class="ava-input bg-white"></select>
                     </div>
                     
-                    <!-- NEW OPTION FOR BULK LABEL -->
                     <div class="sm:col-span-2 mt-2 pt-4 border-t border-[#E9E9EF]">
                         <label class="ava-label text-ava-pink"><i data-feather="tag" class="w-3 h-3 inline"></i> 6. Áp dụng Nhãn dán hàng loạt (Tùy chọn)</label>
                         <input type="text" id="map-bulk-label" placeholder="VD: GIẢM NGAY (Sẽ áp dụng cho toàn bộ SP thay vì Giá gốc)" class="ava-input border-ava-pink/50 bg-ava-light/10 text-ava-dark font-semibold">
@@ -829,23 +811,40 @@
     <!-- MODAL 2: XEM TRƯỚC VÀ THỰC HIỆN IN TRỰC TIẾP / PDF -->
     <!-- ======================================================= -->
     <div id="print-preview-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col items-center p-4">
-        <div class="preview-toolbar no-print flex-wrap justify-center w-full max-w-lg text-center top-4 left-1/2">
+        <!-- FIX YÊU CẦU 2: TOOLBAR MỚI VỚI COLOR PICKER & FONT TÙY BIẾN TỐT HƠN -->
+        <div class="preview-toolbar no-print flex-wrap justify-center w-full max-w-2xl text-center top-4 left-1/2">
             <div class="flex items-center border-r border-[#E9E9EF] pr-3 mr-1">
                 <i data-feather="edit-2" class="w-4 h-4 text-ava-pink mr-2"></i>
                 <span class="text-xs font-bold text-slate-700">Công cụ Sửa nhanh</span>
             </div>
-            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-28 text-xs">
+            
+            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-32 text-xs">
                 <option value="">Đổi Font</option>
                 <option value="Arial, sans-serif">Arial</option>
                 <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
                 <option value="'Oswald', sans-serif">Oswald</option>
+                <option value="'Tahoma', sans-serif">Tahoma</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="'Verdana', sans-serif">Verdana</option>
             </select>
+            
+            <div class="flex items-center gap-1.5 ml-1 border-r border-[#E9E9EF] pr-3">
+                <input type="color" id="quick-color-picker" class="w-7 h-7 p-0 border-none cursor-pointer rounded bg-transparent" onchange="document.execCommand('foreColor', false, this.value)" title="Đổi màu chữ">
+            </div>
+
             <div class="flex bg-slate-100 rounded p-1 gap-1">
                 <button onclick="document.execCommand('bold', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 transition" title="In đậm">B</button>
                 <button onclick="document.execCommand('italic', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-serif italic text-slate-700 transition" title="In nghiêng">I</button>
                 <button onclick="document.execCommand('strikeThrough', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm line-through text-slate-700 transition" title="Gạch ngang">S</button>
             </div>
-            <span class="text-slate-400 text-[10px] w-full mt-1 md:inline">Bôi đen chữ bên dưới để sửa. Mọi chữ sẽ in hoa khi ra giấy.</span>
+            
+            <div class="flex bg-slate-100 rounded p-1 gap-1 ml-1">
+                <button onclick="PrintEngine.adjustFontSize(1)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 transition" title="Tăng cỡ chữ">A+</button>
+                <button onclick="PrintEngine.adjustFontSize(-1)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 transition" title="Giảm cỡ chữ">A-</button>
+            </div>
+
+            <span class="text-slate-400 text-[10px] w-full mt-1 lg:hidden">Bôi đen chữ bên dưới để sửa. Mọi chữ sẽ in hoa khi ra giấy.</span>
         </div>
 
         <div class="no-print bg-white max-w-4xl w-full p-4 rounded-xl shadow-xl flex flex-wrap items-center justify-between mt-[120px] md:mt-[72px] mb-4 relative z-10 border border-[#E9E9EF] gap-4">
@@ -855,6 +854,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <button onclick="PrintEngine.closeModal()" class="ava-btn-secondary px-4 py-2">Đóng lại</button>
+                <!-- Nút in gọi window.print() -->
                 <button onclick="window.print()" class="ava-btn-primary px-5 py-2 shadow-lg shadow-ava-pink/20 flex items-center gap-2">
                     <i data-feather="printer" class="w-4 h-4"></i> In Ngay
                 </button>
@@ -870,7 +870,6 @@
     <script>
         feather.replace();
 
-        // 1. SECURITY & UTILS MODULE (Bảo mật XSS & UX)
         const Utils = {
             escapeHTML(str) {
                 if (str === null || str === undefined) return '';
@@ -901,51 +900,6 @@
                 document.getElementById(tabId).classList.add('active');
                 btnElement.classList.add('active');
             }
-        };
-
-        const oldSetUserFormat = function(format) {
-            TemplateEngine.activeFormat = format;
-            ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
-                const btn = document.getElementById('u-tab-' + f);
-                if (btn) {
-                    if (f === format) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                }
-            });
-            
-            // Xử lý UX UI cho ô Giá gốc / Nhãn dán
-            const lblOrigPrice = document.getElementById('manual-lbl-orig-price');
-            const inputOrigPrice = document.getElementById('manual-original-price');
-            const thOrigPrice = document.getElementById('th-orig-price');
-            if (lblOrigPrice && inputOrigPrice) {
-                if (format === 'GIAMNGAY') {
-                    lblOrigPrice.innerHTML = 'Nhãn dán <span class="text-slate-500 font-normal">(VD: GIẢM NGAY)</span>';
-                    inputOrigPrice.placeholder = "Nhập GIẢM NGAY, GIẢM SỐC...";
-                    if(thOrigPrice) thOrigPrice.innerText = "Giá gốc / Nhãn dán";
-                } else {
-                    lblOrigPrice.innerHTML = 'Giá gốc <span class="text-slate-500 font-normal">(để trống nếu ko có)</span>';
-                    inputOrigPrice.placeholder = "VD: 450.000";
-                    if(thOrigPrice) thOrigPrice.innerText = "Giá gốc";
-                }
-            }
-        };
-
-        const oldSwitchEditingFormat = function(format) {
-            VisualDesigner.currentFormat = format;
-            ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
-                const btn = document.getElementById('adm-btn-' + f);
-                if (btn) {
-                    if (f === format) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                }
-            });
-            VisualDesigner.loadConfigForFormat(format);
         };
 
         const SUPABASE_URL = "https://anknaltyafulhkoaupyc.supabase.co";
@@ -1132,23 +1086,37 @@
                 }
             },
 
-            setUserFormat: oldSetUserFormat,
-
-            applyTempFont(font) {
-                this.userTempMods.fontFamily = font || null;
-            },
-            adjustTempSize(delta) {
-                this.userTempMods.sizeDelta += delta;
-            },
-            resetTempSettings() {
-                this.userTempMods.fontFamily = null;
-                this.userTempMods.sizeDelta = 0;
-                document.getElementById("user-temp-font").value = "";
+            setUserFormat: function(format) {
+                this.activeFormat = format;
+                ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
+                    const btn = document.getElementById('u-tab-' + f);
+                    if (btn) {
+                        if (f === format) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    }
+                });
+                
+                const lblOrigPrice = document.getElementById('manual-lbl-orig-price');
+                const inputOrigPrice = document.getElementById('manual-original-price');
+                const thOrigPrice = document.getElementById('th-orig-price');
+                if (lblOrigPrice && inputOrigPrice) {
+                    if (format === 'GIAMNGAY') {
+                        lblOrigPrice.innerHTML = 'Nhãn dán <span class="text-slate-500 font-normal">(VD: GIẢM NGAY)</span>';
+                        inputOrigPrice.placeholder = "Nhập GIẢM NGAY, GIẢM SỐC...";
+                        if(thOrigPrice) thOrigPrice.innerText = "Giá gốc / Nhãn dán";
+                    } else {
+                        lblOrigPrice.innerHTML = 'Giá gốc <span class="text-slate-500 font-normal">(để trống nếu ko có)</span>';
+                        inputOrigPrice.placeholder = "VD: 450.000";
+                        if(thOrigPrice) thOrigPrice.innerText = "Giá gốc";
+                    }
+                }
             },
 
             renderPopupHTML(product, tplConfig) {
                 const isOctagon = tplConfig.isOctagon;
-                const dSize = this.userTempMods.sizeDelta;
                 const userFont = this.userTempMods.fontFamily;
 
                 let layersHTML = "";
@@ -1158,36 +1126,25 @@
                     let content = layer.text;
                     if (layer.id === 'price') {
                         content = product.price;
-                        if (!content.includes('Đ') && !content.includes('đ')) {
-                            content += " Đ";
-                        }
                     } else if (layer.id === 'orig_price') {
-                        // FIX: Hỗ trợ linh hoạt cho cả mẫu cũ và mẫu GIAMNGAY mới
                         if (!product.originalPrice || String(product.originalPrice).trim() === "") {
-                            content = layer.text; // Có thể để trống hoặc lấy mặc định
+                            content = layer.text;
                         } else {
                             content = String(product.originalPrice).trim();
-                            // Chỉ tự động thêm chữ "Đ" nếu chuỗi nhập vào trông giống một con số và thuộc mẫu bị gạch ngang (isStrike = true)
-                            if (layer.isStrike && !content.includes('Đ') && !content.includes('đ') && /^[0-9.,]+$/.test(content.replace(/\s/g, ''))) {
-                                content += " Đ";
-                            }
                         }
                     } else if (layer.id === 'prod_box') {
                         content = product.name;
                     } else if (layer.id === 'promo') {
-                        content = product.promo || ""; // Đã xóa default text
+                        content = product.promo || ""; 
                     } else if (layer.id === 'date_box') {
-                        // FIX: AVAKIDS Fallback
                         content = product.date || `AVAKIDS`;
                     }
 
-                    if (!content) return; // Nếu promo trống sẽ ẩn luôn thẻ div, rất clean
+                    if (!content) return; 
 
-                    // FIX BẢO MẬT: Escape toàn bộ nội dung HTML
                     content = Utils.escapeHTML(content);
 
                     const finalFont = userFont || layer.fontFamily;
-                    const finalSize = Math.max(6, layer.fontSize + dSize);
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
 
@@ -1199,7 +1156,7 @@
                             width: ${layer.w}mm;
                             height: ${layer.h}mm;
                             font-family: ${finalFont};
-                            font-size: ${finalSize}px;
+                            font-size: ${layer.fontSize}px;
                             font-weight: ${layer.fontWeight};
                             text-align: ${layer.textAlign};
                             color: ${layer.color};
@@ -1250,7 +1207,20 @@
                 this.loadConfigForFormat('A8');
             },
 
-            switchEditingFormat: oldSwitchEditingFormat,
+            switchEditingFormat(format) {
+                this.currentFormat = format;
+                ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
+                    const btn = document.getElementById('adm-btn-' + f);
+                    if (btn) {
+                        if (f === format) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    }
+                });
+                this.loadConfigForFormat(format);
+            },
 
             loadConfigForFormat(format) {
                 this.currentConfig = JSON.parse(JSON.stringify(TemplateEngine.templates[format]));
@@ -1371,7 +1341,6 @@
                     lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''} layer-uppercase`;
 
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
-                    // FIX XSS TRÊN CANVAS
                     lDiv.innerHTML = `<span class="${strikeClass}">${Utils.escapeHTML(layer.text)}</span>`;
 
                     lDiv.onmousedown = (e) => {
@@ -1385,7 +1354,6 @@
 
                         VisualDesigner.recordSnapshot();
                         
-                        // FIX LỖI GIẬT ZOOM CANVAS BẰNG DELTA CHUẨN
                         let lastMouseX = e.clientX;
                         let lastMouseY = e.clientY;
 
@@ -1434,6 +1402,10 @@
                 document.getElementById("prop-font-weight").value = layer.fontWeight;
                 document.getElementById("prop-text-align").value = layer.textAlign;
                 document.getElementById("prop-strikethrough").value = layer.isStrike ? 'yes' : 'no';
+                
+                // Cập nhật giá trị Color Picker 
+                const colorInput = document.getElementById("prop-color");
+                if (colorInput) colorInput.value = layer.color || "#000000";
 
                 this.updateInspectorGeometryInputs();
             },
@@ -1545,10 +1517,21 @@
         };
 
         const PriceParser = {
-            parse(raw) {
-                if (raw === null || raw === undefined) return { valid: false, error: "Dữ liệu trống" };
-                let str = String(raw).trim().replace(/[đĐ\sVNĐvnd]/g, '');
-                if (!str) return { valid: false, error: "Dữ liệu trống" };
+            parse(raw, isManual = false) {
+                if (raw === null || raw === undefined) return { valid: false, error: "Dữ liệu trống", rawText: "" };
+                let str = String(raw).trim();
+                if (!str) return { valid: false, error: "Dữ liệu trống", rawText: "" };
+
+                // YÊU CẦU 3: Nếu là nhập thủ công, giữ nguyên các chữ nếu không phải là định dạng số thuần túy
+                if (isManual) {
+                    const noSpace = str.replace(/\s/g, '');
+                    // Nếu chứa chữ cái (không phải số, chấm, phẩy, hoặc ký hiệu Đ) thì trả về nguyên bản
+                    if (/[a-zA-Z]/i.test(noSpace) && !/^[0-9.,]+[đĐ]?$/i.test(noSpace)) {
+                        return { valid: true, value: str, formatted: str }; 
+                    }
+                }
+
+                str = str.replace(/[đĐ\sVNĐvnd]/g, '');
 
                 let isFloatDetected = false;
                 if (!isNaN(raw) && String(raw).includes('.')) {
@@ -1564,11 +1547,10 @@
                     const numFloat = parseFloat(str);
                     if (!isNaN(numFloat)) {
                         let roundedNum = Math.floor(numFloat);
-                        // FIX YÊU CẦU 3: Làm tròn xuống ngàn chẵn
                         if (roundedNum >= 1000) {
                             roundedNum = Math.floor(roundedNum / 1000) * 1000;
                         }
-                        return { valid: true, value: roundedNum, formatted: roundedNum.toLocaleString('vi-VN') };
+                        return { valid: true, value: roundedNum, formatted: roundedNum.toLocaleString('vi-VN') + " Đ" };
                     }
                 }
 
@@ -1585,7 +1567,8 @@
                     if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
                         str = str.replace(/\./g, '');
                     } else if (parts.length === 2 && parts[1].length !== 3) {
-                        return { valid: false, error: "Dấu chấm không chuẩn", raw };
+                        if(isManual) return { valid: true, value: raw, formatted: raw };
+                        return { valid: false, error: "Dấu chấm không chuẩn", rawText: raw };
                     } else {
                         str = str.replace(/\./g, '');
                     }
@@ -1594,18 +1577,21 @@
                     if (parts.length > 1 && parts.every((p, idx) => idx === 0 || p.length === 3)) {
                         str = str.replace(/,/g, '');
                     } else {
-                        return { valid: false, error: "Dấu phẩy không chuẩn", raw };
+                        if(isManual) return { valid: true, value: raw, formatted: raw };
+                        return { valid: false, error: "Dấu phẩy không chuẩn", rawText: raw };
                     }
                 }
 
                 let num = Number(str);
-                if (isNaN(num) || num < 0) return { valid: false, error: "Số không hợp lệ", raw };
+                if (isNaN(num) || num < 0) {
+                    if(isManual) return { valid: true, value: raw, formatted: raw };
+                    return { valid: false, error: "Số không hợp lệ", rawText: raw };
+                }
                 
-                // FIX YÊU CẦU 3: Làm tròn xuống ngàn chẵn (ví dụ: 194400 -> 194000)
                 if (num >= 1000) {
                     num = Math.floor(num / 1000) * 1000;
                 }
-                return { valid: true, value: num, formatted: num.toLocaleString('vi-VN') };
+                return { valid: true, value: num, formatted: num.toLocaleString('vi-VN') + " Đ" };
             }
         };
 
@@ -1678,7 +1664,7 @@
                     this.rawRows.forEach((row, index) => {
                         const rawPrice = row[priceIdx];
                         const name = nameIdx !== "" ? row[nameIdx] : `Dòng ${index+2}`;
-                        const res = PriceParser.parse(rawPrice);
+                        const res = PriceParser.parse(rawPrice, false); // Excel parse = strict number
                         if (!res.valid) {
                             this.errors.push({
                                 rowNum: index + 2,
@@ -1726,7 +1712,6 @@
                 const mapColDateElement = document.getElementById("map-col-date");
                 const dateIdx = mapColDateElement ? mapColDateElement.value : "";
                 
-                // MỤC SỐ 6 MỚI - Áp dụng Hàng Loạt
                 const bulkLabelInput = document.getElementById("map-bulk-label");
                 const bulkLabel = bulkLabelInput ? bulkLabelInput.value.trim() : "";
 
@@ -1738,24 +1723,22 @@
                 const validProducts = [];
                 this.rawRows.forEach((row) => {
                     const rawPrice = row[priceIdx];
-                    const priceRes = PriceParser.parse(rawPrice);
+                    const priceRes = PriceParser.parse(rawPrice, false);
                     const name = String(row[nameIdx] || "").trim();
 
                     if (name && priceRes.valid) {
                         let originalPriceFormatted = "";
                         
-                        // FIX YÊU CẦU 1: Ưu tiên 1 - Lấy Nhãn Dán Hàng Loạt nhập thủ công trong ô số 6
                         if (bulkLabel !== "") {
                             originalPriceFormatted = bulkLabel;
                         } 
-                        // Ưu tiên 2 - Lấy từ cột Giá Gốc nếu được map
                         else if (origIdx !== "" && row[origIdx]) {
                             const origRaw = String(row[origIdx]).trim();
                             if (/^[0-9.,]+$/.test(origRaw.replace(/\s/g, ''))) {
-                                const origRes = PriceParser.parse(origRaw);
+                                const origRes = PriceParser.parse(origRaw, false);
                                 if (origRes.valid) originalPriceFormatted = origRes.formatted;
                             } else {
-                                originalPriceFormatted = origRaw; // Giữ nguyên Text (VD: GIẢM NGAY)
+                                originalPriceFormatted = origRaw; 
                             }
                         }
 
@@ -1763,7 +1746,6 @@
                             name: name,
                             price: priceRes.formatted,
                             originalPrice: originalPriceFormatted,
-                            // FIX YÊU CẦU 2: Xóa default text + TRẢ GÓP 0% LÃI SUẤT
                             promo: promoIdx !== "" && row[promoIdx] ? String(row[promoIdx]).trim() : "",
                             date: dateIdx !== "" && row[dateIdx] ? String(row[dateIdx]).trim() : `AVAKIDS`,
                             quantity: 1
@@ -1806,7 +1788,6 @@
                     return;
                 }
 
-                // FIX BẢO MẬT & UI RESPONSIVE
                 list.forEach((p, idx) => {
                     const tr = document.createElement("tr");
                     tr.className = "hover:bg-slate-50 transition";
@@ -1849,7 +1830,7 @@
                     target[field] = value;
                     await DBManager.updateProduct(target);
                     this.updateCounters();
-                    Utils.showToast("Đã lưu thay đổi"); // FIX UX
+                    Utils.showToast("Đã lưu thay đổi"); 
                 }
             },
 
@@ -1862,31 +1843,24 @@
                 const qty = parseInt(document.getElementById("manual-quantity").value) || 1;
 
                 if (!name || !priceRaw) {
-                    alert("Vui lòng điền Tên sản phẩm và Giá giảm!");
+                    alert("Vui lòng điền Tên sản phẩm và Giá giảm/Chữ giảm giá!");
                     return;
                 }
 
-                const priceRes = PriceParser.parse(priceRaw);
-                if (!priceRes.valid) {
-                    alert("Giá giảm không hợp lệ: " + priceRes.error);
-                    return;
-                }
+                // YÊU CẦU 3: Cho phép nhập tự do (Text/Số) trong mục nhập thủ công
+                const priceRes = PriceParser.parse(priceRaw, true); 
 
                 let origFormatted = "";
                 if (origRaw) {
-                    if (/^[0-9.,]+$/.test(origRaw.replace(/\s/g, ''))) {
-                        const origRes = PriceParser.parse(origRaw);
-                        if (origRes.valid) origFormatted = origRes.formatted;
-                    } else {
-                        origFormatted = origRaw; // Giữ nguyên Text (VD: GIẢM NGAY)
-                    }
+                    const origRes = PriceParser.parse(origRaw, true);
+                    origFormatted = origRes.formatted;
                 }
 
                 await DBManager.addProduct({
                     name,
                     price: priceRes.formatted,
                     originalPrice: origFormatted,
-                    promo: promo || "", // FIX YÊU CẦU 2: Bỏ default text
+                    promo: promo || "", 
                     date: dateVal || `AVAKIDS`,
                     quantity: qty
                 });
@@ -1975,6 +1949,36 @@
 
             closeModal() {
                 document.getElementById("print-preview-modal").classList.add("hidden");
+            },
+            
+            // YÊU CẦU 2: Tính năng Tăng/Giảm font size cho vùng bôi đen (Selection)
+            adjustFontSize(delta) {
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+                
+                // Mặc định execCommand fontSize chỉ từ 1-7, không theo px được, nên ta wrap bằng thẻ span
+                const range = selection.getRangeAt(0);
+                if (range.collapsed) return; 
+
+                const span = document.createElement("span");
+                // Lấy kích thước hiện tại (nếu có)
+                let parentElem = selection.anchorNode.parentElement;
+                let currentSize = 16; // default fallback
+                if(parentElem) {
+                     let sizeStr = window.getComputedStyle(parentElem).fontSize;
+                     if(sizeStr) currentSize = parseFloat(sizeStr);
+                }
+                
+                let newSize = currentSize + (delta * 2); // Mỗi lần nhấn tăng/giảm 2px
+                span.style.fontSize = newSize + "px";
+                
+                try {
+                    range.surroundContents(span);
+                } catch(e) {
+                    // Fallback back to standard execCommand if DOM structure is complex
+                    let sizeCmd = delta > 0 ? 5 : 2; 
+                    document.execCommand("fontSize", false, sizeCmd);
+                }
             }
         };
 
@@ -2039,7 +2043,6 @@
                 this.bindEvents();
             },
             bindEvents() {
-                // Hỗ trợ nút Enter thêm sản phẩm nhanh
                 const manualTab = document.getElementById('manual-input-tab');
                 if(manualTab) {
                     manualTab.addEventListener('keypress', function(e) {
