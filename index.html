@@ -415,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.7</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.8</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -668,6 +668,16 @@
                                     <label class="ava-label text-center !text-[10px]">Cao(mm)</label>
                                     <input type="number" id="prop-h" step="0.5" class="ava-input !px-1 text-center font-mono" oninput="VisualDesigner.updateActiveGeometry('h', parseFloat(this.value)||0)">
                                 </div>
+                                
+                                <!-- FIX YÊU CẦU 1: CÁC NÚT CĂN GIỮA MỚI -->
+                                <div class="col-span-4 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#E9E9EF]">
+                                    <button onclick="VisualDesigner.alignActiveLayer('center-x')" class="ava-btn-secondary !py-1 !px-2 text-[11px] font-bold text-slate-600 hover:text-ava-pink">
+                                        ↔ Giữa Ngang
+                                    </button>
+                                    <button onclick="VisualDesigner.alignActiveLayer('center-y')" class="ava-btn-secondary !py-1 !px-2 text-[11px] font-bold text-slate-600 hover:text-ava-pink">
+                                        ↕ Giữa Dọc
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
@@ -747,7 +757,7 @@
                         </div>
                         
                         <div class="bg-white border-t border-[#E9E9EF] p-2 text-center">
-                            <p class="text-[10px] text-slate-400"><i data-feather="mouse-pointer" class="w-3 h-3 inline pb-0.5"></i> Chọn trực tiếp layer trên khung vẽ. Dùng chuột kéo thả để di chuyển tọa độ.</p>
+                            <p class="text-[10px] text-slate-400"><i data-feather="mouse-pointer" class="w-3 h-3 inline pb-0.5"></i> Click để chọn. Nhấp đúp 2 lần để sửa chữ. Dùng chuột kéo thả để di chuyển.</p>
                         </div>
                     </div>
                 </div>
@@ -1184,7 +1194,7 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%;">${content}</span>
+                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%; pointer-events: none;">${content}</span>
                         </div>
                     `;
                 });
@@ -1221,6 +1231,19 @@
 
             init() {
                 this.loadConfigForFormat('A8');
+                
+                // Allow deselecting when clicking empty space on canvas
+                const stage = document.getElementById("visual-canvas-stage");
+                if (stage) {
+                    stage.onmousedown = () => {
+                        if (this.activeLayerId !== null) {
+                            this.activeLayerId = null;
+                            this.renderLayersList();
+                            this.updateInspectorUI();
+                            document.querySelectorAll('.editor-canvas-stage > div').forEach(d => d.classList.remove('editor-layer-selected'));
+                        }
+                    };
+                }
             },
 
             switchEditingFormat(format) {
@@ -1278,6 +1301,22 @@
                 const stage = document.getElementById("visual-canvas-stage");
                 stage.style.transform = `scale(${val})`;
             },
+            
+            // FIX P1: NÚT CĂN GIỮA THÔNG MINH
+            alignActiveLayer(alignment) {
+                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
+                if (!layer) return;
+                this.recordSnapshot();
+                
+                if (alignment === 'center-x') {
+                    layer.x = Math.round((this.currentConfig.widthMm - layer.w) / 2 * 10) / 10;
+                } else if (alignment === 'center-y') {
+                    layer.y = Math.round((this.currentConfig.heightMm - layer.h) / 2 * 10) / 10;
+                }
+                
+                this.renderCanvas();
+                this.updateInspectorUI();
+            },
 
             renderLayersList() {
                 const container = document.getElementById("layer-list-container");
@@ -1288,10 +1327,10 @@
                     const item = document.createElement("div");
                     item.className = `p-2 rounded-lg flex items-center justify-between text-xs cursor-pointer border ${isSelected ? 'bg-ava-light border-ava-pink shadow-sm' : 'bg-white border-transparent hover:border-[#E9E9EF]'}`;
                     item.onclick = () => {
-                        VisualDesigner.activeLayerId = layer.id;
-                        VisualDesigner.renderLayersList();
-                        VisualDesigner.renderCanvas();
-                        VisualDesigner.updateInspectorUI();
+                        this.activeLayerId = layer.id;
+                        this.renderLayersList();
+                        this.renderCanvas();
+                        this.updateInspectorUI();
                     };
 
                     item.innerHTML = `
@@ -1311,6 +1350,8 @@
 
             renderCanvas() {
                 const stage = document.getElementById("visual-canvas-stage");
+                // Avoid resetting entire canvas if we are just updating a layer's position via code.
+                // But for full render, we clear it.
                 stage.innerHTML = "";
 
                 const wPx = this.currentConfig.widthMm * MM_TO_PX;
@@ -1357,25 +1398,75 @@
                     lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''} layer-uppercase`;
 
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
-                    lDiv.innerHTML = `<span class="${strikeClass}">${Utils.escapeHTML(layer.text)}</span>`;
+                    
+                    // FIX P0: pointer-events: none để lDiv nhận mousedown và kéo mượt mà
+                    lDiv.innerHTML = `<span class="${strikeClass}" contenteditable="true" style="outline: none; display: inline-block; width: 100%; pointer-events: none;">${Utils.escapeHTML(layer.text)}</span>`;
+
+                    const span = lDiv.querySelector('span');
+
+                    // FIX P0: Double click to edit
+                    lDiv.ondblclick = (e) => {
+                        e.stopPropagation();
+                        if (layer.isLocked) return;
+                        
+                        lDiv.classList.add('editing-mode');
+                        span.style.pointerEvents = 'auto';
+                        span.style.cursor = 'text';
+                        span.focus();
+                        
+                        // Select all text
+                        const range = document.createRange();
+                        range.selectNodeContents(span);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    };
+
+                    // FIX P0: On blur, save and disable edit mode
+                    span.onblur = () => {
+                        lDiv.classList.remove('editing-mode');
+                        span.style.pointerEvents = 'none';
+                        span.style.cursor = 'move';
+                        // Re-render to normalize the HTML
+                        this.updateActiveText(span.innerText); 
+                    };
+
+                    // Live sync property box
+                    span.oninput = () => {
+                        layer.text = span.innerText;
+                        const propText = document.getElementById("prop-text-content");
+                        if (propText) propText.value = span.innerText;
+                    };
 
                     lDiv.onmousedown = (e) => {
+                        if (lDiv.classList.contains('editing-mode')) {
+                            e.stopPropagation();
+                            return; // let span handle selection
+                        }
+                        
                         e.stopPropagation();
-                        VisualDesigner.activeLayerId = layer.id;
-                        VisualDesigner.renderLayersList();
-                        VisualDesigner.updateInspectorUI();
-                        VisualDesigner.renderCanvas();
+                        
+                        const isChangingSelection = this.activeLayerId !== layer.id;
+                        this.activeLayerId = layer.id;
+                        this.renderLayersList();
+                        this.updateInspectorUI();
+
+                        // FIX P0: Tối ưu không re-render toàn bộ Canvas khi chỉ đổi selection
+                        if (isChangingSelection) {
+                            document.querySelectorAll('.editor-canvas-stage > div').forEach(d => d.classList.remove('editor-layer-selected'));
+                            lDiv.classList.add('editor-layer-selected');
+                        }
 
                         if (layer.isLocked) return;
 
-                        VisualDesigner.recordSnapshot();
+                        this.recordSnapshot();
                         
                         let lastMouseX = e.clientX;
                         let lastMouseY = e.clientY;
 
                         const onMouseMove = (moveEvt) => {
-                            const deltaXmm = (moveEvt.clientX - lastMouseX) / (MM_TO_PX * VisualDesigner.zoom);
-                            const deltaYmm = (moveEvt.clientY - lastMouseY) / (MM_TO_PX * VisualDesigner.zoom);
+                            const deltaXmm = (moveEvt.clientX - lastMouseX) / (MM_TO_PX * this.zoom);
+                            const deltaYmm = (moveEvt.clientY - lastMouseY) / (MM_TO_PX * this.zoom);
 
                             lastMouseX = moveEvt.clientX;
                             lastMouseY = moveEvt.clientY;
@@ -1383,13 +1474,17 @@
                             let newX = Math.round((layer.x + deltaXmm) * 10) / 10;
                             let newY = Math.round((layer.y + deltaYmm) * 10) / 10;
 
-                            newX = Math.max(0, Math.min(newX, VisualDesigner.currentConfig.widthMm - layer.w));
-                            newY = Math.max(0, Math.min(newY, VisualDesigner.currentConfig.heightMm - layer.h));
+                            newX = Math.max(0, Math.min(newX, this.currentConfig.widthMm - layer.w));
+                            newY = Math.max(0, Math.min(newY, this.currentConfig.heightMm - layer.h));
 
                             layer.x = newX;
                             layer.y = newY;
-                            VisualDesigner.renderCanvas();
-                            VisualDesigner.updateInspectorGeometryInputs();
+                            
+                            // DOM UPDATE DIRECTLY - NO RE-RENDER (SIÊU MƯỢT)
+                            lDiv.style.left = `${layer.x * MM_TO_PX}px`;
+                            lDiv.style.top = `${layer.y * MM_TO_PX}px`;
+                            
+                            this.updateInspectorGeometryInputs();
                         };
 
                         const onMouseUp = () => {
@@ -1439,7 +1534,7 @@
                 if (layer) {
                     this.recordSnapshot();
                     layer.text = val;
-                    this.renderCanvas();
+                    this.renderCanvas(); // Normal re-render when typing in the property inspector
                 }
             },
 
@@ -1643,7 +1738,6 @@
 
             openMappingModal() {
                 const modal = document.getElementById("excel-mapping-modal");
-                // Reset bulk label
                 const mapBulkLabel = document.getElementById("map-bulk-label");
                 if (mapBulkLabel) mapBulkLabel.value = "";
 
@@ -1677,7 +1771,7 @@
                     this.rawRows.forEach((row, index) => {
                         const rawPrice = row[priceIdx];
                         const name = nameIdx !== "" ? row[nameIdx] : `Dòng ${index+2}`;
-                        const res = PriceParser.parse(rawPrice, false); // Excel parse = strict number
+                        const res = PriceParser.parse(rawPrice, false);
                         if (!res.valid) {
                             this.errors.push({
                                 rowNum: index + 2,
@@ -1958,25 +2052,20 @@
 
                 modal.classList.remove("hidden");
                 
-                // FIX VỠ CHỮ: Chạy thuật toán Scale-to-Fit ngay sau khi render xong DOM của preview
                 setTimeout(() => {
                     this.autoScaleTextToFit();
-                }, 50); // delay nhỏ để trình duyệt render xong Layout
+                }, 50); 
             },
             
-            // THUẬT TOÁN TỰ ĐỘNG ÉP CHỮ VỪA KHUNG
             autoScaleTextToFit() {
                 const textContainers = document.querySelectorAll('#print-sheet-wrapper .autofit-text');
                 textContainers.forEach(container => {
                     const span = container.querySelector('span');
                     if (!span) return;
                     
-                    // Đo kích thước hiện tại
                     let currentFontSize = parseFloat(window.getComputedStyle(container).fontSize);
-                    const minFontSize = 6; // Không thu nhỏ quá 6px để tránh không đọc được
+                    const minFontSize = 6; 
                     
-                    // Lặp thu nhỏ nếu nội dung tràn ra khỏi div cha
-                    // Sử dụng scrollHeight/scrollWidth của cha và span để so sánh
                     while ((span.offsetWidth > container.clientWidth || span.offsetHeight > container.clientHeight) && currentFontSize > minFontSize) {
                         currentFontSize -= 0.5;
                         container.style.fontSize = currentFontSize + 'px';
