@@ -415,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.1_FINAL</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.2_FINAL</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -448,17 +448,19 @@
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
                     <h2 class="text-lg font-bold text-slate-800 shrink-0">Cấu hình In</h2>
                     <div class="segmented-control w-full sm:w-auto overflow-x-auto" id="template-selector">
-                        <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">POPUP A8</button>
-                        <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">POPUP A6</button>
-                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
-                        <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">POPUP GIẢM NGAY</button>
-                        <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">POPUP LỤC GIÁC</button>
+                        <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">A8 Nhỏ</button>
+                        <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">A6 Chuẩn</button>
+                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">Ngang</button>
+                        <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">Giảm Ngay</button>
+                        <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                     </div>
                 </div>
             </div>
 
-            <div class="ava-card overflow-hidden">
-                <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="ava-card overflow-hidden">
+                        <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
                     <button class="tab-btn active" onclick="UITabs.switchTab('manual-input-tab', this)">
                         <span class="flex items-center gap-2"><i data-feather="edit-3" class="w-4 h-4"></i> Nhập thủ công</span>
                     </button>
@@ -567,6 +569,23 @@
                     </table>
                 </div>
             </div>
+                </div> <!-- End col-span-8 -->
+                
+                <!-- CỘT RIGHT: PREVIEW HÌNH ẢNH MẪU -->
+                <div class="lg:col-span-4">
+                    <div class="ava-card p-5 sticky top-24">
+                        <h3 class="font-bold text-slate-800 text-sm mb-3 uppercase border-b border-[#E9E9EF] pb-3 flex items-center gap-2">
+                            <i data-feather="image" class="w-4 h-4 text-ava-pink"></i> XEM TRƯỚC MẪU IN
+                        </h3>
+                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px]">
+                            <!-- THAY ĐỔI ẢNH TẠI OBJECT 'previewImages' BÊN DƯỚI JAVASCRIPT -->
+                            <img id="static-template-preview" src="https://placehold.co/400x400/FCE7F1/F05A9D?text=A8+NH%E1%BB%8E" alt="Preview" class="max-w-full max-h-[300px] object-contain drop-shadow-sm rounded border border-slate-200">
+                        </div>
+                        <p class="text-[10.5px] text-slate-400 text-center mt-3">* Đây là hình ảnh minh họa cho mẫu in thực tế sẽ được áp dụng.</p>
+                    </div>
+                </div> <!-- End col-span-4 -->
+            </div> <!-- End Grid -->
         </section>
 
         <!-- ======================================================= -->
@@ -1132,6 +1151,30 @@
                     }
                 });
                 
+                
+                // Cập nhật Hình ảnh xem trước tĩnh
+                const previewImages = {
+                    'A8': 'https://placehold.co/400x400/FCE7F1/F05A9D?text=A8+NH%E1%BB%8E', // Thay link ảnh A8 của anh vào đây
+                    'A6': 'https://placehold.co/400x500/FCE7F1/F05A9D?text=A6+CHU%E1%BA%A8N', // Thay link ảnh A6 của anh vào đây
+                    'NGANG': 'https://placehold.co/600x300/FCE7F1/F05A9D?text=NGANG', // Thay link ảnh Ngang
+                    'GIAMNGAY': 'https://placehold.co/600x300/FCE7F1/F05A9D?text=GI%E1%BA%A2M+NGAY', // Thay link ảnh Giảm Ngay
+                    'TRON': 'https://placehold.co/400x400/FCE7F1/F05A9D?text=B%C3%81T+GI%C3%81C' // Thay link ảnh Tròn (Bát giác)
+                };
+                const previewNames = {
+                    'A8': 'POPUP A8 NHỎ',
+                    'A6': 'POPUP A6 CHUẨN',
+                    'NGANG': 'POPUP NGANG',
+                    'GIAMNGAY': 'POPUP GIẢM NGAY',
+                    'TRON': 'POPUP BÁT GIÁC'
+                };
+                
+                const imgEl = document.getElementById('static-template-preview');
+                const nameEl = document.getElementById('preview-template-name');
+                if (imgEl && nameEl) {
+                    imgEl.src = previewImages[format];
+                    nameEl.innerText = previewNames[format];
+                }
+                
                 const lblOrigPrice = document.getElementById('manual-lbl-orig-price');
                 const inputOrigPrice = document.getElementById('manual-original-price');
                 const thOrigPrice = document.getElementById('th-orig-price');
@@ -1202,7 +1245,7 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%; pointer-events: none;">${content}</span>
+                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%;">${content}</span>
                         </div>
                     `;
                 });
