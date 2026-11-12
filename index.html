@@ -116,7 +116,7 @@
         /* KHUNG VẬT LÝ POPUP CHUẨN (MM) */
         .card-a8 { width: 52mm !important; height: 53mm !important; }
         .card-a6 { width: 95mm !important; height: 105mm !important; }
-        .card-ngang { width: 120mm !important; height: 60mm !important; }
+        .card-ngang, .card-giamngay { width: 120mm !important; height: 60mm !important; }
         .card-tron { width: 95mm !important; height: 95mm !important; }
 
         .card-octagon-wrap {
@@ -394,7 +394,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.3</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.4</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -430,6 +430,7 @@
                         <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">A8 Nhỏ</button>
                         <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">A6 Chuẩn</button>
                         <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">Ngang</button>
+                        <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">Giảm Ngay</button>
                         <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                     </div>
                 </div>
@@ -472,8 +473,8 @@
                             <input type="text" id="manual-name" placeholder="Ví dụ: Sữa non AVAKids 800g" class="ava-input text-sm">
                         </div>
                         <div class="md:col-span-3">
-                            <label class="ava-label text-slate-500">Giá gốc (để trống nếu ko có)</label>
-                            <input type="text" id="manual-original-price" placeholder="VD: 450.000" class="ava-input">
+                            <label class="ava-label text-slate-500">Giá gốc (hoặc chữ Giảm Ngay)</label>
+                            <input type="text" id="manual-original-price" placeholder="VD: 450.000 / GIẢM NGAY" class="ava-input">
                         </div>
                         <div class="md:col-span-3">
                             <label class="ava-label">Giá giảm <span class="text-rose-500">*</span></label>
@@ -601,6 +602,7 @@
                             <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="segmented-btn active whitespace-nowrap">A8 Nhỏ</button>
                             <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="segmented-btn whitespace-nowrap">A6 Chuẩn</button>
                             <button onclick="VisualDesigner.switchEditingFormat('NGANG')" id="adm-btn-NGANG" class="segmented-btn whitespace-nowrap">Ngang</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('GIAMNGAY')" id="adm-btn-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">Giảm Ngay</button>
                             <button onclick="VisualDesigner.switchEditingFormat('TRON')" id="adm-btn-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                         </div>
                     </div>
@@ -897,7 +899,7 @@
 
         const oldSetUserFormat = function(format) {
             TemplateEngine.activeFormat = format;
-            ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
+            ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
                 const btn = document.getElementById('u-tab-' + f);
                 if (btn) {
                     if (f === format) {
@@ -910,7 +912,7 @@
         };
         const oldSwitchEditingFormat = function(format) {
             VisualDesigner.currentFormat = format;
-            ['A8', 'A6', 'NGANG', 'TRON'].forEach(f => {
+            ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
                 const btn = document.getElementById('adm-btn-' + f);
                 if (btn) {
                     if (f === format) {
@@ -1050,6 +1052,20 @@
                         { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 },
+                GIAMNGAY: {
+                    name: "Popup Giảm Ngay",
+                    widthMm: 120,
+                    heightMm: 60,
+                    borderWidth: 3,
+                    isOctagon: false,
+                    layers: [
+                        { id: "orig_price", name: "Giá gốc / Giảm Ngay", text: "GIẢM NGAY", x: 5, y: 4, w: 110, h: 8, fontSize: 16, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#e11d48", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "promo", name: "Khuyến mãi", text: "+ TRẢ GÓP 0% LÃI SUẤT", x: 5, y: 32, w: 110, h: 6, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 50, w: 75, h: 7, fontSize: 9.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
+                    ]
+                },
                 TRON: {
                     name: "Popup Bát Giác",
                     widthMm: 95,
@@ -1123,12 +1139,16 @@
                             content += " Đ";
                         }
                     } else if (layer.id === 'orig_price') {
+                        // FIX: Hỗ trợ linh hoạt cho cả mẫu cũ và mẫu GIAMNGAY mới
                         if (!product.originalPrice || String(product.originalPrice).trim() === "") {
-                            return;
-                        }
-                        content = String(product.originalPrice).trim();
-                        if (!content.includes('Đ') && !content.includes('đ')) {
-                            content += " Đ";
+                            // Nếu trống, lấy mặc định của layer (ví dụ: GIẢM NGAY)
+                            content = layer.text;
+                        } else {
+                            content = String(product.originalPrice).trim();
+                            // Chỉ tự động thêm chữ "Đ" nếu chuỗi nhập vào trông giống một con số và thuộc mẫu bị gạch ngang (isStrike = true)
+                            if (layer.isStrike && !content.includes('Đ') && !content.includes('đ') && /^[0-9.,]+$/.test(content.replace(/\s/g, ''))) {
+                                content += " Đ";
+                            }
                         }
                     } else if (layer.id === 'prod_box') {
                         content = product.name;
@@ -1685,8 +1705,14 @@
                     if (name && priceRes.valid) {
                         let originalPriceFormatted = "";
                         if (origIdx !== "" && row[origIdx]) {
-                            const origRes = PriceParser.parse(row[origIdx]);
-                            if (origRes.valid) originalPriceFormatted = origRes.formatted;
+                            // Check if the original price column contains text like "GIẢM NGAY" instead of a number
+                            const origRaw = String(row[origIdx]).trim();
+                            if (/^[0-9.,]+$/.test(origRaw.replace(/\s/g, ''))) {
+                                const origRes = PriceParser.parse(origRaw);
+                                if (origRes.valid) originalPriceFormatted = origRes.formatted;
+                            } else {
+                                originalPriceFormatted = origRaw; // Keep text as is for custom labels like "GIẢM NGAY"
+                            }
                         }
 
                         validProducts.push({
@@ -1747,7 +1773,7 @@
                             <input type="text" value="${Utils.escapeHTML(p.name)}" onchange="ProductController.updateField(${p.id}, 'name', this.value)" class="font-bold text-slate-700 w-full">
                         </td>
                         <td class="text-right" data-label="Giá gốc">
-                            <input type="text" value="${Utils.escapeHTML(p.originalPrice || '')}" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="text-right line-through text-slate-400 w-full">
+                            <input type="text" value="${Utils.escapeHTML(p.originalPrice || '')}" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="text-right text-slate-500 w-full">
                         </td>
                         <td class="text-right" data-label="Giá giảm">
                             <input type="text" value="${Utils.escapeHTML(p.price)}" onchange="ProductController.updateField(${p.id}, 'price', this.value)" class="text-right font-black text-ava-pink w-full">
@@ -1803,8 +1829,12 @@
 
                 let origFormatted = "";
                 if (origRaw) {
-                    const origRes = PriceParser.parse(origRaw);
-                    if (origRes.valid) origFormatted = origRes.formatted;
+                    if (/^[0-9.,]+$/.test(origRaw.replace(/\s/g, ''))) {
+                        const origRes = PriceParser.parse(origRaw);
+                        if (origRes.valid) origFormatted = origRes.formatted;
+                    } else {
+                        origFormatted = origRaw; // Giữ nguyên Text (VD: GIẢM NGAY)
+                    }
                 }
 
                 await DBManager.addProduct({
@@ -1855,7 +1885,7 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'TRON': 4 },
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 4 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
