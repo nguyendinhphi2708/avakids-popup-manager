@@ -415,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.8</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9_Final</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -669,7 +669,6 @@
                                     <input type="number" id="prop-h" step="0.5" class="ava-input !px-1 text-center font-mono" oninput="VisualDesigner.updateActiveGeometry('h', parseFloat(this.value)||0)">
                                 </div>
                                 
-                                <!-- FIX YÊU CẦU 1: CÁC NÚT CĂN GIỮA MỚI -->
                                 <div class="col-span-4 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#E9E9EF]">
                                     <button onclick="VisualDesigner.alignActiveLayer('center-x')" class="ava-btn-secondary !py-1 !px-2 text-[11px] font-bold text-slate-600 hover:text-ava-pink">
                                         ↔ Giữa Ngang
@@ -1141,6 +1140,7 @@
                 }
             },
 
+            // KHU VỰC 1: DÙNG CHO MÀN HÌNH IN (CÓ AUTOFIT, KHÔNG EVENT)
             renderPopupHTML(product, tplConfig) {
                 const isOctagon = tplConfig.isOctagon;
                 const userFont = this.userTempMods.fontFamily;
@@ -1232,7 +1232,6 @@
             init() {
                 this.loadConfigForFormat('A8');
                 
-                // Allow deselecting when clicking empty space on canvas
                 const stage = document.getElementById("visual-canvas-stage");
                 if (stage) {
                     stage.onmousedown = () => {
@@ -1267,7 +1266,7 @@
                 this.redoStack = [];
                 this.activeLayerId = this.currentConfig.layers[0]?.id || null;
                 this.renderLayersList();
-                this.renderCanvas();
+                this.renderCanvas(); // Render canvas for design
                 this.updateInspectorUI();
                 document.getElementById("canvas-physical-spec").innerText = `${this.currentConfig.widthMm} x ${this.currentConfig.heightMm} mm`;
             },
@@ -1314,6 +1313,7 @@
                     layer.y = Math.round((this.currentConfig.heightMm - layer.h) / 2 * 10) / 10;
                 }
                 
+                // Trực tiếp gán lại qua DOM cho mượt, hoặc re-render
                 this.renderCanvas();
                 this.updateInspectorUI();
             },
@@ -1329,7 +1329,16 @@
                     item.onclick = () => {
                         this.activeLayerId = layer.id;
                         this.renderLayersList();
-                        this.renderCanvas();
+                        
+                        // Optimize: Chỉ add class cho Canvas thay vì re-render toàn bộ
+                        document.querySelectorAll('.editor-canvas-stage > div').forEach(d => {
+                            if (d.getAttribute('data-id') === layer.id) {
+                                d.classList.add('editor-layer-selected');
+                            } else {
+                                d.classList.remove('editor-layer-selected');
+                            }
+                        });
+                        
                         this.updateInspectorUI();
                     };
 
@@ -1348,10 +1357,9 @@
                 feather.replace();
             },
 
+            // KHU VỰC 2: DÙNG CHO MÀN HÌNH ADMIN THIẾT KẾ (CÓ EVENT KÉO THẢ MƯỢT MÀ)
             renderCanvas() {
                 const stage = document.getElementById("visual-canvas-stage");
-                // Avoid resetting entire canvas if we are just updating a layer's position via code.
-                // But for full render, we clear it.
                 stage.innerHTML = "";
 
                 const wPx = this.currentConfig.widthMm * MM_TO_PX;
@@ -1371,6 +1379,8 @@
 
                     const lDiv = document.createElement("div");
                     const isSelected = layer.id === this.activeLayerId;
+                    
+                    lDiv.setAttribute('data-id', layer.id); // For selection binding
 
                     const leftPx = layer.x * MM_TO_PX;
                     const topPx = layer.y * MM_TO_PX;
@@ -1399,22 +1409,23 @@
 
                     const strikeClass = layer.isStrike ? 'price-strike-line' : '';
                     
-                    // FIX P0: pointer-events: none để lDiv nhận mousedown và kéo mượt mà
-                    lDiv.innerHTML = `<span class="${strikeClass}" contenteditable="true" style="outline: none; display: inline-block; width: 100%; pointer-events: none;">${Utils.escapeHTML(layer.text)}</span>`;
+                    // FIX P0: pointer-events: none MẶC ĐỊNH ĐỂ CHO PHÉP KÉO THẢ MƯỢT TỪ lDiv
+                    lDiv.innerHTML = `<span class="${strikeClass}" style="outline: none; display: inline-block; width: 100%; pointer-events: none;">${Utils.escapeHTML(layer.text)}</span>`;
 
                     const span = lDiv.querySelector('span');
 
-                    // FIX P0: Double click to edit
+                    // FIX P0: NHẤP ĐÚP CHUỘT (DOUBLE CLICK) MỚI CHO PHÉP SỬA CHỮ
                     lDiv.ondblclick = (e) => {
                         e.stopPropagation();
                         if (layer.isLocked) return;
                         
                         lDiv.classList.add('editing-mode');
-                        span.style.pointerEvents = 'auto';
+                        span.setAttribute("contenteditable", "true");
+                        span.style.pointerEvents = 'auto'; // Mở khóa thẻ span để nhận text
                         span.style.cursor = 'text';
                         span.focus();
                         
-                        // Select all text
+                        // Tự động bôi đen toàn bộ chữ khi click vào
                         const range = document.createRange();
                         range.selectNodeContents(span);
                         const sel = window.getSelection();
@@ -1422,36 +1433,41 @@
                         sel.addRange(range);
                     };
 
-                    // FIX P0: On blur, save and disable edit mode
+                    // Khi người dùng click ra ngoài (Blur) -> Khóa lại về trạng thái Kéo Thả
                     span.onblur = () => {
                         lDiv.classList.remove('editing-mode');
-                        span.style.pointerEvents = 'none';
+                        span.removeAttribute("contenteditable");
+                        span.style.pointerEvents = 'none'; // Khóa thẻ span lại
                         span.style.cursor = 'move';
-                        // Re-render to normalize the HTML
-                        this.updateActiveText(span.innerText); 
+                        
+                        // Lưu dữ liệu vào config
+                        layer.text = span.innerText;
+                        this.updateInspectorUI();
                     };
 
-                    // Live sync property box
+                    // Đồng bộ live text lúc đang gõ (nếu cần)
                     span.oninput = () => {
                         layer.text = span.innerText;
                         const propText = document.getElementById("prop-text-content");
                         if (propText) propText.value = span.innerText;
                     };
 
+                    // XỬ LÝ SỰ KIỆN KÉO THẢ TRÊN LỚP BỌC BÊN NGOÀI
                     lDiv.onmousedown = (e) => {
+                        // Nếu đang ở chế độ gõ chữ thì dừng lệnh kéo thả
                         if (lDiv.classList.contains('editing-mode')) {
                             e.stopPropagation();
-                            return; // let span handle selection
+                            return; 
                         }
                         
                         e.stopPropagation();
                         
+                        // Xử lý chọn (select) đối tượng mượt mà không re-render Canvas
                         const isChangingSelection = this.activeLayerId !== layer.id;
                         this.activeLayerId = layer.id;
                         this.renderLayersList();
                         this.updateInspectorUI();
 
-                        // FIX P0: Tối ưu không re-render toàn bộ Canvas khi chỉ đổi selection
                         if (isChangingSelection) {
                             document.querySelectorAll('.editor-canvas-stage > div').forEach(d => d.classList.remove('editor-layer-selected'));
                             lDiv.classList.add('editor-layer-selected');
@@ -1464,6 +1480,7 @@
                         let lastMouseX = e.clientX;
                         let lastMouseY = e.clientY;
 
+                        // FIX: Tính delta chia cho zoom để kéo chuẩn xác khi zoom 150%
                         const onMouseMove = (moveEvt) => {
                             const deltaXmm = (moveEvt.clientX - lastMouseX) / (MM_TO_PX * this.zoom);
                             const deltaYmm = (moveEvt.clientY - lastMouseY) / (MM_TO_PX * this.zoom);
@@ -1474,16 +1491,18 @@
                             let newX = Math.round((layer.x + deltaXmm) * 10) / 10;
                             let newY = Math.round((layer.y + deltaYmm) * 10) / 10;
 
+                            // Chặn không cho kéo văng ra ngoài khung tem
                             newX = Math.max(0, Math.min(newX, this.currentConfig.widthMm - layer.w));
                             newY = Math.max(0, Math.min(newY, this.currentConfig.heightMm - layer.h));
 
                             layer.x = newX;
                             layer.y = newY;
                             
-                            // DOM UPDATE DIRECTLY - NO RE-RENDER (SIÊU MƯỢT)
+                            // Cập nhật DOM trực tiếp (KHÔNG RE-RENDER MẢNG) -> Đảm bảo siêu mượt
                             lDiv.style.left = `${layer.x * MM_TO_PX}px`;
                             lDiv.style.top = `${layer.y * MM_TO_PX}px`;
                             
+                            // Cập nhật cột thuộc tính Real-time
                             this.updateInspectorGeometryInputs();
                         };
 
@@ -1502,7 +1521,16 @@
 
             updateInspectorUI() {
                 const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
-                if (!layer) return;
+                // Fix lỗi: Khi không chọn layer nào thì làm rỗng các ô input
+                if (!layer) {
+                    document.getElementById("prop-layer-title").innerText = `Thuộc tính`;
+                    document.getElementById("prop-text-content").value = "";
+                    document.getElementById("prop-x").value = "";
+                    document.getElementById("prop-y").value = "";
+                    document.getElementById("prop-w").value = "";
+                    document.getElementById("prop-h").value = "";
+                    return;
+                }
 
                 document.getElementById("prop-layer-title").innerText = `Cấu hình: ${layer.name}`;
                 document.getElementById("prop-text-content").value = layer.text;
@@ -1523,6 +1551,7 @@
             updateInspectorGeometryInputs() {
                 const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
                 if (!layer) return;
+                // FIX VẤN ĐỀ 1: Đồng bộ dữ liệu số vào ô input
                 document.getElementById("prop-x").value = layer.x;
                 document.getElementById("prop-y").value = layer.y;
                 document.getElementById("prop-w").value = layer.w;
@@ -1534,7 +1563,7 @@
                 if (layer) {
                     this.recordSnapshot();
                     layer.text = val;
-                    this.renderCanvas(); // Normal re-render when typing in the property inspector
+                    this.renderCanvas(); // Cần render lại để thấy chữ thay đổi
                 }
             },
 
@@ -1543,7 +1572,7 @@
                 if (layer) {
                     this.recordSnapshot();
                     layer[prop] = val;
-                    this.renderCanvas();
+                    this.renderCanvas(); // Cần render lại để đổi kích thước khung bọc
                 }
             },
 
@@ -1552,7 +1581,7 @@
                 if (layer) {
                     this.recordSnapshot();
                     layer[prop] = val;
-                    this.renderCanvas();
+                    this.renderCanvas(); // Đổi font/màu sắc cần render lại CSS
                 }
             },
 
@@ -1632,8 +1661,10 @@
                 let str = String(raw).trim();
                 if (!str) return { valid: false, error: "Dữ liệu trống", rawText: "" };
 
+                // YÊU CẦU 3: Nếu là nhập thủ công, giữ nguyên các chữ nếu không phải là định dạng số thuần túy
                 if (isManual) {
                     const noSpace = str.replace(/\s/g, '');
+                    // Nếu chứa chữ cái (không phải số, chấm, phẩy, hoặc ký hiệu Đ) thì trả về nguyên bản
                     if (/[a-zA-Z]/i.test(noSpace) && !/^[0-9.,]+[đĐ]?$/i.test(noSpace)) {
                         return { valid: true, value: str, formatted: str }; 
                     }
@@ -1738,6 +1769,7 @@
 
             openMappingModal() {
                 const modal = document.getElementById("excel-mapping-modal");
+                // Reset bulk label
                 const mapBulkLabel = document.getElementById("map-bulk-label");
                 if (mapBulkLabel) mapBulkLabel.value = "";
 
@@ -1771,7 +1803,7 @@
                     this.rawRows.forEach((row, index) => {
                         const rawPrice = row[priceIdx];
                         const name = nameIdx !== "" ? row[nameIdx] : `Dòng ${index+2}`;
-                        const res = PriceParser.parse(rawPrice, false);
+                        const res = PriceParser.parse(rawPrice, false); // Excel parse = strict number
                         if (!res.valid) {
                             this.errors.push({
                                 rowNum: index + 2,
