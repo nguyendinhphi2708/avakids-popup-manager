@@ -450,7 +450,7 @@
                     <div class="segmented-control w-full sm:w-auto overflow-x-auto" id="template-selector">
                         <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">POPUP A8</button>
                         <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">POPUP A6</button>
-                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANNG</button>
+                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
                         <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">POPUP GIẢM NGAY</button>
                         <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">POPUP LỤC GIÁC</button>
                     </div>
@@ -577,7 +577,7 @@
                         <h3 class="font-bold text-slate-800 text-sm mb-3 uppercase border-b border-[#E9E9EF] pb-3 flex items-center gap-2">
                             <i data-feather="image" class="w-4 h-4 text-ava-pink"></i> XEM TRƯỚC MẪU IN
                         </h3>
-                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
+                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 </span></p>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px]">
                             <!-- THAY ĐỔI ẢNH TẠI OBJECT 'previewImages' BÊN DƯỚI JAVASCRIPT -->
                             <img id="static-template-preview" src="https://placehold.co/400x400/FCE7F1/F05A9D?text=A8+NH%E1%BB%8E" alt="Preview" class="max-w-full max-h-[300px] object-contain drop-shadow-sm rounded border border-slate-200">
@@ -1040,7 +1040,7 @@
             activeFormat: 'A8',
             defaultTemplates: {
                 A8: {
-                    name: "Popup A8 Nhỏ",
+                    name: "POPUP A8",
                     widthMm: 52,
                     heightMm: 53,
                     borderWidth: 2.5,
@@ -1054,7 +1054,7 @@
                     ]
                 },
                 A6: {
-                    name: "Popup A6 Chuẩn",
+                    name: "POPUP A6",
                     widthMm: 95,
                     heightMm: 105,
                     borderWidth: 4,
@@ -1161,8 +1161,8 @@
                     'TRON': './images/popup-luc-giac.jpg' 
                 };
                 const previewNames = {
-                    'A8': 'POPUP A8 NHỎ',
-                    'A6': 'POPUP A6 CHUẨN',
+                    'A8': 'POPUP A8',
+                    'A6': 'POPUP A6',
                     'NGANG': 'POPUP NGANG',
                     'GIAMNGAY': 'POPUP GIẢM NGAY',
                     'TRON': 'POPUP BÁT GIÁC'
