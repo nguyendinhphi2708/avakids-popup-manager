@@ -72,13 +72,37 @@
         }
 
         @media print {
-            .no-print { display: none !important; }
+            /* Ẩn tàng hình mọi thứ không thuộc trang in */
+            body > *:not(#print-preview-modal) {
+                display: none !important;
+            }
+            
+            /* Giải phóng Modal in */
+            #print-preview-modal {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+                padding: 0 !important;
+                z-index: 9999 !important;
+            }
+            
+            /* Ẩn các râu ria trong Modal */
+            .preview-toolbar, .no-print { 
+                display: none !important; 
+            }
+            
+            /* Cấu hình mặt giấy A4 chuẩn */
             body {
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 overflow: visible !important;
             }
+            
             .print-page {
                 width: 194mm !important;
                 height: 281mm !important;
@@ -87,24 +111,21 @@
                 display: flex !important;
                 flex-wrap: wrap !important;
                 align-content: flex-start !important;
-                justify-content: center !important;
-                gap: 2mm !important; 
+                justify-content: flex-start !important; /* Xếp khít lề trái */
+                gap: 5mm !important; /* Khoảng cách an toàn giữa các tem */
                 box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
+                overflow: hidden !important;
             }
+            
             .popup-card {
                 box-shadow: none !important;
-                break-inside: avoid;
-                page-break-inside: avoid;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
                 flex-shrink: 0 !important;
             }
-            #print-preview-modal {
-                position: static !important;
-                background: none !important;
-                display: block !important;
-                padding: 0 !important;
-            }
+            
             #print-sheet-wrapper {
                 overflow: visible !important;
                 height: auto !important;
@@ -394,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.6</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.6.1</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -434,8 +455,6 @@
                         <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                     </div>
                 </div>
-                
-                <!-- FIX YÊU CẦU 4: Đã xóa cụm "Tùy biến nhanh" -->
             </div>
 
             <div class="ava-card overflow-hidden">
@@ -696,7 +715,6 @@
                                 </div>
                                 <div>
                                     <label class="ava-label text-center whitespace-nowrap overflow-hidden text-ellipsis">Màu sắc</label>
-                                    <!-- FIX YÊU CẦU 5: COLOR PICKER CHO ADMIN -->
                                     <input type="color" id="prop-color" class="ava-input !p-0 !h-8 w-full border-none cursor-pointer" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
                                 </div>
                             </div>
