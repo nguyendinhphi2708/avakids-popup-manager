@@ -1699,7 +1699,11 @@
             handleFileSelected(event) {
 
                 const file = event.target.files[0];
+                // Người dùng hủy chọn file thì giữ nguyên hướng dẫn
                 if (!file) return;
+                / Chỉ đóng hướng dẫn sau khi người dùng đã chọn file
+                this.closeWarningModal();
+
                 document.getElementById("excel-filename-display").innerText = file.name;
 
                 const reader = new FileReader();
