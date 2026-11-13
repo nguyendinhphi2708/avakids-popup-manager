@@ -104,8 +104,8 @@
                 box-sizing: border-box !important;
             }
 
-            /* --- LAYOUT 1 CỘT CĂN GIỮA (POPUP NGANG & POPUP GIẢM NGAY) --- */
-            .print-page.layout-POPUP NGANG, 
+            /* --- LAYOUT 1 CỘT CĂN GIỮA (NGANG & GIẢM NGAY) --- */
+            .print-page.layout-NGANG, 
             .print-page.layout-GIAMNGAY {
                 display: flex !important;
                 flex-direction: column !important;
@@ -122,7 +122,7 @@
                 grid-template-columns: 95mm 95mm !important;
                 justify-content: center !important; /* Căn giữa toàn bộ lưới */
                 align-content: start !important;
-                gap: 3mm 4mm !important; /* Gap dọc 3mm, Gap POPUP NGANG 4mm */
+                gap: 3mm 4mm !important; /* Gap dọc 3mm, Gap ngang 4mm */
             }
 
             /* --- LAYOUT 3 CỘT (A8) --- */
@@ -147,7 +147,7 @@
             /* FIX CỨNG KÍCH THƯỚC TRÁNH BÓP MÉO TRÊN MÁY IN */
             .card-a8 { width: 52mm !important; height: 53mm !important; max-width: 52mm !important; min-width: 52mm !important;}
             .card-a6 { width: 95mm !important; height: 105mm !important; max-width: 95mm !important; min-width: 95mm !important;}
-            .card-POPUP NGANG, .card-giamngay { width: 120mm !important; height: 60mm !important; max-width: 120mm !important; min-width: 120mm !important;}
+            .card-ngang, .card-giamngay { width: 120mm !important; height: 60mm !important; max-width: 120mm !important; min-width: 120mm !important;}
             .card-tron { width: 95mm !important; height: 95mm !important; max-width: 95mm !important; min-width: 95mm !important;}
             
             #print-sheet-wrapper {
@@ -163,7 +163,7 @@
         /* KHUNG VẬT LÝ POPUP CHUẨN (MM) - DÙNG CHO PREVIEW CSS/CANVAS */
         .card-a8 { width: 52mm !important; height: 53mm !important; }
         .card-a6 { width: 95mm !important; height: 105mm !important; }
-        .card-POPUP NGANG, .card-giamngay { width: 120mm !important; height: 60mm !important; }
+        .card-ngang, .card-giamngay { width: 120mm !important; height: 60mm !important; }
         .card-tron { width: 95mm !important; height: 95mm !important; }
 
         .card-octagon-wrap {
@@ -286,7 +286,7 @@
                     <div class="segmented-control w-full sm:w-auto overflow-x-auto" id="template-selector">
                         <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">POPUP A8</button>
                         <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">POPUP A6</button>
-                        <button onclick="TemplateEngine.setUserFormat('POPUP NGANG')" id="u-tab-POPUP NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
+                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
                         <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">POPUP GIẢM NGAY</button>
                         <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">POPUP LỤC GIÁC</button>
                     </div>
@@ -408,7 +408,7 @@
                         <h3 class="font-bold text-slate-800 text-sm mb-3 uppercase border-b border-[#E9E9EF] pb-3 flex items-center gap-2">
                             <i data-feather="image" class="w-4 h-4 text-ava-pink"></i> XEM TRƯỚC MẪU IN
                         </h3>
-                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP POPUP A8</span></p>
+                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
                         
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px]">
                             <!-- SỬ DỤNG LẠI THẺ IMG CHO TRẢI NGHIỆM SLIDESHOW MƯỢT MÀ -->
@@ -452,11 +452,11 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
                         <span class="font-bold text-slate-800 text-sm">Chỉnh sửa mẫu:</span>
                         <div class="segmented-control w-full sm:w-auto overflow-x-auto">
-                            <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="segmented-btn active whitespace-nowrap">POPUP A8</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="segmented-btn whitespace-nowrap">POPUP A6</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('POPUP NGANG')" id="adm-btn-POPUP NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('GIAMNGAY')" id="adm-btn-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">POPUP GIẢM NGAY</button>
-                            <button onclick="VisualDesigner.switchEditingFormat('TRON')" id="adm-btn-TRON" class="segmented-btn whitespace-nowrap">POPUP LỤC GIÁC</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('A8')" id="adm-btn-A8" class="segmented-btn active whitespace-nowrap">A8 Nhỏ</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('A6')" id="adm-btn-A6" class="segmented-btn whitespace-nowrap">A6 Chuẩn</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('NGANG')" id="adm-btn-NGANG" class="segmented-btn whitespace-nowrap">Ngang</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('GIAMNGAY')" id="adm-btn-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">Giảm Ngay</button>
+                            <button onclick="VisualDesigner.switchEditingFormat('TRON')" id="adm-btn-TRON" class="segmented-btn whitespace-nowrap">Bát Giác</button>
                         </div>
                     </div>
 
@@ -523,7 +523,7 @@
                                 
                                 <div class="col-span-4 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#E9E9EF]">
                                     <button onclick="VisualDesigner.alignActiveLayer('center-x')" class="ava-btn-secondary !py-1 !px-2 text-[11px] font-bold text-slate-600 hover:text-ava-pink">
-                                        ↔ Giữa POPUP NGANG
+                                        ↔ Giữa Ngang
                                     </button>
                                     <button onclick="VisualDesigner.alignActiveLayer('center-y')" class="ava-btn-secondary !py-1 !px-2 text-[11px] font-bold text-slate-600 hover:text-ava-pink">
                                         ↕ Giữa Dọc
@@ -562,7 +562,7 @@
                                 </div>
                             </div>
                             
-                            <!-- FIX 100% LỖI MẤT DRAG BẰNG CÁCH PHỤC HỒI ĐÚNG GIAO DIỆN SELECT GẠCH POPUP NGANG -->
+                            <!-- FIX 100% LỖI MẤT DRAG BẰNG CÁCH PHỤC HỒI ĐÚNG GIAO DIỆN SELECT GẠCH NGANG -->
                             <div class="grid grid-cols-4 gap-2">
                                 <div>
                                     <label class="ava-label text-center !text-[11px]">Căn lề</label>
@@ -582,7 +582,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="ava-label text-center !text-[11px] whitespace-nowrap overflow-hidden text-ellipsis" title="Gạch POPUP NGANG">Gạch POPUP NGANG</label>
+                                    <label class="ava-label text-center !text-[11px] whitespace-nowrap overflow-hidden text-ellipsis" title="Gạch ngang">Gạch ngang</label>
                                     <select id="prop-strikethrough" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStrike(this.value === 'yes')">
                                         <option value="no">Không</option>
                                         <option value="yes">Có</option>
@@ -686,7 +686,7 @@
                         <select id="map-col-price" class="ava-input bg-white border-ava-pink/30"></select>
                     </div>
                     <div>
-                        <label class="ava-label">3. Giá gốc (Gạch POPUP NGANG)</label>
+                        <label class="ava-label">3. Giá gốc (Gạch ngang)</label>
                         <select id="map-col-original-price" class="ava-input bg-white"></select>
                     </div>
                     <div>
@@ -700,7 +700,7 @@
                     
                     <div class="sm:col-span-2 mt-2 pt-4 border-t border-[#E9E9EF]">
                         <label class="ava-label text-ava-pink"><i data-feather="tag" class="w-3 h-3 inline"></i> 6. Áp dụng Nhãn dán hàng loạt (Tùy chọn)</label>
-                        <input type="text" id="map-bulk-label" placeholder="VD: POPUP GIẢM NGAY (Sẽ áp dụng cho toàn bộ SP thay vì Giá gốc)" class="ava-input border-ava-pink/50 bg-ava-light/10 text-ava-dark font-semibold">
+                        <input type="text" id="map-bulk-label" placeholder="VD: GIẢM NGAY (Sẽ áp dụng cho toàn bộ SP thay vì Giá gốc)" class="ava-input border-ava-pink/50 bg-ava-light/10 text-ava-dark font-semibold">
                     </div>
                 </div>
 
@@ -757,7 +757,7 @@
             <div class="flex bg-slate-100 rounded p-1 gap-1">
                 <button onclick="document.execCommand('bold', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 transition" title="In đậm">B</button>
                 <button onclick="document.execCommand('italic', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-serif italic text-slate-700 transition" title="In nghiêng">I</button>
-                <button onclick="document.execCommand('strikeThrough', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm line-through text-slate-700 transition" title="Gạch POPUP NGANG">S</button>
+                <button onclick="document.execCommand('strikeThrough', false, null)" class="w-7 h-7 flex items-center justify-center rounded hover:bg-white hover:shadow-sm line-through text-slate-700 transition" title="Gạch ngang">S</button>
             </div>
             
             <div class="flex bg-slate-100 rounded p-1 gap-1 ml-1">
@@ -908,7 +908,7 @@
             activeFormat: 'A8',
             defaultTemplates: {
                 A8: {
-                    name: "Popup POPUP A8",
+                    name: "Popup A8 Nhỏ",
                     widthMm: 52,
                     heightMm: 53,
                     borderWidth: 2.5,
@@ -922,7 +922,7 @@
                     ]
                 },
                 A6: {
-                    name: "Popup POPUP A6",
+                    name: "Popup A6 Chuẩn",
                     widthMm: 95,
                     heightMm: 105,
                     borderWidth: 4,
@@ -935,8 +935,8 @@
                         { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 63, y: 92, w: 27, h: 9, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 },
-                POPUP NGANG: {
-                    name: "Popup POPUP NGANG",
+                NGANG: {
+                    name: "Popup Ngang",
                     widthMm: 120,
                     heightMm: 60,
                     borderWidth: 3,
@@ -950,13 +950,13 @@
                     ]
                 },
                 GIAMNGAY: {
-                    name: "Popup POPUP GIẢM NGAY",
+                    name: "Popup Giảm Ngay",
                     widthMm: 120,
                     heightMm: 60,
                     borderWidth: 3,
                     isOctagon: false,
                     layers: [
-                        { id: "orig_price", name: "Giá gốc / Nhãn dán", text: "POPUP GIẢM NGAY", x: 5, y: 4, w: 110, h: 8, fontSize: 16, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#e11d48", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá gốc / Nhãn dán", text: "GIẢM NGAY", x: 5, y: 4, w: 110, h: 8, fontSize: 16, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#e11d48", isStrike: false, isLocked: false, isVisible: true },
                         { id: "price", name: "Giá giảm", text: "250.000 Đ", x: 5, y: 13, w: 110, h: 16, fontSize: 32, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "promo", name: "Khuyến mãi", text: "", x: 5, y: 32, w: 110, h: 6, fontSize: 10, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
                         { id: "prod_box", name: "Ô Tên SP", text: "CHẢO INOX GREEN COOK 20CM", x: 5, y: 50, w: 75, h: 7, fontSize: 9.5, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true },
@@ -964,7 +964,7 @@
                     ]
                 },
                 TRON: {
-                    name: "Popup POPUP LỤC GIÁC",
+                    name: "Popup Bát Giác",
                     widthMm: 95,
                     heightMm: 95,
                     borderWidth: 3.5,
@@ -1008,7 +1008,7 @@
 
             setUserFormat: function(format) {
                 this.activeFormat = format;
-                ['A8', 'A6', 'POPUP NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
+                ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
                     const btn = document.getElementById('u-tab-' + f);
                     if (btn) {
                         if (f === format) {
@@ -1020,11 +1020,11 @@
                 });
                 
                 const previewNames = {
-                    'A8': 'POPUP POPUP A8',
-                    'A6': 'POPUP POPUP A6',
-                    'POPUP NGANG': 'POPUP POPUP NGANG',
-                    'GIAMNGAY': 'POPUP POPUP GIẢM NGAY',
-                    'TRON': 'POPUP POPUP LỤC GIÁC'
+                    'A8': 'POPUP A8 NHỎ',
+                    'A6': 'POPUP A6 CHUẨN',
+                    'NGANG': 'POPUP NGANG',
+                    'GIAMNGAY': 'POPUP GIẢM NGAY',
+                    'TRON': 'POPUP BÁT GIÁC'
                 };
                 
                 const nameEl = document.getElementById('preview-template-name');
@@ -1035,8 +1035,8 @@
                 const thOrigPrice = document.getElementById('th-orig-price');
                 if (lblOrigPrice && inputOrigPrice) {
                     if (format === 'GIAMNGAY') {
-                        lblOrigPrice.innerHTML = 'Nhãn dán <span class="text-slate-500 font-normal">(VD: POPUP GIẢM NGAY)</span>';
-                        inputOrigPrice.placeholder = "Nhập POPUP GIẢM NGAY, GIẢM SỐC...";
+                        lblOrigPrice.innerHTML = 'Nhãn dán <span class="text-slate-500 font-normal">(VD: GIẢM NGAY)</span>';
+                        inputOrigPrice.placeholder = "Nhập GIẢM NGAY, GIẢM SỐC...";
                         if(thOrigPrice) thOrigPrice.innerText = "Giá gốc / Nhãn dán";
                     } else {
                         lblOrigPrice.innerHTML = 'Giá gốc <span class="text-slate-500 font-normal">(để trống nếu ko có)</span>';
@@ -1048,7 +1048,7 @@
                 const previewImages = {
                     'A8': ['images/popup-a8.jpg', 'images/popup-a8-1.jpg'], 
                     'A6': ['images/popup-a6.jpg', 'images/popup-a6-1.jpg'], 
-                    'POPUP NGANG': ['images/popup-POPUP NGANG.jpg', 'images/popup-POPUP NGANG-1.jpg'], 
+                    'NGANG': ['images/popup-ngang.jpg', 'images/popup-ngang-1.jpg'], 
                     'GIAMNGAY': ['images/popup-giam-ngay.jpg', 'images/popup-giam-ngay-1.jpg'], 
                     'TRON': ['images/popup-luc-giac.jpg', 'images/popup-luc-giac-1.jpg'] 
                 };
@@ -1192,7 +1192,7 @@
 
             switchEditingFormat(format) {
                 this.currentFormat = format;
-                ['A8', 'A6', 'POPUP NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
+                ['A8', 'A6', 'NGANG', 'GIAMNGAY', 'TRON'].forEach(f => {
                     const btn = document.getElementById('adm-btn-' + f);
                     if (btn) {
                         if (f === format) {
@@ -2004,7 +2004,7 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'POPUP NGANG': 4, 'GIAMNGAY': 4, 'TRON': 4 },
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 4 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
