@@ -87,47 +87,36 @@
                 height: 100% !important;
                 background: white !important;
                 padding: 0 !important;
-                margin: 0 !important;
                 z-index: 9999 !important;
             }
             
             /* Ẩn các râu ria trong Modal */
-            .preview-toolbar, .no-print, .preview-stat-summary { 
+            .preview-toolbar, .no-print { 
                 display: none !important; 
             }
             
             /* Cấu hình mặt giấy A4 chuẩn */
-            html, body {
+            body {
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 overflow: visible !important;
-                width: 100% !important;
-                height: 100% !important;
             }
             
             .print-page {
-                width: 195mm !important;
-                height: 282mm !important; /* Cố định chuẩn A4 để không nhảy trang */
-                margin: 0 !important;
-                padding: 0 !important;
+                width: 194mm !important;
+                height: 281mm !important;
+                margin: 0 auto !important;
                 page-break-after: always;
                 display: flex !important;
                 flex-wrap: wrap !important;
                 align-content: flex-start !important;
-                justify-content: flex-start !important; 
-                gap: 4mm !important; /* Ép khoảng cách an toàn nhỏ hơn để tránh tràn margin A4 */
+                justify-content: flex-start !important; /* Xếp khít lề trái */
+                gap: 5mm !important; /* Khoảng cách an toàn giữa các tem */
                 box-shadow: none !important;
                 border: none !important;
+                padding: 0 !important;
                 overflow: hidden !important;
-                background: white !important;
-            }
-            
-            /* Fix thẻ div bị nhảy do lỗi float/flex in máy in */
-            .print-page::after {
-                content: "";
-                display: table;
-                clear: both;
             }
             
             .popup-card {
@@ -135,10 +124,6 @@
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
                 flex-shrink: 0 !important;
-                float: left !important; /* Chuyển thành float dự phòng nếu flex bị lỗi máy in */
-                margin-right: 4mm !important;
-                margin-bottom: 4mm !important;
-                position: relative !important; /* Fix lỗi chữ bay ra ngoài */
             }
             
             #print-sheet-wrapper {
@@ -146,8 +131,6 @@
                 height: auto !important;
                 gap: 0 !important;
                 padding: 0 !important;
-                margin: 0 !important;
-                display: block !important; /* Tắt flex bọc ngoài wrapper để tránh lỗi layout máy in */
             }
         }
 
@@ -432,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.5_EXCEL_FLOW</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.6_PRINT_PERFECT</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -1292,7 +1275,7 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span class="${strikeClass}" ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; ${isPrintView ? 'pointer-events: auto;' : ''}">${content}</span>
+                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%;">${content}</span>
                         </div>
                     `;
                 });
