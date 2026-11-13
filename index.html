@@ -415,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.6_PRINT_PERFECT</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.7_SUPER_FIX</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -581,7 +581,7 @@
                         <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px]">
                             <!-- THAY ĐỔI ẢNH TẠI OBJECT 'previewImages' BÊN DƯỚI JAVASCRIPT -->
-                            <img id="static-template-preview" src="./images/popup-a8-1.jpg" alt="Preview" class="max-w-full max-h-[300px] object-contain drop-shadow-sm rounded border border-slate-200" style="transition: opacity 0.2s ease-in-out;">
+                            <img id="static-template-preview" src="./images/popup-a8.jpg" alt="Preview" class="max-w-full max-h-[300px] object-contain drop-shadow-sm rounded border border-slate-200" style="transition: opacity 0.2s ease-in-out;">
                         </div>
                         <p class="text-[10.5px] text-slate-400 text-center mt-3">* Đây là hình ảnh minh họa cho mẫu in thực tế sẽ được áp dụng.</p>
                     </div>
@@ -1282,7 +1282,7 @@
 
                 if (isOctagon) {
                     return `
-                        <div class="popup-card card-tron card-octagon-wrap" style="position: relative;">
+                        <div class="popup-card card-tron card-octagon-wrap" style="position: relative; width: ${tplConfig.widthMm}mm; height: ${tplConfig.heightMm}mm;">
                             <div class="card-octagon-inner">
                                 ${layersHTML}
                             </div>
@@ -1293,6 +1293,8 @@
                 return `
                     <div class="popup-card card-${this.activeFormat.toLowerCase()}" style="
                         position: relative;
+                        width: ${tplConfig.widthMm}mm;
+                        height: ${tplConfig.heightMm}mm;
                         background: #fff;
                         border: ${tplConfig.borderWidth}px solid #000;
                     ">
