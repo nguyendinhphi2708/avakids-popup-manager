@@ -415,21 +415,21 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v3.0_GRID_MASTER_PRINT</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.1_FINAL</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 p-1 rounded-lg flex">
-                    <button onclick="App.switchView('user')" id="btn-view-user" class="px-4 py-1.5 rounded-md text-xs font-bold bg-white text-ava-pink shadow-sm transition">Trang Chủ</button>
-                    <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500 hover:text-slate-800 transition">Đăng Nhập</button>
+                    <button onclick="App.switchView('user')" id="btn-view-user" class="px-4 py-1.5 rounded-md text-xs font-bold bg-white text-ava-pink shadow-sm transition">In ấn</button>
+                    <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500 hover:text-slate-800 transition">Thiết kế (Admin)</button>
                 </div>
                 
                 <div id="admin-user-info" class="hidden items-center gap-3 pl-4 border-l border-[#E9E9EF]">
                     <div class="flex flex-col items-end">
-                        <span class="text-[10px] text-slate-400 font-semibold uppercase hidden">Administrator</span>
-                        <span id="admin-email-display" class="text-xs text-slate-700 font-semibold hidden"></span>
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase">Administrator</span>
+                        <span id="admin-email-display" class="text-xs text-slate-700 font-semibold"></span>
                     </div>
                     <button onclick="AuthManager.logout()" class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 transition" title="Đăng xuất">
                         <i data-feather="log-out" class="w-4 h-4"></i>
@@ -457,15 +457,13 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-8 space-y-6">
-                    <div class="ava-card overflow-hidden">
-                        <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
+            <div class="ava-card overflow-hidden">
+                <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
                     <button class="tab-btn active" onclick="UITabs.switchTab('manual-input-tab', this)">
                         <span class="flex items-center gap-2"><i data-feather="edit-3" class="w-4 h-4"></i> Nhập thủ công</span>
                     </button>
                     <button class="tab-btn" onclick="UITabs.switchTab('excel-import-tab', this)">
-                        <span class="flex items-center gap-2"><i data-feather="file-text" class="w-4 h-4"></i> IN ĐỒNG LOẠT</span>
+                        <span class="flex items-center gap-2"><i data-feather="file-text" class="w-4 h-4"></i> Import từ Excel</span>
                     </button>
                 </div>
 
@@ -506,13 +504,12 @@
                 <div id="excel-import-tab" class="tab-content p-6">
                     <div class="max-w-3xl mx-auto flex flex-col items-center">
                         <div class="text-center mb-4">
-                            <h3 class="font-bold text-slate-800 text-base mb-2">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
-                            <a href="Mau_In_Popup_AVAKids.xlsx" download class="inline-block bg-slate-100 text-slate-600 font-semibold text-xs px-4 py-2 rounded-lg border border-slate-200 hover:bg-white hover:border-ava-pink transition-colors mb-4 shadow-sm"><i data-feather="download" class="w-3 h-3 inline mr-1"></i> DOWNLOAD FILE MẪU</a>
-                            
-                            
+                            <h3 class="font-bold text-slate-800 text-base">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
+                            <p class="text-slate-500 text-xs mt-1">Hệ thống tự động chuẩn hóa giá, làm tròn số lẻ cực đoan và nhận diện cột.</p>
+                            <p class="text-ava-pink font-semibold text-xs mt-1 bg-ava-light/50 px-3 py-1 rounded inline-block">Mặc định cột Ngày In sẽ hiển thị "AVAKIDS" nếu file Excel không có.</p>
                         </div>
                         
-                        <div class="w-full border-2 border-dashed border-[#cbd5e1] hover:border-ava-pink hover:bg-ava-light/20 rounded-xl p-8 text-center transition cursor-pointer flex flex-col items-center justify-center gap-3" onclick="ExcelImporter.showWarningModal()">
+                        <div class="w-full border-2 border-dashed border-[#cbd5e1] hover:border-ava-pink hover:bg-ava-light/20 rounded-xl p-8 text-center transition cursor-pointer flex flex-col items-center justify-center gap-3" onclick="document.getElementById('excel-file-input').click()">
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
                             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
                                 <i data-feather="upload-cloud" class="w-6 h-6"></i>
@@ -540,8 +537,8 @@
 
                     <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                         <div class="relative flex-1 sm:flex-none">
-                            
-                            <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="Nhập tên sản phẩm để tìm..." class="ava-input w-full sm:w-48 lg:w-64 !py-1.5 px-3">
+                            <i data-feather="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="search-product-box" onkeyup="ProductController.filterTable()" placeholder="Tìm kiếm..." class="ava-input pl-9 w-full sm:w-48 lg:w-64 !py-1.5">
                         </div>
                         <button onclick="ProductController.clearAllProducts()" class="text-xs font-semibold text-slate-400 hover:text-rose-500 transition px-2">Xóa tất cả</button>
                         <button onclick="PrintEngine.openPreviewModal()" class="ava-btn-primary px-5 py-2 flex items-center gap-2 shadow-lg shadow-ava-pink/20 hover:-translate-y-0.5 transform w-full sm:w-auto justify-center">
@@ -570,24 +567,6 @@
                     </table>
                 </div>
             </div>
-                </div> <!-- End col-span-8 -->
-                
-                <!-- CỘT RIGHT: PREVIEW HÌNH ẢNH MẪU -->
-                <div class="lg:col-span-4">
-                    <div class="ava-card p-5 sticky top-24">
-                        <h3 class="font-bold text-slate-800 text-sm mb-3 uppercase border-b border-[#E9E9EF] pb-3 flex items-center gap-2">
-                            <i data-feather="image" class="w-4 h-4 text-ava-pink"></i> XEM TRƯỚC MẪU IN
-                        </h3>
-                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px] overflow-hidden relative">
-                            <div id="dynamic-template-preview" class="transition-all duration-300 ease-in-out transform origin-center flex justify-center items-center w-full h-full">
-                                <!-- Render template HTML vào đây -->
-                            </div>
-                        </div>
-                        <p class="text-[10.5px] text-slate-400 text-center mt-3">* Bản xem trước chính xác 100% tỷ lệ thật được tự động render từ cấu trúc hệ thống.</p>
-                    </div>
-                </div> <!-- End col-span-4 -->
-            </div> <!-- End Grid -->
         </section>
 
         <!-- ======================================================= -->
@@ -795,35 +774,6 @@
     </main>
 
     <!-- ======================================================= -->
-    
-    <!-- MODAL 1.5: CẢNH BÁO HƯỚNG DẪN IMPORT EXCEL TRƯỚC KHI CHỌN FILE -->
-    <div id="excel-warning-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
-        <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
-            <div class="px-5 py-4 bg-sky-50 border-b border-sky-100 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600"><i data-feather="info" class="w-4 h-4"></i></div>
-                    <span class="font-bold text-base text-sky-800 uppercase">HƯỚNG DẪN SỬ DỤNG</span>
-                </div>
-                <button onclick="ExcelImporter.closeWarningModal()" class="text-sky-400 hover:text-sky-700 transition"><i data-feather="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <div class="p-6 overflow-y-auto space-y-4">
-                <p class="text-slate-700 text-[13px] font-bold text-center leading-relaxed">
-                    BẠN DOWNLOAD FILE MẪU CHÉP DỮ LIỆU VÀO ĐÚNG CỘT HOẶC TỰ TẠO FILE ĐỒNG NHẤT DỮ LIỆU: <br>
-                    <span class="text-ava-pink">CỘT A: TÊN SẢN PHẨM | CỘT B: GIÁ GỐC | CỘT C: GIÁ GIẢM | CỘT D: KHUYẾN MÃI</span>
-                </p>
-                <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm p-1">
-                    <img src="images/EXCEL-MAU.jpg" alt="Mẫu cấu hình cột Excel" class="w-full h-auto rounded">
-                </div>
-            </div>
-
-            <div class="px-5 py-4 bg-slate-50 border-t border-[#E9E9EF] flex justify-end gap-3">
-                <button onclick="ExcelImporter.closeWarningModal()" class="ava-btn-secondary px-4 py-2">Hủy bỏ</button>
-                <button onclick="ExcelImporter.acceptWarningAndSelectFile()" class="bg-sky-500 hover:bg-sky-600 text-white rounded-lg px-6 py-2 flex items-center gap-2 font-black shadow-md transition"><i data-feather="check-circle" class="w-4 h-4"></i> ĐÃ HIỂU / ĐỒNG Ý</button>
-            </div>
-        </div>
-    </div>
-
     <!-- MODAL 1: ÁNH XẠ CỘT & KIỂM TRA LỖI DỮ LIỆU EXCEL -->
     <!-- ======================================================= -->
     <div id="excel-mapping-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
@@ -1182,30 +1132,6 @@
                     }
                 });
                 
-                
-                // Cập nhật Hình ảnh xem trước tĩnh
-                const previewImages = {
-                    'A8': 'https://placehold.co/400x400/FCE7F1/F05A9D?text=A8+NH%E1%BB%8E', // Thay link ảnh A8 của anh vào đây
-                    'A6': 'https://placehold.co/400x500/FCE7F1/F05A9D?text=A6+CHU%E1%BA%A8N', // Thay link ảnh A6 của anh vào đây
-                    'NGANG': 'https://placehold.co/600x300/FCE7F1/F05A9D?text=NGANG', // Thay link ảnh Ngang
-                    'GIAMNGAY': 'https://placehold.co/600x300/FCE7F1/F05A9D?text=GI%E1%BA%A2M+NGAY', // Thay link ảnh Giảm Ngay
-                    'TRON': 'https://placehold.co/400x400/FCE7F1/F05A9D?text=B%C3%81T+GI%C3%81C' // Thay link ảnh Tròn (Bát giác)
-                };
-                const previewNames = {
-                    'A8': 'POPUP A8 NHỎ',
-                    'A6': 'POPUP A6 CHUẨN',
-                    'NGANG': 'POPUP NGANG',
-                    'GIAMNGAY': 'POPUP GIẢM NGAY',
-                    'TRON': 'POPUP BÁT GIÁC'
-                };
-                
-                const imgEl = document.getElementById('static-template-preview');
-                const nameEl = document.getElementById('preview-template-name');
-                if (imgEl && nameEl) {
-                    imgEl.src = previewImages[format];
-                    nameEl.innerText = previewNames[format];
-                }
-                
                 const lblOrigPrice = document.getElementById('manual-lbl-orig-price');
                 const inputOrigPrice = document.getElementById('manual-original-price');
                 const thOrigPrice = document.getElementById('th-orig-price');
@@ -1223,7 +1149,7 @@
             },
 
             // KHU VỰC 1: DÙNG CHO MÀN HÌNH IN (CÓ AUTOFIT, KHÔNG EVENT)
-            renderPopupHTML(product, tplConfig, isPrintView = false, explicitFormat = null) {
+            renderPopupHTML(product, tplConfig) {
                 const isOctagon = tplConfig.isOctagon;
                 const userFont = this.userTempMods.fontFamily;
 
@@ -1276,14 +1202,14 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%;">${content}</span>
+                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%; pointer-events: none;">${content}</span>
                         </div>
                     `;
                 });
 
                 if (isOctagon) {
                     return `
-                        <div class="popup-card card-tron card-octagon-wrap" style="position: relative; width: ${tplConfig.widthMm}mm; height: ${tplConfig.heightMm}mm;">
+                        <div class="popup-card card-tron card-octagon-wrap" style="position: relative;">
                             <div class="card-octagon-inner">
                                 ${layersHTML}
                             </div>
@@ -1292,10 +1218,8 @@
                 }
 
                 return `
-                    <div class="popup-card card-${(explicitFormat || this.activeFormat).toLowerCase()}" style="
+                    <div class="popup-card card-${this.activeFormat.toLowerCase()}" style="
                         position: relative;
-                        width: ${tplConfig.widthMm}mm;
-                        height: ${tplConfig.heightMm}mm;
                         background: #fff;
                         border: ${tplConfig.borderWidth}px solid #000;
                     ">
@@ -1825,20 +1749,7 @@
             headers: [],
             errors: [],
 
-            
-            showWarningModal() {
-                document.getElementById("excel-warning-modal").classList.remove("hidden");
-            },
-            closeWarningModal() {
-                document.getElementById("excel-warning-modal").classList.add("hidden");
-            },
-            acceptWarningAndSelectFile() {
-                this.closeWarningModal();
-                document.getElementById('excel-file-input').click();
-            },
-            
             handleFileSelected(event) {
-
                 const file = event.target.files[0];
                 if (!file) return;
                 document.getElementById("excel-filename-display").innerText = file.name;
@@ -2142,11 +2053,6 @@
         };
 
         const PrintEngine = {
-            // A4 Dọc (Portrait): 
-            // A8 (52x53): 3 cột x 5 hàng = 15
-            // A6 (95x105): 2 cột x 2 hàng = 4
-            // Ngang/GiamNgay (120x60): 1 cột x 4 hàng = 4
-            // Tron (95x95): 2 cột x 2 hàng = 4 (Sửa lại 4 cho an toàn, tránh mất nội dung trang cuối)
             capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 4 },
 
             openPreviewModal() {
@@ -2177,10 +2083,10 @@
                 for (let page = 0; page < totalPages; page++) {
                     const pageItems = printList.slice(page * capacity, (page + 1) * capacity);
                     const pageDiv = document.createElement("div");
-                    pageDiv.className = `print-page layout-${format} bg-white shadow-xl border border-slate-200`;
+                    pageDiv.className = "print-page bg-white shadow-xl p-2 border border-slate-200";
 
                     pageItems.forEach(item => {
-                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config, true, format);
+                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config);
                     });
 
                     wrapper.appendChild(pageDiv);
