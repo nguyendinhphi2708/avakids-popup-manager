@@ -415,7 +415,7 @@
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-ava-pink rounded-lg flex items-center justify-center text-white font-black text-xl leading-none">A</div>
                 <div class="flex flex-col">
-                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v2.9.8_ULTIMATE_PRINT</span></span>
+                    <span class="text-[15px] font-black tracking-tight text-slate-800 uppercase">AVAKids <span class="text-ava-pink">Popup Pro</span> <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded ml-2">v3.0_GRID_MASTER_PRINT</span></span>
                     <span id="supabase-status-badge" class="text-[10px] font-medium text-slate-400 mt-[-2px]">Supabase: Ngoại tuyến</span>
                 </div>
             </div>
@@ -2141,7 +2141,7 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 4 },
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 8, 'GIAMNGAY': 8, 'TRON': 6 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
@@ -2171,7 +2171,7 @@
                 for (let page = 0; page < totalPages; page++) {
                     const pageItems = printList.slice(page * capacity, (page + 1) * capacity);
                     const pageDiv = document.createElement("div");
-                    pageDiv.className = "print-page bg-white shadow-xl border border-slate-200";
+                    pageDiv.className = `print-page layout-${format} bg-white shadow-xl border border-slate-200`;
 
                     pageItems.forEach(item => {
                         pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config, true);
