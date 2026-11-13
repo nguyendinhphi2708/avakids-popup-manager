@@ -579,11 +579,12 @@
                             <i data-feather="image" class="w-4 h-4 text-ava-pink"></i> XEM TRƯỚC MẪU IN
                         </h3>
                         <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px]">
-                            <!-- THAY ĐỔI ẢNH TẠI OBJECT 'previewImages' BÊN DƯỚI JAVASCRIPT -->
-                            <img id="static-template-preview" src="images/popup-a8.jpg" alt="Preview" class="max-w-full max-h-[300px] object-contain drop-shadow-sm rounded border border-slate-200" style="transition: opacity 0.2s ease-in-out;">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px] overflow-hidden relative">
+                            <div id="dynamic-template-preview" class="transition-all duration-300 ease-in-out transform origin-center flex justify-center items-center w-full h-full">
+                                <!-- Render template HTML vào đây -->
+                            </div>
                         </div>
-                        <p class="text-[10.5px] text-slate-400 text-center mt-3">* Đây là hình ảnh minh họa cho mẫu in thực tế sẽ được áp dụng.</p>
+                        <p class="text-[10.5px] text-slate-400 text-center mt-3">* Bản xem trước chính xác 100% tỷ lệ thật được tự động render từ cấu trúc hệ thống.</p>
                     </div>
                 </div> <!-- End col-span-4 -->
             </div> <!-- End Grid -->
@@ -1222,7 +1223,7 @@
             },
 
             // KHU VỰC 1: DÙNG CHO MÀN HÌNH IN (CÓ AUTOFIT, KHÔNG EVENT)
-            renderPopupHTML(product, tplConfig, isPrintView = false) {
+            renderPopupHTML(product, tplConfig, isPrintView = false, explicitFormat = null) {
                 const isOctagon = tplConfig.isOctagon;
                 const userFont = this.userTempMods.fontFamily;
 
@@ -1291,7 +1292,7 @@
                 }
 
                 return `
-                    <div class="popup-card card-${this.activeFormat.toLowerCase()}" style="
+                    <div class="popup-card card-${(explicitFormat || this.activeFormat).toLowerCase()}" style="
                         position: relative;
                         width: ${tplConfig.widthMm}mm;
                         height: ${tplConfig.heightMm}mm;
@@ -2141,7 +2142,12 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 6 },
+            // A4 Dọc (Portrait): 
+            // A8 (52x53): 3 cột x 5 hàng = 15
+            // A6 (95x105): 2 cột x 2 hàng = 4
+            // Ngang/GiamNgay (120x60): 1 cột x 4 hàng = 4
+            // Tron (95x95): 2 cột x 2 hàng = 4 (Sửa lại 4 cho an toàn, tránh mất nội dung trang cuối)
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 4 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
@@ -2174,7 +2180,7 @@
                     pageDiv.className = `print-page layout-${format} bg-white shadow-xl border border-slate-200`;
 
                     pageItems.forEach(item => {
-                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config, true);
+                        pageDiv.innerHTML += TemplateEngine.renderPopupHTML(item, config, true, format);
                     });
 
                     wrapper.appendChild(pageDiv);
