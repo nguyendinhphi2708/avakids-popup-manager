@@ -92,13 +92,13 @@
                 width: 210mm !important;
                 height: 297mm !important;
                 margin: 0 !important;
-                padding: 0 !important; /* Chỉ padding top/bottom. Bỏ padding hai bên để Grid tự lo */
+                padding: 10mm 0 !important; /* Chỉ padding top/bottom. Bỏ padding hai bên để Grid tự lo */
                 page-break-after: always;
                 page-break-inside: avoid !important;
                 background: white !important;
                 box-shadow: none !important;
                 border: none !important;
-                overflow: visible !important;
+                overflow: hidden !important;
                 box-sizing: border-box !important;
             }
 
@@ -114,14 +114,27 @@
                 gap: 5mm !important;
             }
 
-            /* SỬ DỤNG FLEXBOX VÀ MARGIN TĨNH ĐỂ CHỐNG DÍNH CHẶT (VƯỢT LỖI GAP CHROME) */
-            .print-page.layout-A6, 
-            .print-page.layout-TRON,
-            .print-page.layout-A8 {
-                display: flex !important;
-                flex-wrap: wrap !important;
+            /* SỬ DỤNG GRID ĐỂ CHỐNG CẮT TRANG KHI IN */
+            .print-page.layout-A6 {
+                display: grid !important;
+                grid-template-columns: 95mm 95mm !important;
                 justify-content: center !important;
-                align-content: flex-start !important;
+                align-content: start !important;
+                gap: 5mm 4mm !important;
+            }
+            .print-page.layout-TRON {
+                display: grid !important;
+                grid-template-columns: 70mm 70mm !important;
+                justify-content: center !important;
+                align-content: start !important;
+                gap: 5mm 15mm !important; /* Dọc 5mm, ngang 15mm, tổng chiều cao 3 hàng: 70*3+5*2=220mm, lọt thỏm trong 297mm của A4 */
+            }
+            .print-page.layout-A8 {
+                display: grid !important;
+                grid-template-columns: 52mm 52mm 52mm !important;
+                justify-content: center !important;
+                align-content: start !important;
+                gap: 5mm !important;
             }
 
             .popup-card {
@@ -140,8 +153,7 @@
             }
             
             .print-page.layout-TRON .popup-card {
-                margin-right: 20mm !important;
-                margin-bottom: 2mm !important; /* Bóp nhỏ lề dọc xuống 2mm để chứa 4 hàng (8 tem) */
+                margin: 4mm !important; /* Dư sức cách xa nhau */
             }
             
             .print-page.layout-A8 .popup-card {
@@ -416,8 +428,8 @@
                             
                             <div class="w-full h-full overflow-auto flex justify-center custom-scrollbar pt-4 pb-4">
                                 <!-- Mô phỏng tờ giấy A4 Ảo chứa Real-time DOM. -->
-                                <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.65); transform-origin: top center; width: 210mm; min-height: 297mm; height: 297mm;">
-                                    <div id="realtime-preview-content" class="w-full h-full" style="padding: 10mm 4mm;">
+                                <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.65); transform-origin: top center; width: 210mm; height: 297mm; box-sizing: border-box; overflow: hidden;">
+                                    <div id="realtime-preview-content" class="w-full h-full" style="padding: 5mm 0; box-sizing: border-box;">
                                         <!-- Nội dung tem sẽ được Javascript vẽ trực tiếp vào đây -->
                                     </div>
                                 </div>
@@ -1077,8 +1089,10 @@
                     }
                 }
                 
-                // Đồng bộ CSS Flex/Grid cho tờ giấy A4 ảo y hệt như bản in thật
+                // TẠO LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BAO GIỜ BỊ RỚT DÒNG
                 previewContainer.className = "w-full h-full grid justify-center content-start";
+                previewContainer.style.padding = "5mm 0"; // Khớp 100% với padding của máy in 
+                
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
                     previewContainer.style.gridTemplateColumns = "120mm";
                     previewContainer.style.gap = "5mm";
@@ -1087,7 +1101,8 @@
                     previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    previewContainer.style.gap = "5mm 15mm";
+                    // 70*3=210, 210 + gap 5*2(10) + padding 5*2(10) = 230mm. Bạo đảm không tràn 297mm.
+                    previewContainer.style.gap = "5mm 15mm"; 
                 } else if (format === 'A8') {
                     previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
                     previewContainer.style.gap = "5mm";
@@ -1102,19 +1117,17 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để tắt contenteditable
                 });
                 
                 previewContainer.innerHTML = htmlStr;
                 
-                // Xóa float/margin dư thừa bên trong tờ giấy ảo
+                // XÓA MỌI MARGIN/FLOAT KHÔNG CẦN THIẾT Ở LIVE PREVIEW (CHỈ ĐỂ GRID LÀM VIỆC)
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
                     c.style.float = 'none';
                     c.style.margin = '0';
-                    if (format === 'NGANG' || format === 'GIAMNGAY') {
-                        c.style.margin = '0 auto';
-                    }
+                    c.style.position = 'relative'; // Bắt buộc
                 });
                 
                 // Chạy autofit cho chữ trên màn hình Live
@@ -1137,10 +1150,15 @@
             },
             
             init() {
-                // XÓA CACHE ĐỂ LẤY BẢN 70X70 MỚI NHẤT
+                // ÉP TRÌNH DUYỆT XÓA SẠCH CACHE ĐỂ NHẬN CONFIG 70X70 CHUẨN
                 localStorage.removeItem('draft_tpl_TRON');
                 localStorage.removeItem('custom_default_TRON');
                 this.templates = JSON.parse(JSON.stringify(this.defaultTemplates));
+                
+                // Mặc định luôn tải mẫu Bát Giác để user thấy ngay sự thay đổi 70x70
+                setTimeout(() => {
+                    this.setUserFormat('TRON');
+                }, 100);
             },
 
             async fetchTemplatesOnline() {
@@ -1274,7 +1292,7 @@
                 if (isOctagon) {
                     return `
                         <div class="popup-card card-tron" style="position: relative; width: ${tplConfig.widthMm}mm !important; height: ${tplConfig.heightMm}mm !important; min-width: ${tplConfig.widthMm}mm !important; max-width: ${tplConfig.widthMm}mm !important; min-height: ${tplConfig.heightMm}mm !important; max-height: ${tplConfig.heightMm}mm !important; background: transparent; border: none; overflow: hidden; margin: 0;">
-                            <img src="images/lucgiac.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none;" alt="Nền Bát Giác">
+                            <img src="images/lucgiac.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;" alt="Nền Bát Giác">
                             ${layersHTML}
                         </div>
                     `;
@@ -1370,8 +1388,10 @@
                     }
                 }
                 
-                // Đồng bộ CSS Flex/Grid cho tờ giấy A4 ảo y hệt như bản in thật
+                // TẠO LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BAO GIỜ BỊ RỚT DÒNG
                 previewContainer.className = "w-full h-full grid justify-center content-start";
+                previewContainer.style.padding = "5mm 0"; // Khớp 100% với padding của máy in 
+                
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
                     previewContainer.style.gridTemplateColumns = "120mm";
                     previewContainer.style.gap = "5mm";
@@ -1380,7 +1400,8 @@
                     previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    previewContainer.style.gap = "5mm 15mm";
+                    // 70*3=210, 210 + gap 5*2(10) + padding 5*2(10) = 230mm. Bạo đảm không tràn 297mm.
+                    previewContainer.style.gap = "5mm 15mm"; 
                 } else if (format === 'A8') {
                     previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
                     previewContainer.style.gap = "5mm";
@@ -1395,19 +1416,17 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để tắt contenteditable
                 });
                 
                 previewContainer.innerHTML = htmlStr;
                 
-                // Xóa float/margin dư thừa bên trong tờ giấy ảo
+                // XÓA MỌI MARGIN/FLOAT KHÔNG CẦN THIẾT Ở LIVE PREVIEW (CHỈ ĐỂ GRID LÀM VIỆC)
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
                     c.style.float = 'none';
                     c.style.margin = '0';
-                    if (format === 'NGANG' || format === 'GIAMNGAY') {
-                        c.style.margin = '0 auto';
-                    }
+                    c.style.position = 'relative'; // Bắt buộc
                 });
                 
                 // Chạy autofit cho chữ trên màn hình Live
@@ -2523,7 +2542,7 @@
                 await ProductController.loadProducts();
                 await AuthManager.checkSession();
                 this.bindEvents();
-                TemplateEngine.setUserFormat('A8'); // Kích hoạt Preview ngay lập tức
+                
             },
             bindEvents() {
                 const manualTab = document.getElementById('manual-input-tab');
