@@ -140,7 +140,8 @@
             }
             
             .print-page.layout-TRON .popup-card {
-                margin: 4mm !important; /* Dư sức cách xa nhau */
+                margin-right: 20mm !important;
+                margin-bottom: 2mm !important; /* Bóp nhỏ lề dọc xuống 2mm để chứa 4 hàng (8 tem) */
             }
             
             .print-page.layout-A8 .popup-card {
@@ -2307,7 +2308,7 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 6 },
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 8 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
