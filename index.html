@@ -242,9 +242,9 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="bg-slate-100 p-1 rounded-lg flex">
-                    <button onclick="App.switchView('user')" id="btn-view-user" class="px-4 py-1.5 rounded-md text-xs font-bold bg-white text-ava-pink shadow-sm transition">Trang Chủ</button>
-                    <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-500 hover:text-slate-800 transition">Đăng Nhập</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="App.switchView('user')" id="btn-view-user" class="px-4 py-1.5 rounded-full text-xs font-bold bg-ava-pink text-white shadow-sm transition">Trang Chủ</button>
+                    <button onclick="App.switchView('admin')" id="btn-view-admin" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition" title="Dành cho Quản trị viên"><i data-feather="settings" class="w-3.5 h-3.5 inline"></i></button>
                 </div>
                 
                 <div id="admin-user-info" class="hidden items-center gap-3 pl-4 border-l border-[#E9E9EF]">
@@ -328,19 +328,20 @@
                     <div class="max-w-3xl mx-auto flex flex-col items-center">
                         <div class="text-center mb-4">
                             <h3 class="font-bold text-slate-800 text-base mb-2">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
-                            <a href="Mau_In_Popup_AVAKids.xlsx" download class="inline-block bg-blue-600 text-white font-black text-sm px-6 py-2.5 rounded-lg border-b-4 border-blue-800 hover:bg-blue-500 hover:border-blue-700 transition-all mb-4 shadow-lg uppercase tracking-wide"><i data-feather="download" class="w-4 h-4 inline mr-1"></i> DOWNLOAD FILE MẪU</a>
+                            <a href="Mau_In_Popup_AVAKids.xlsx" download class="inline-flex items-center justify-center bg-white text-ava-pink font-black text-sm px-6 py-2.5 rounded-lg border-2 border-ava-pink hover:bg-ava-light transition-all mb-4 shadow-sm uppercase tracking-wide gap-2 w-full sm:w-auto"><i data-feather="download" class="w-4 h-4"></i> TẢI FILE EXCEL MẪU</a>
                         </div>
                         
-                        <div class="w-full border-2 border-dashed border-[#cbd5e1] hover:border-ava-pink hover:bg-ava-light/20 rounded-xl p-8 text-center transition cursor-pointer flex flex-col items-center justify-center gap-3" onclick="ExcelImporter.showWarningModal()">
+                        <div class="w-full border-2 border-dashed border-ava-pink/40 bg-ava-light/10 hover:bg-ava-light/30 rounded-2xl p-6 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-md" onclick="ExcelImporter.showWarningModal()">
                             <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
-                            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                <i data-feather="upload-cloud" class="w-6 h-6"></i>
+                            <div class="w-14 h-14 rounded-full bg-white shadow-sm flex items-center justify-center text-ava-pink mb-1">
+                                <i data-feather="file-plus" class="w-7 h-7"></i>
                             </div>
-                            <div>
-                                <span class="font-semibold text-ava-pink">Nhấn để tải file lên</span> <span class="text-slate-500">hoặc kéo thả vào đây</span>
+                            <div class="flex flex-col">
+                                <span class="font-black text-ava-dark text-base uppercase tracking-tight">KÉO THẢ HOẶC CHỌN FILE EXCEL</span>
+                                <span class="text-slate-500 text-[11px] mt-1">Hỗ trợ định dạng: .xlsx, .xls, .csv</span>
                             </div>
-                            <div id="excel-filename-display" class="bg-slate-100 px-3 py-1 rounded text-xs font-mono text-slate-600 font-semibold max-w-full truncate">
-                                Chưa chọn file nào
+                            <div id="excel-filename-display" class="mt-2 bg-white px-4 py-1.5 rounded-full text-[11px] font-mono text-slate-600 font-semibold max-w-full truncate border border-slate-200">
+                                Chưa nạp dữ liệu
                             </div>
                         </div>
                     </div>
@@ -395,12 +396,25 @@
                         </h3>
                         <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
                         
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center min-h-[260px]">
-                            <!-- SỬ DỤNG LẠI THẺ IMG CHO TRẢI NGHIỆM SLIDESHOW MƯỢT MÀ -->
-                            <img id="static-template-preview" src="images/popup-a8.jpg" alt="Preview" class="max-w-full max-h-[300px] object-contain drop-shadow-sm rounded border border-slate-200" style="transition: opacity 0.2s ease-in-out;">
+                        <div class="relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-100 border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[350px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
+                            <!-- Nền ảo tạo cảm giác không gian làm việc 3D -->
+                            <div class="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
+                            
+                            <!-- Mô phỏng tờ giấy A4 nổi bật -->
+                            <div class="relative bg-white p-2 rounded-lg shadow-xl border border-slate-200 flex items-center justify-center z-10 transition-transform hover:scale-105 duration-300 ease-out cursor-pointer" title="Minh họa cấu trúc tem">
+                                <!-- SỬ DỤNG LẠI THẺ IMG CHO TRẢI NGHIỆM SLIDESHOW MƯỢT MÀ -->
+                                <img id="static-template-preview" src="images/popup-a8.jpg" alt="Preview" class="max-w-full max-h-[300px] object-contain transition-opacity duration-300 ease-in-out" style="transition: opacity 0.25s ease-in-out;">
+                            </div>
+                            
+                            <div class="absolute bottom-3 left-0 w-full flex justify-center z-10 pointer-events-none">
+                                <span class="bg-slate-800/70 backdrop-blur text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Minh họa bố cục</span>
+                            </div>
                         </div>
                         
-                        <p class="text-[10.5px] text-slate-400 text-center mt-3">* Đây là hình ảnh minh họa cho mẫu in thực tế sẽ được áp dụng.</p>
+                        <div class="mt-4 bg-amber-50 border border-amber-100 rounded-lg p-3 flex gap-2 items-start">
+                            <i data-feather="info" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"></i>
+                            <p class="text-[11px] text-amber-700 leading-relaxed font-medium">Bản xem trước ở trên mô phỏng kích thước và tỷ lệ thực tế. Khi bấm nút <b class="text-ava-pink">"Xem trước & In A4"</b>, hệ thống sẽ tự động tự động dàn trang tối ưu nhất để tiết kiệm giấy.</p>
+                        </div>
                     </div>
                 </div> <!-- End col-span-4 -->
             </div> <!-- End Grid -->
