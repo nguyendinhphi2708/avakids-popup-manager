@@ -92,7 +92,7 @@
                 width: 210mm !important;
                 height: 297mm !important;
                 margin: 0 !important;
-                padding: 5mm 0 !important; /* Ép mỏng padding dọc để chừa chỗ cho 3 hàng Bát Giác */
+                padding: 10mm 0 !important; /* Chỉ padding top/bottom. Bỏ padding hai bên để Grid tự lo */
                 page-break-after: always;
                 page-break-inside: avoid !important;
                 background: white !important;
@@ -134,24 +134,23 @@
                 overflow: hidden !important;
             }
             
-            /* GÁN MARGIN TĨNH ĐỂ TẠO KHOẢNG HỞ TUYỆT ĐỐI NHƯNG KHÔNG BỊ RỚT DÒNG */
+            /* GÁN MARGIN TĨNH ĐỂ TẠO KHOẢNG HỞ TUYỆT ĐỐI */
             .print-page.layout-A6 .popup-card {
-                margin: 3mm !important; 
+                margin: 2.5mm !important; 
             }
             
             .print-page.layout-TRON .popup-card {
-                /* Dọc 2mm, Ngang 8mm. Để 3 hàng (80mmx3=240mm) + margin(4mm*3=12) = 252mm < 297mm. Dư sức lọt 6 tem! */
-                margin: 2mm 8mm !important; 
+                margin: 4mm !important; /* Dư sức cách xa nhau */
             }
             
             .print-page.layout-A8 .popup-card {
-                margin: 2mm !important;
+                margin: 2.5mm !important;
             }
 
             .card-a8 { width: 52mm !important; height: 53mm !important; max-width: 52mm !important; min-width: 52mm !important; min-height: 53mm !important; max-height: 53mm !important;}
             .card-a6 { width: 95mm !important; height: 105mm !important; max-width: 95mm !important; min-width: 95mm !important; min-height: 105mm !important; max-height: 105mm !important;}
             .card-ngang, .card-giamngay { width: 120mm !important; height: 60mm !important; max-width: 120mm !important; min-width: 120mm !important; min-height: 60mm !important; max-height: 60mm !important;}
-            .card-tron { width: 80mm !important; height: 80mm !important; max-width: 80mm !important; min-width: 80mm !important; min-height: 80mm !important; max-height: 80mm !important;}
+            .card-tron { width: 70mm !important; height: 70mm !important; max-width: 70mm !important; min-width: 70mm !important; min-height: 70mm !important; max-height: 70mm !important;}
             
             #print-sheet-wrapper {
                 overflow: visible !important;
@@ -167,7 +166,7 @@
         .card-a8 { width: 52mm !important; height: 53mm !important; }
         .card-a6 { width: 95mm !important; height: 105mm !important; }
         .card-ngang, .card-giamngay { width: 120mm !important; height: 60mm !important; }
-        .card-tron { width: 80mm !important; height: 80mm !important; }
+        .card-tron { width: 70mm !important; height: 70mm !important; }
 
         
 
@@ -417,7 +416,7 @@
                             <div class="w-full h-full overflow-auto flex justify-center custom-scrollbar pt-4 pb-4">
                                 <!-- Mô phỏng tờ giấy A4 Ảo chứa Real-time DOM. -->
                                 <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.65); transform-origin: top center; width: 210mm; min-height: 297mm; height: 297mm;">
-                                    <div id="realtime-preview-content" class="w-full h-full" style="padding: 5mm 0;">
+                                    <div id="realtime-preview-content" class="w-full h-full" style="padding: 10mm 4mm;">
                                         <!-- Nội dung tem sẽ được Javascript vẽ trực tiếp vào đây -->
                                     </div>
                                 </div>
@@ -997,17 +996,17 @@
                 },
                 TRON: {
                     name: "Popup Bát Giác",
-                    widthMm: 80,
-                    heightMm: 80,
+                    widthMm: 70,
+                    heightMm: 70,
                     borderWidth: 0,
                     isOctagon: true,
                     layers: [
-                        { id: "lbl", name: "Tiêu đề", text: "GIẢM SỐC", x: 15, y: 8, w: 50, h: 8, fontSize: 18, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
-                        { id: "orig_price", name: "Giá cũ gạch", text: "450.000 Đ", x: 12, y: 17, w: 56, h: 6, fontSize: 13, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, strikeThickness: "2px", strikeColor: "#000000", isLocked: false, isVisible: true },
-                        { id: "price", name: "Giá giảm lớn", text: "250.000 Đ", x: 8, y: 24, w: 64, h: 14, fontSize: 28, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
-                        { id: "promo", name: "Khuyến mãi", text: "TẶNG 1 QUÀ CÙNG LOẠI", x: 10, y: 39, w: 60, h: 6, fontSize: 9, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
-                        { id: "prod_box", name: "Tên sản phẩm", text: "CHẢO INOX GREEN COOK 20CM", x: 8, y: 55, w: 38, h: 12, fontSize: 8, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: false, isStrike: false, isLocked: false, isVisible: true },
-                        { id: "date_box", name: "Thời gian áp dụng", text: "AVAKIDS", x: 47, y: 55, w: 25, h: 12, fontSize: 7.5, fontWeight: "600", fontFamily: "Arial, sans-serif", textAlign: "right", color: "#334155", hasBorder: false, isStrike: false, isLocked: false, isVisible: true }
+                        { id: "lbl", name: "Tiêu đề", text: "GIẢM SỐC", x: 13, y: 7, w: 44, h: 7, fontSize: 16, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "orig_price", name: "Giá cũ gạch", text: "450.000 Đ", x: 10, y: 15, w: 50, h: 6, fontSize: 11, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#475569", isStrike: true, strikeThickness: "2px", strikeColor: "#000000", isLocked: false, isVisible: true },
+                        { id: "price", name: "Giá giảm lớn", text: "250.000 Đ", x: 7, y: 21, w: 56, h: 13, fontSize: 24, fontWeight: "900", fontFamily: "'Oswald', sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "promo", name: "Khuyến mãi", text: "TẶNG 1 QUÀ CÙNG LOẠI", x: 9, y: 34, w: 52, h: 6, fontSize: 8, fontWeight: "900", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", isStrike: false, isLocked: false, isVisible: true },
+                        { id: "prod_box", name: "Tên sản phẩm", text: "CHẢO INOX GREEN COOK 20CM", x: 7, y: 48, w: 33, h: 10, fontSize: 7, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "left", color: "#000", hasBorder: false, isStrike: false, isLocked: false, isVisible: true },
+                        { id: "date_box", name: "Thời gian áp dụng", text: "AVAKIDS", x: 41, y: 48, w: 22, h: 10, fontSize: 6.5, fontWeight: "600", fontFamily: "Arial, sans-serif", textAlign: "right", color: "#334155", hasBorder: false, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 }
             },
@@ -1107,20 +1106,13 @@
                 
                 previewContainer.innerHTML = htmlStr;
                 
-                // Gán margin tĩnh cho Live Preview tương đương CSS Print
+                // Xóa float/margin dư thừa bên trong tờ giấy ảo
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
                     c.style.float = 'none';
+                    c.style.margin = '0';
                     if (format === 'NGANG' || format === 'GIAMNGAY') {
                         c.style.margin = '0 auto';
-                    } else if (format === 'TRON') {
-                        c.style.margin = '2mm 8mm';
-                    } else if (format === 'A6') {
-                        c.style.margin = '3mm';
-                    } else if (format === 'A8') {
-                        c.style.margin = '2mm';
-                    } else {
-                        c.style.margin = '0';
                     }
                 });
                 
@@ -1242,7 +1234,7 @@
                     const finalFont = userFont || layer.fontFamily;
                     const strikeThick = layer.strikeThickness || '2px';
                     const strikeColor = layer.strikeColor || '#000000';
-                    const strikeStyle = layer.isStrike ? `text-decoration: line-through; text-decoration-thickness: ${strikeThick}; text-decoration-color: ${strikeColor};` : '';
+                    const strikeStyle = layer.isStrike ? `text-decoration: line-through !important; -webkit-text-decoration-line: line-through !important; text-decoration-thickness: ${strikeThick} !important; text-decoration-color: ${strikeColor} !important;` : '';
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
 
                     layersHTML += `
@@ -1401,20 +1393,13 @@
                 
                 previewContainer.innerHTML = htmlStr;
                 
-                // Gán margin tĩnh cho Live Preview tương đương CSS Print
+                // Xóa float/margin dư thừa bên trong tờ giấy ảo
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
                     c.style.float = 'none';
+                    c.style.margin = '0';
                     if (format === 'NGANG' || format === 'GIAMNGAY') {
                         c.style.margin = '0 auto';
-                    } else if (format === 'TRON') {
-                        c.style.margin = '2mm 8mm';
-                    } else if (format === 'A6') {
-                        c.style.margin = '3mm';
-                    } else if (format === 'A8') {
-                        c.style.margin = '2mm';
-                    } else {
-                        c.style.margin = '0';
                     }
                 });
                 
@@ -1809,11 +1794,6 @@
                     this.recordSnapshot();
                     layer[prop] = val;
                     this.renderCanvas(); // Đổi font/màu sắc cần render lại CSS
-                    
-                    // Nếu là sửa gạch ngang, đồng bộ sang cả Print Engine (Preview) để khi bấm In lập tức có hiệu lực
-                    if (prop === 'strikeThickness' || prop === 'strikeColor') {
-                        TemplateEngine.templates[this.currentFormat] = this.currentConfig;
-                    }
                 }
             },
 
@@ -2404,19 +2384,17 @@
                 const thickness = document.getElementById('strike-thickness-preview') ? document.getElementById('strike-thickness-preview').value : '2px';
                 const sColor = document.getElementById('strike-color-picker-preview') ? document.getElementById('strike-color-picker-preview').value : 'black';
                 
+                // CSS inline siêu mạnh
                 span.style.cssText = `text-decoration: line-through !important; text-decoration-color: ${sColor} !important; text-decoration-thickness: ${thickness} !important; -webkit-text-fill-color: inherit;`;
                 
                 try {
                     range.surroundContents(span);
+                    // Clear selection để user thấy rõ kết quả
                     window.getSelection().removeAllRanges();
                     this.lastSelectionRange = null;
                 } catch(e) {
                     document.execCommand('strikeThrough', false, null);
                 }
-                
-                // Sau khi user bôi đen gạch ngang xong, đồng bộ luôn color và thickness cho toàn bộ trang
-                this.changeStrikeColor(sColor);
-                this.changeStrikeThickness(thickness);
             },
             
             // Hàm thay đổi độ dày/màu ngay lập tức nếu đang bôi đen chữ đã gạch
