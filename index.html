@@ -92,21 +92,20 @@
                 width: 210mm !important;
                 height: 297mm !important;
                 margin: 0 !important;
-                padding: 10mm 0 !important; 
+                padding: 5mm 0 !important; /* Lề trên dưới 5mm, chừa đủ chỗ cho 8 tem */
                 page-break-after: always;
                 page-break-inside: avoid !important;
                 background: white !important;
                 box-shadow: none !important;
                 border: none !important;
-                overflow: hidden !important;
+                /* TRẢ VỀ OVERFLOW VISIBLE ĐỂ KHÔNG BAO GIỜ BỊ CHROME CHÉM CẮT GÓC DƯỚI CÙNG */
+                overflow: visible !important; 
                 box-sizing: border-box !important;
                 
-                /* SỬ DỤNG FLEXBOX LẠI NHƯNG KHÓA CỨNG FLEX-WRAP ĐỂ CHỐNG RỚT DÒNG */
-                display: flex !important;
-                flex-wrap: wrap !important;
-                align-content: flex-start !important;
-                justify-content: center !important;
+                /* DÀN TRANG FLOAT 100% CỔ ĐIỂN - CHỐNG MỌI LỖI RỚT CỘT / DỒN CỘT CỦA FLEX VÀ GRID TRÊN CHROME */
+                display: block !important;
             }
+            .print-page::after { content: ""; display: table; clear: both; }
 
             .popup-card {
                 box-shadow: none !important;
@@ -115,33 +114,29 @@
                 position: relative !important;
                 box-sizing: border-box !important;
                 overflow: hidden !important;
-                
                 display: block !important;
-                flex-shrink: 0 !important; 
+                float: left !important; /* Bắt buộc float */
             }
             
-            /* CĂN GIỮA MẪU LỚN */
-            .print-page.layout-NGANG, 
-            .print-page.layout-GIAMNGAY {
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 5mm !important;
-            }
+            /* KHOẢNG CÁCH CHO TỪNG LOẠI MẪU (ÉP CHẾT BẰNG MARGIN) */
             
-            /* A6 & A8: Tự do theo Gap */
-            .print-page.layout-A6 { gap: 5mm 4mm !important; }
-            .print-page.layout-A8 { gap: 5mm !important; }
+            /* A6 (95mm x2 = 190mm). Giấy 210mm. Dư 20. Trái phải 10mm. Giữa không cần thiết vì đã có lề. */
+            .print-page.layout-A6 { padding-left: 9mm !important; padding-top: 10mm !important; }
+            .print-page.layout-A6 .popup-card { margin-right: 2mm !important; margin-bottom: 4mm !important; }
+
+            /* TRÒN/BÁT GIÁC (70x70). Cần nhét 8 tem. 70x2=140. Dư 70mm bề ngang. Margin trái 25, phải 25, giữa 20.
+               Chiều dọc: 70x4 = 280mm. Giấy 297. Dư 17. Padding top 5mm. Margin bottom 3mm*3 = 9mm. Tổng 294mm < 297mm. HOÀN HẢO! */
+            .print-page.layout-TRON { padding-left: 25mm !important; padding-top: 5mm !important; }
+            .print-page.layout-TRON .popup-card { margin-right: 20mm !important; margin-bottom: 3mm !important; }
             
-            /* TRÒN (BÁT GIÁC 70x70): CẦN 8 TEM => ÉP KHOẢNG CÁCH DỌC THẬT NHỎ CHỐNG CẮT! */
-            /* Với padding dọc 10mm x 2 = 20mm. Giấy còn 277mm.
-               4 tem cao 70*4 = 280mm => TRÀN! Lỗi ở đây! Khổ giấy A4 297mm KHÔNG THỂ CHỨA 280mm TEM + 20mm PADDING!
-               ĐỂ NHÉT VỪA 8 TEM, PADDING CỦA TỜ GIẤY CHỈ ĐƯỢC PHÉP LÀ 3mm.
-               Gap dọc = 2mm.
-               Kiểm tra: 70*4 + 2*3(gap) = 280 + 6 = 286mm. 286mm + 3mm(padding-top) + 3mm(padding-bottom) = 292mm < 297mm. VỪA KHÍT!
-            */
-            .print-page.layout-TRON {
-                padding: 3mm 0 !important; /* Hạ padding để giành đất cho 4 hàng */
-                gap: 2mm 15mm !important; /* Khe hở dọc cực mỏng 2mm, khe hở ngang 15mm cho 2 cột xa nhau dễ cắt */
+            /* A8 (52mm x3 = 156mm). Dư 54mm. Padding trái 12mm. Margin phải 15mm. */
+            .print-page.layout-A8 { padding-left: 12mm !important; padding-top: 10mm !important; }
+            .print-page.layout-A8 .popup-card { margin-right: 15mm !important; margin-bottom: 5mm !important; }
+            
+            /* NGANG & GIẢM NGAY (1 CỘT GIỮA) */
+            .print-page.layout-NGANG, .print-page.layout-GIAMNGAY { padding-top: 10mm !important; }
+            .print-page.layout-NGANG .popup-card, .print-page.layout-GIAMNGAY .popup-card {
+                float: none !important; margin: 0 auto 5mm auto !important; 
             }
 
             .card-a8 { width: 52mm !important; height: 53mm !important; max-width: 52mm !important; min-width: 52mm !important; min-height: 53mm !important; max-height: 53mm !important;}
@@ -1073,23 +1068,18 @@
                     }
                 }
                 
-                // TẠO LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BAO GIỜ BỊ RỚT DÒNG
-                previewContainer.className = "w-full h-full grid justify-center content-start";
-                previewContainer.style.padding = "5mm 0"; // Khớp 100% với padding của máy in 
+                // SỬ DỤNG FLOAT GIỐNG NHƯ TRANG IN ẤN ĐỂ KHÔNG BỊ TRÌNH DUYỆT BÓP MÉO HAY RỚT CỘT
+                previewContainer.className = "w-full h-full block";
+                previewContainer.style.boxSizing = "border-box";
                 
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
-                    previewContainer.style.gridTemplateColumns = "120mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.padding = "10mm 0 0 0";
                 } else if (format === 'A6') {
-                    previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 4mm";
+                    previewContainer.style.padding = "10mm 0 0 9mm";
                 } else if (format === 'TRON') {
-                    previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    // 70*3=210, 210 + gap 5*2(10) + padding 5*2(10) = 230mm. Bạo đảm không tràn 297mm.
-                    previewContainer.style.gap = "5mm 15mm"; 
+                    previewContainer.style.padding = "5mm 0 0 25mm"; 
                 } else if (format === 'A8') {
-                    previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.padding = "10mm 0 0 12mm";
                 }
                 
                 // Scale thu nhỏ lại để vừa vùng chứa
@@ -1104,14 +1094,25 @@
                     htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để tắt contenteditable
                 });
                 
-                previewContainer.innerHTML = htmlStr;
+                previewContainer.innerHTML = htmlStr + '<div style="clear: both;"></div>';
                 
-                // XÓA MỌI MARGIN/FLOAT KHÔNG CẦN THIẾT Ở LIVE PREVIEW (CHỈ ĐỂ GRID LÀM VIỆC)
+                // GÁN MARGIN RIÊNG CHO TỪNG LOẠI TEM ĐỂ TRÔI NỔI (FLOAT)
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
-                    c.style.float = 'none';
-                    c.style.margin = '0';
-                    c.style.position = 'relative'; // Bắt buộc
+                    c.style.float = 'left';
+                    if (format === 'NGANG' || format === 'GIAMNGAY') {
+                        c.style.float = 'none';
+                        c.style.margin = '0 auto 5mm auto';
+                    } else if (format === 'A6') {
+                        c.style.marginRight = '2mm';
+                        c.style.marginBottom = '4mm';
+                    } else if (format === 'TRON') {
+                        c.style.marginRight = '20mm';
+                        c.style.marginBottom = '3mm';
+                    } else if (format === 'A8') {
+                        c.style.marginRight = '15mm';
+                        c.style.marginBottom = '5mm';
+                    }
                 });
                 
                 // Chạy autofit cho chữ trên màn hình Live
@@ -1373,23 +1374,18 @@
                     }
                 }
                 
-                // TẠO LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BAO GIỜ BỊ RỚT DÒNG
-                previewContainer.className = "w-full h-full grid justify-center content-start";
-                previewContainer.style.padding = "5mm 0"; // Khớp 100% với padding của máy in 
+                // SỬ DỤNG FLOAT GIỐNG NHƯ TRANG IN ẤN ĐỂ KHÔNG BỊ TRÌNH DUYỆT BÓP MÉO HAY RỚT CỘT
+                previewContainer.className = "w-full h-full block";
+                previewContainer.style.boxSizing = "border-box";
                 
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
-                    previewContainer.style.gridTemplateColumns = "120mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.padding = "10mm 0 0 0";
                 } else if (format === 'A6') {
-                    previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 4mm";
+                    previewContainer.style.padding = "10mm 0 0 9mm";
                 } else if (format === 'TRON') {
-                    previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    // 70*3=210, 210 + gap 5*2(10) + padding 5*2(10) = 230mm. Bạo đảm không tràn 297mm.
-                    previewContainer.style.gap = "5mm 15mm"; 
+                    previewContainer.style.padding = "5mm 0 0 25mm"; 
                 } else if (format === 'A8') {
-                    previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.padding = "10mm 0 0 12mm";
                 }
                 
                 // Scale thu nhỏ lại để vừa vùng chứa
@@ -1404,14 +1400,25 @@
                     htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để tắt contenteditable
                 });
                 
-                previewContainer.innerHTML = htmlStr;
+                previewContainer.innerHTML = htmlStr + '<div style="clear: both;"></div>';
                 
-                // XÓA MỌI MARGIN/FLOAT KHÔNG CẦN THIẾT Ở LIVE PREVIEW (CHỈ ĐỂ GRID LÀM VIỆC)
+                // GÁN MARGIN RIÊNG CHO TỪNG LOẠI TEM ĐỂ TRÔI NỔI (FLOAT)
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
-                    c.style.float = 'none';
-                    c.style.margin = '0';
-                    c.style.position = 'relative'; // Bắt buộc
+                    c.style.float = 'left';
+                    if (format === 'NGANG' || format === 'GIAMNGAY') {
+                        c.style.float = 'none';
+                        c.style.margin = '0 auto 5mm auto';
+                    } else if (format === 'A6') {
+                        c.style.marginRight = '2mm';
+                        c.style.marginBottom = '4mm';
+                    } else if (format === 'TRON') {
+                        c.style.marginRight = '20mm';
+                        c.style.marginBottom = '3mm';
+                    } else if (format === 'A8') {
+                        c.style.marginRight = '15mm';
+                        c.style.marginBottom = '5mm';
+                    }
                 });
                 
                 // Chạy autofit cho chữ trên màn hình Live
@@ -2312,7 +2319,7 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 6 },
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 8 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
