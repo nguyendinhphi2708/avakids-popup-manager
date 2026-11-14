@@ -608,6 +608,21 @@
                                     <label class="ava-label text-center !text-[11px]">Màu chữ</label>
                                     <input type="color" id="prop-color" class="ava-input !p-0 !h-[30px] w-full border-none cursor-pointer rounded overflow-hidden" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
                                 </div>
+                                <div class="col-span-4 mt-2 border-t border-slate-200 pt-2 pb-1 grid grid-cols-2 gap-4">
+                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                                        <label class="ava-label !mb-0 text-slate-500">Nét gạch ngang:</label>
+                                        <select id="prop-strike-thickness" class="ava-input !py-1 !px-2 !w-20 text-xs font-bold" onchange="VisualDesigner.updateActiveStyle('strikeThickness', this.value)">
+                                            <option value="2px">2px</option>
+                                            <option value="3px">3px</option>
+                                            <option value="4px">4px</option>
+                                            <option value="5px">5px</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                                        <label class="ava-label !mb-0 text-slate-500">Màu gạch:</label>
+                                        <input type="color" id="prop-strike-color" class="ava-input !p-0 !h-[26px] !w-16 border-none cursor-pointer rounded" oninput="VisualDesigner.updateActiveStyle('strikeColor', this.value)">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1062,18 +1077,19 @@
                 }
                 
                 // Đồng bộ CSS Flex/Grid cho tờ giấy A4 ảo y hệt như bản in thật
-                                // Đồng bộ CSS Float/Block cho tờ giấy A4 ảo y hệt như bản in thật (Khắc phục lỗi overlap)
-                previewContainer.className = "w-full h-full block";
-                previewContainer.style.padding = "10mm 5mm";
-                
+                previewContainer.className = "w-full h-full grid justify-center content-start";
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
-                    previewContainer.style.paddingLeft = "5mm";
+                    previewContainer.style.gridTemplateColumns = "120mm";
+                    previewContainer.style.gap = "5mm";
                 } else if (format === 'A6') {
-                    previewContainer.style.paddingLeft = "8mm";
+                    previewContainer.style.gridTemplateColumns = "95mm 95mm";
+                    previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
-                    previewContainer.style.paddingLeft = "20mm";
+                    previewContainer.style.gridTemplateColumns = "70mm 70mm";
+                    previewContainer.style.gap = "5mm 15mm";
                 } else if (format === 'A8') {
-                    previewContainer.style.paddingLeft = "10mm";
+                    previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
+                    previewContainer.style.gap = "5mm";
                 }
                 
                 // Scale thu nhỏ lại để vừa vùng chứa
@@ -1085,24 +1101,7 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); 
-                });
-                
-                previewContainer.innerHTML = htmlStr + '<div style="clear: both;"></div>';
-                
-                // Set Margin riêng y hệt CSS Print
-                const cards = previewContainer.querySelectorAll('.popup-card');
-                cards.forEach(c => {
-                    c.style.float = 'left';
-                    c.style.marginRight = '4mm';
-                    c.style.marginBottom = '4mm';
-                    if (format === 'NGANG' || format === 'GIAMNGAY') {
-                        c.style.float = 'none';
-                        c.style.margin = '6mm auto';
-                    } else if (format === 'TRON') {
-                        c.style.marginRight = '20mm';
-                        c.style.marginBottom = '12mm';
-                    }
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
                 });
                 
                 previewContainer.innerHTML = htmlStr;
@@ -1148,17 +1147,22 @@
                 try {
                     const { data, error } = await supabaseClient.from("popup_templates").select("id, config");
                     if (error) throw error;
+                    
+                    // Nếu gọi data không bị lỗi (kể cả bảng chưa có dữ liệu - length = 0), thì xem như đã kết nối Trực Tuyến!
+                    document.getElementById("supabase-status-badge").innerText = "Supabase: Trực tuyến";
+                    document.getElementById("supabase-status-badge").className = "text-[10px] font-medium text-emerald-500 mt-[-2px]";
+
                     if (data && data.length > 0) {
                         data.forEach(row => {
                             if (this.templates[row.id] && row.config) {
                                 this.templates[row.id] = row.config;
                             }
                         });
-                        document.getElementById("supabase-status-badge").innerText = "Supabase: Trực tuyến";
-                        document.getElementById("supabase-status-badge").className = "text-[10px] font-medium text-emerald-500 mt-[-2px]";
                     }
                 } catch(err) {
-                    console.warn("Chưa đồng bộ được mẫu Supabase:", err.message);
+                    console.warn("Lỗi Supabase:", err.message);
+                    document.getElementById("supabase-status-badge").innerText = "Supabase Lỗi: " + err.message;
+                    document.getElementById("supabase-status-badge").className = "text-[10px] font-medium text-rose-500 mt-[-2px]";
                 }
             },
 
@@ -1366,18 +1370,19 @@
                 }
                 
                 // Đồng bộ CSS Flex/Grid cho tờ giấy A4 ảo y hệt như bản in thật
-                                // Đồng bộ CSS Float/Block cho tờ giấy A4 ảo y hệt như bản in thật (Khắc phục lỗi overlap)
-                previewContainer.className = "w-full h-full block";
-                previewContainer.style.padding = "10mm 5mm";
-                
+                previewContainer.className = "w-full h-full grid justify-center content-start";
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
-                    previewContainer.style.paddingLeft = "5mm";
+                    previewContainer.style.gridTemplateColumns = "120mm";
+                    previewContainer.style.gap = "5mm";
                 } else if (format === 'A6') {
-                    previewContainer.style.paddingLeft = "8mm";
+                    previewContainer.style.gridTemplateColumns = "95mm 95mm";
+                    previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
-                    previewContainer.style.paddingLeft = "20mm";
+                    previewContainer.style.gridTemplateColumns = "70mm 70mm";
+                    previewContainer.style.gap = "5mm 15mm";
                 } else if (format === 'A8') {
-                    previewContainer.style.paddingLeft = "10mm";
+                    previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
+                    previewContainer.style.gap = "5mm";
                 }
                 
                 // Scale thu nhỏ lại để vừa vùng chứa
@@ -1389,24 +1394,7 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); 
-                });
-                
-                previewContainer.innerHTML = htmlStr + '<div style="clear: both;"></div>';
-                
-                // Set Margin riêng y hệt CSS Print
-                const cards = previewContainer.querySelectorAll('.popup-card');
-                cards.forEach(c => {
-                    c.style.float = 'left';
-                    c.style.marginRight = '4mm';
-                    c.style.marginBottom = '4mm';
-                    if (format === 'NGANG' || format === 'GIAMNGAY') {
-                        c.style.float = 'none';
-                        c.style.margin = '6mm auto';
-                    } else if (format === 'TRON') {
-                        c.style.marginRight = '20mm';
-                        c.style.marginBottom = '12mm';
-                    }
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
                 });
                 
                 previewContainer.innerHTML = htmlStr;
@@ -1769,6 +1757,12 @@
                 const colorInput = document.getElementById("prop-color");
                 if (colorInput) colorInput.value = layer.color || "#000000";
 
+                const sThick = document.getElementById("prop-strike-thickness");
+                if (sThick) sThick.value = layer.strikeThickness || "2px";
+                
+                const sColor = document.getElementById("prop-strike-color");
+                if (sColor) sColor.value = layer.strikeColor || "#000000";
+
                 this.updateInspectorGeometryInputs();
             },
 
@@ -1805,9 +1799,13 @@
                 if (layer) {
                     this.recordSnapshot();
                     
-                    // Cập nhật gạch ngang
-                    if (prop === 'isStrike') {
-                        layer.isStrike = val;
+                    // Phục vụ gạch ngang dropdown Admin
+                    if (prop === 'isStrike' && val === true) {
+                        layer.isStrike = true;
+                        if (!layer.strikeThickness) layer.strikeThickness = '2px';
+                        if (!layer.strikeColor) layer.strikeColor = '#000000';
+                    } else if (prop === 'isStrike' && val === false) {
+                        layer.isStrike = false;
                     } else {
                         layer[prop] = val;
                     }
@@ -1815,7 +1813,7 @@
                     this.renderCanvas(); 
                     if (prop === 'isStrike') this.updateInspectorUI();
                     
-                    if (prop === 'isStrike' || prop === 'color') {
+                    if (prop === 'strikeThickness' || prop === 'strikeColor' || prop === 'isStrike' || prop === 'color') {
                         TemplateEngine.templates[this.currentFormat] = this.currentConfig;
                         if(document.getElementById('realtime-preview-content')) {
                             TemplateEngine.updateLivePreview();
