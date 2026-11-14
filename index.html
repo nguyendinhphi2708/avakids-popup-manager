@@ -395,43 +395,6 @@
                         </h3>
                         <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
                         
-                        <!-- STICKY TOOLBAR CHO REAL-TIME PREVIEW -->
-                        <div class="bg-white border border-slate-200 rounded-xl p-2 mb-3 flex flex-wrap items-center justify-center gap-2 shadow-sm">
-                            <div class="flex items-center border-r border-slate-200 pr-2">
-                                <i data-feather="edit-2" class="w-3.5 h-3.5 text-ava-pink mr-1.5"></i>
-                                <span class="text-[11px] font-bold text-slate-700">Sửa Nhanh</span>
-                            </div>
-                            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-28 text-[11px]">
-                                <option value="">Đổi Font</option>
-                                <option value="Arial, sans-serif">Arial</option>
-                                <option value="'Roboto', sans-serif">Roboto</option>
-                                <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
-                                <option value="'Oswald', sans-serif">Oswald</option>
-                                <option value="'Anton', sans-serif">Anton</option>
-                                <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
-                                <option value="'Alfa Slab One', cursive">Alfa Slab One</option>
-                                <option value="'Passion One', cursive">Passion One</option>
-                                <option value="'Russo One', sans-serif">Russo One</option>
-                                <option value="'Paytone One', sans-serif">Paytone One</option>
-                            </select>
-                            <input type="color" class="w-6 h-6 p-0 border-none cursor-pointer rounded bg-transparent" onchange="document.execCommand('foreColor', false, this.value)" title="Đổi màu chữ">
-                            <div class="flex bg-slate-100 rounded p-0.5 gap-0.5">
-                                <button onclick="document.execCommand('bold', false, null)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 text-xs">B</button>
-                                <button onclick="document.execCommand('italic', false, null)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-serif italic text-slate-700 text-xs">I</button>
-                                <button onclick="TemplateEngine.applyBlackStrikeThrough()" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 text-xs line-through decoration-2" title="Gạch ngang Đen">S</button>
-                            </div>
-                            <select id="strike-thickness" onchange="TemplateEngine.changeStrikeThickness(this.value)" class="ava-input !py-1 !px-1 !w-16 text-[10px]" title="Độ dày gạch ngang">
-                                <option value="2px">Nét 2px</option>
-                                <option value="3px">Nét 3px</option>
-                                <option value="4px">Nét 4px</option>
-                                <option value="5px">Nét 5px</option>
-                            </select>
-                            <div class="flex bg-slate-100 rounded p-0.5 gap-0.5">
-                                <button onclick="TemplateEngine.adjustFontSize(1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 text-[10px]">A+</button>
-                                <button onclick="TemplateEngine.adjustFontSize(-1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 text-[10px]">A-</button>
-                            </div>
-                        </div>
-
                         <!-- BẢNG ĐIỀU KHIỂN TRANG -->
                         <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2 mb-3 shadow-sm">
                             <span class="text-[11px] font-bold text-slate-500 pl-2">Trang <span id="preview-current-page" class="text-ava-pink font-black">1</span> / <span id="preview-total-pages">1</span></span>
@@ -510,6 +473,7 @@
                         <button onclick="VisualDesigner.undo()" class="w-9 h-9 flex items-center justify-center ava-btn-secondary !p-0" title="Hoàn tác (Ctrl+Z)"><i data-feather="corner-up-left" class="w-4 h-4"></i></button>
                         <button onclick="VisualDesigner.redo()" class="w-9 h-9 flex items-center justify-center ava-btn-secondary !p-0 mr-2" title="Làm lại (Ctrl+Y)"><i data-feather="corner-up-right" class="w-4 h-4"></i></button>
                         
+                        <button onclick="VisualDesigner.setAsDefault()" class="ava-btn-secondary px-3 py-1.5 text-xs text-blue-500 border-blue-200 bg-blue-50 hover:bg-blue-100" title="Lưu thiết kế hiện tại làm mốc mặc định (Để dùng cho nút Khôi Phục)">Lưu Mốc Gốc</button>
                         <button onclick="VisualDesigner.resetToDefault()" class="ava-btn-secondary px-3 py-1.5 text-xs text-slate-500">Khôi phục gốc</button>
                         <button onclick="VisualDesigner.saveDraft()" class="ava-btn-secondary px-3 py-1.5 text-xs border-slate-300">Lưu nháp</button>
                         <button onclick="VisualDesigner.publishOnline()" class="ava-btn-primary px-4 py-1.5 text-xs flex items-center gap-1.5 shadow-md shadow-ava-pink/20">
@@ -633,6 +597,21 @@
                                         <option value="no">Không</option>
                                         <option value="yes">Có</option>
                                     </select>
+                                </div>
+                                <div class="col-span-4 mt-1 border-t border-slate-200 pt-2 grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="ava-label text-center !text-[11px]">Độ dày gạch ngang</label>
+                                        <select id="prop-strike-thickness" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStyle('strikeThickness', this.value)">
+                                            <option value="2px">2px</option>
+                                            <option value="3px">3px</option>
+                                            <option value="4px">4px</option>
+                                            <option value="5px">5px</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="ava-label text-center !text-[11px]">Màu gạch ngang</label>
+                                        <input type="color" id="prop-strike-color" class="ava-input !p-0 !h-[30px] w-full border-none cursor-pointer rounded overflow-hidden" oninput="VisualDesigner.updateActiveStyle('strikeColor', this.value)">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="ava-label text-center !text-[11px]">Màu sắc</label>
@@ -1710,10 +1689,11 @@
 
                     lDiv.className = `${isSelected ? 'editor-layer-selected' : ''} ${layer.isLocked ? 'editor-layer-locked' : ''} layer-uppercase`;
 
-                    const strikeClass = layer.isStrike ? 'price-strike-line' : '';
+                    const strikeThick = layer.strikeThickness || '2px';
+                    const strikeColor = layer.strikeColor || '#000000';
+                    const strikeStyle = layer.isStrike ? `text-decoration: line-through; text-decoration-thickness: ${strikeThick}; text-decoration-color: ${strikeColor};` : '';
                     
-                    // FIX P0: pointer-events: none MẶC ĐỊNH ĐỂ CHO PHÉP KÉO THẢ MƯỢT TỪ lDiv
-                    lDiv.innerHTML = `<span class="${strikeClass}" style="outline: none; display: inline-block; width: 100%; pointer-events: none;">${Utils.escapeHTML(layer.text)}</span>`;
+                    lDiv.innerHTML = `<span style="outline: none; display: inline-block; width: 100%; pointer-events: none; ${strikeStyle}">${Utils.escapeHTML(layer.text)}</span>`;
 
                     const span = lDiv.querySelector('span');
 
@@ -1850,6 +1830,12 @@
                 const colorInput = document.getElementById("prop-color");
                 if (colorInput) colorInput.value = layer.color || "#000000";
 
+                const sThick = document.getElementById("prop-strike-thickness");
+                if (sThick) sThick.value = layer.strikeThickness || "2px";
+                
+                const sColor = document.getElementById("prop-strike-color");
+                if (sColor) sColor.value = layer.strikeColor || "#000000";
+
                 this.updateInspectorGeometryInputs();
             },
 
@@ -1917,14 +1903,35 @@
                 }
             },
 
+            setAsDefault() {
+                if (confirm(`Lưu cấu hình hiện tại làm mốc mặc định mới cho mẫu ${this.currentFormat}?
+(Sau này bấm Khôi phục gốc sẽ quay về mốc này)`)) {
+                    TemplateEngine.customDefaultTemplates = TemplateEngine.customDefaultTemplates || {};
+                    TemplateEngine.customDefaultTemplates[this.currentFormat] = JSON.parse(JSON.stringify(this.currentConfig));
+                    localStorage.setItem(`custom_default_${this.currentFormat}`, JSON.stringify(this.currentConfig));
+                    Utils.showToast("Đã lưu mốc mặc định thành công!");
+                }
+            },
+            
             resetToDefault() {
-                if (confirm(`Khôi phục mẫu ${this.currentFormat} về nguyên bản ban đầu?`)) {
+                if (confirm(`Khôi phục mẫu ${this.currentFormat} về mốc nguyên bản?`)) {
                     this.recordSnapshot();
-                    this.currentConfig = JSON.parse(JSON.stringify(TemplateEngine.defaultTemplates[this.currentFormat]));
+                    let baseConfig = TemplateEngine.defaultTemplates[this.currentFormat];
+                    
+                    // Nếu user có lưu mốc riêng trong LocalStorage thì ưu tiên dùng nó
+                    const savedCustom = localStorage.getItem(`custom_default_${this.currentFormat}`);
+                    if (savedCustom) {
+                        baseConfig = JSON.parse(savedCustom);
+                    } else if (TemplateEngine.customDefaultTemplates && TemplateEngine.customDefaultTemplates[this.currentFormat]) {
+                        baseConfig = TemplateEngine.customDefaultTemplates[this.currentFormat];
+                    }
+                    
+                    this.currentConfig = JSON.parse(JSON.stringify(baseConfig));
                     this.activeLayerId = this.currentConfig.layers[0]?.id || null;
                     this.renderLayersList();
                     this.renderCanvas();
                     this.updateInspectorUI();
+                    Utils.showToast("Đã khôi phục cài đặt gốc!");
                 }
             },
 
