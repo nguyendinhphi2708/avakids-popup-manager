@@ -599,7 +599,7 @@
                                 </div>
                                 <div>
                                     <label class="ava-label text-center !text-[11px] whitespace-nowrap overflow-hidden text-ellipsis" title="Gạch ngang">Gạch ngang</label>
-                                    <select id="prop-strikethrough" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStrike(this.value === 'yes')">
+                                    <select id="prop-strikethrough" class="ava-input !px-1" onchange="VisualDesigner.updateActiveStyle('isStrike', this.value === 'yes')">
                                         <option value="no">Không</option>
                                         <option value="yes">Có</option>
                                     </select>
@@ -1136,6 +1136,10 @@
             },
             
             init() {
+                // Xóa Cache cũ để ép nhận cấu trúc 70x70 mới
+                localStorage.removeItem('draft_tpl_TRON');
+                localStorage.removeItem('custom_default_TRON');
+                
                 this.templates = JSON.parse(JSON.stringify(this.defaultTemplates));
             },
 
@@ -1232,10 +1236,14 @@
                     content = Utils.escapeHTML(content);
 
                     const finalFont = userFont || layer.fontFamily;
-                    const strikeThick = layer.strikeThickness || '2px';
-                    const strikeColor = layer.strikeColor || '#000000';
-                    const strikeStyle = layer.isStrike ? `text-decoration: line-through !important; -webkit-text-decoration-line: line-through !important; text-decoration-thickness: ${strikeThick} !important; text-decoration-color: ${strikeColor} !important;` : '';
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
+                    
+                    let strikeStyleCSS = '';
+                    if (layer.isStrike) {
+                        const sThick = layer.strikeThickness || '2px';
+                        const sColor = layer.strikeColor || '#000000';
+                        strikeStyleCSS = `text-decoration: line-through; text-decoration-thickness: ${sThick}; text-decoration-color: ${sColor};`;
+                    }
 
                     layersHTML += `
                         <div class="layer-uppercase autofit-text" style="
@@ -1257,9 +1265,7 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <!-- isPrintView: true -> Đây là chế độ hiển thị Xem trước ở User View. Cần tắt tính năng Edit và Pointer Event.
-                                              false -> Đây là chế độ Edit (Trang Admin và Lúc bật Xem trước & In). Cần bật Edit và Pointer Event auto. -->
-                            <span ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; ${isPrintView ? 'pointer-events: none;' : 'pointer-events: auto;'} ${strikeStyle}">${content}</span>
+                            <span ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; ${isPrintView ? 'pointer-events: none;' : 'pointer-events: auto;'} ${strikeStyleCSS}">${content}</span>
                         </div>
                     `;
                 });
@@ -1797,14 +1803,7 @@
                 }
             },
 
-            updateActiveStrike(isStrike) {
-                const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
-                if (layer) {
-                    this.recordSnapshot();
-                    layer.isStrike = isStrike;
-                    this.renderCanvas();
-                }
-            },
+
 
             toggleActiveLock(isLocked) {
                 const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
