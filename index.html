@@ -396,24 +396,54 @@
                         </h3>
                         <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
                         
-                        <div class="relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-100 border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[350px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.03)] overflow-hidden">
-                            <!-- Nền ảo tạo cảm giác không gian làm việc 3D -->
-                            <div class="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
+                        <!-- STICKY TOOLBAR CHO REAL-TIME PREVIEW -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-2 mb-3 flex flex-wrap items-center justify-center gap-2 shadow-sm sticky top-[72px] z-40">
+                            <div class="flex items-center border-r border-slate-200 pr-2">
+                                <i data-feather="edit-2" class="w-3.5 h-3.5 text-ava-pink mr-1.5"></i>
+                                <span class="text-[11px] font-bold text-slate-700">Sửa Nhanh</span>
+                            </div>
+                            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-28 text-[11px]">
+                                <option value="">Đổi Font</option>
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="'Roboto', sans-serif">Roboto</option>
+                                <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
+                                <option value="'Oswald', sans-serif">Oswald</option>
+                                <option value="'Anton', sans-serif">Anton (Siêu Đậm)</option>
+                                <option value="'Bebas Neue', sans-serif">Bebas Neue (Cao Đậm)</option>
+                                <option value="'Alfa Slab One', cursive">Alfa Slab One</option>
+                                <option value="'Passion One', cursive">Passion One</option>
+                                <option value="'Russo One', sans-serif">Russo One</option>
+                                <option value="'Paytone One', sans-serif">Paytone One</option>
+                            </select>
+                            <input type="color" class="w-6 h-6 p-0 border-none cursor-pointer rounded bg-transparent" onchange="document.execCommand('foreColor', false, this.value)" title="Đổi màu chữ">
+                            <div class="flex bg-slate-100 rounded p-0.5 gap-0.5">
+                                <button onclick="document.execCommand('bold', false, null)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 text-xs">B</button>
+                                <button onclick="document.execCommand('italic', false, null)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-serif italic text-slate-700 text-xs">I</button>
+                            </div>
+                            <div class="flex bg-slate-100 rounded p-0.5 gap-0.5">
+                                <button onclick="PrintEngine.adjustFontSize(1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 text-[10px]">A+</button>
+                                <button onclick="PrintEngine.adjustFontSize(-1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 text-[10px]">A-</button>
+                            </div>
+                        </div>
+
+                        <!-- KHU VỰC BÀN LÀM VIỆC 3D CHỨA TỜ GIẤY ẢO -->
+                        <div class="relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-200/60 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[400px] shadow-[inset_0_2px_15px_rgba(0,0,0,0.05)] overflow-hidden">
                             
-                            <!-- Mô phỏng tờ giấy A4 nổi bật -->
-                            <div class="relative bg-white p-2 rounded-lg shadow-xl border border-slate-200 flex items-center justify-center z-10 transition-transform hover:scale-105 duration-300 ease-out cursor-pointer" title="Minh họa cấu trúc tem">
-                                <!-- SỬ DỤNG LẠI THẺ IMG CHO TRẢI NGHIỆM SLIDESHOW MƯỢT MÀ -->
-                                <img id="static-template-preview" src="images/popup-a8.jpg" alt="Preview" class="max-w-full max-h-[300px] object-contain transition-opacity duration-300 ease-in-out" style="transition: opacity 0.25s ease-in-out;">
+                            <!-- Mô phỏng tờ giấy A4 Ảo chứa Real-time DOM -->
+                            <div class="relative bg-white p-2 rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.65); transform-origin: top center; width: 210mm; min-height: 297mm; overflow: hidden;">
+                                <div id="realtime-preview-content" class="w-full flex flex-wrap justify-center align-start gap-[2mm]" style="padding: 10mm 4mm;">
+                                    <!-- Nội dung tem sẽ được Javascript vẽ trực tiếp vào đây -->
+                                </div>
                             </div>
                             
                             <div class="absolute bottom-3 left-0 w-full flex justify-center z-10 pointer-events-none">
-                                <span class="bg-slate-800/70 backdrop-blur text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Minh họa bố cục</span>
+                                <span class="bg-ava-pink text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-md border border-white/20 flex items-center gap-1"><i data-feather="zap" class="w-3 h-3"></i> TỜ GIẤY A4 TRỰC TIẾP (LIVE)</span>
                             </div>
                         </div>
                         
-                        <div class="mt-4 bg-amber-50 border border-amber-100 rounded-lg p-3 flex gap-2 items-start">
-                            <i data-feather="info" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"></i>
-                            <p class="text-[11px] text-amber-700 leading-relaxed font-medium">Bản xem trước ở trên mô phỏng kích thước và tỷ lệ thực tế. Khi bấm nút <b class="text-ava-pink">"Xem trước & In A4"</b>, hệ thống sẽ tự động tự động dàn trang tối ưu nhất để tiết kiệm giấy.</p>
+                        <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3 flex gap-2 items-start shadow-sm">
+                            <i data-feather="mouse-pointer" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
+                            <p class="text-[11px] text-blue-800 leading-relaxed font-medium"><b>Chỉnh sửa trực tiếp:</b> Khung trên là tờ giấy A4 thật. Hãy click đúp (Double-click) vào giá tiền, tên sản phẩm để sửa chữ, đổi Font hoặc đổi màu ngay lập tức!</p>
                         </div>
                     </div>
                 </div> <!-- End col-span-4 -->
@@ -1044,42 +1074,66 @@
                     }
                 }
                 
-                const previewImages = {
-                    'A8': ['images/popup-a8.jpg', 'images/popup-a8-1.jpg'], 
-                    'A6': ['images/popup-a6.jpg', 'images/popup-a6-1.jpg'], 
-                    'NGANG': ['images/popup-ngang.jpg', 'images/popup-ngang-1.jpg'], 
-                    'GIAMNGAY': ['images/popup-giam-ngay.jpg', 'images/popup-giam-ngay-1.jpg'], 
-                    'TRON': ['images/popup-luc-giac.jpg', 'images/popup-luc-giac-1.jpg'] 
-                };
+                // Gọi hàm update Live Preview thay vì chạy Slideshow ảnh
+                this.updateLivePreview();
+            },
+            
+            updateLivePreview: function() {
+                const previewContainer = document.getElementById('realtime-preview-content');
+                const paper = document.getElementById('realtime-preview-paper');
+                if (!previewContainer || !paper) return;
                 
-                const imgEl = document.getElementById('static-template-preview');
-                if (imgEl) {
-                    // Xóa interval cũ nếu có
-                    if (window.previewSlideInterval) {
-                        clearInterval(window.previewSlideInterval);
-                    }
-                    
-                    const imgSet = previewImages[format];
-                    
-                    // Preload ảnh thứ 2 để chống giật
-                    const preloadImg = new Image();
-                    preloadImg.src = imgSet[1];
-
-                    // Reset trạng thái và gán hình 1
-                    imgEl.style.opacity = '1';
-                    imgEl.src = imgSet[0];
-                    window.currentSlideIdx = 0;
-                    
-                    // Đếm giờ Slideshow 2 ảnh
-                    window.previewSlideInterval = setInterval(() => {
-                        window.currentSlideIdx = window.currentSlideIdx === 0 ? 1 : 0;
-                        imgEl.style.opacity = '0.3';
-                        setTimeout(() => {
-                            imgEl.src = imgSet[window.currentSlideIdx];
-                            imgEl.style.opacity = '1';
-                        }, 250); 
-                    }, 2000);
+                const format = this.activeFormat;
+                const config = this.templates[format];
+                if (!config) return;
+                
+                // Set CSS cho tờ giấy A4 ảo y hệt như bản in thật
+                if (format === 'NGANG' || format === 'GIAMNGAY') {
+                    previewContainer.style.flexDirection = 'column';
+                    previewContainer.style.alignItems = 'center';
+                    previewContainer.style.justifyContent = 'flex-start';
+                } else {
+                    previewContainer.style.flexDirection = 'row';
+                    previewContainer.style.alignItems = 'flex-start';
+                    previewContainer.style.justifyContent = 'center';
                 }
+
+                // Chỉnh Scale để giấy A4 vừa với màn hình
+                if (format === 'A6' || format === 'TRON') {
+                    paper.style.transform = 'scale(0.55)';
+                } else {
+                    paper.style.transform = 'scale(0.45)';
+                }
+                
+                // Lấy sản phẩm thật từ Table hoặc dùng SP mẫu nếu bảng trống
+                let productsToRender = [];
+                if (ProductController.products.length > 0) {
+                    // Lấy tối đa 1 trang A4 để render (Tùy theo capacity)
+                    const cap = PrintEngine.capacityMap[format];
+                    const numToRender = Math.min(ProductController.products.length, cap);
+                    for (let i = 0; i < numToRender; i++) {
+                        productsToRender.push(ProductController.products[i]);
+                    }
+                } else {
+                    productsToRender.push({
+                        name: "SẢN PHẨM MẪU AVAKIDS",
+                        price: "250.000 Đ",
+                        originalPrice: format === 'GIAMNGAY' ? "GIẢM SỐC" : "450.000 Đ",
+                        promo: "MUA 2 TẶNG 1 ĐỒ CHƠI",
+                        date: "AVAKIDS"
+                    });
+                }
+                
+                let htmlStr = "";
+                productsToRender.forEach(p => {
+                    htmlStr += this.renderPopupHTML(p, config, false, format); // isPrintView = false để bật contenteditable
+                });
+                
+                previewContainer.innerHTML = htmlStr;
+                
+                // Chạy autofit cho chữ trên màn hình Live
+                setTimeout(() => { PrintEngine.autoScaleTextToFitNode(previewContainer); }, 50);
+                feather.replace();
             },
 
             // KHU VỰC 1: DÙNG CHO MÀN HÌNH IN (CÓ AUTOFIT, KHÔNG EVENT)
@@ -1999,6 +2053,8 @@
                 const totalPrints = this.products.reduce((sum, p) => sum + (p.quantity || 1), 0);
                 document.getElementById("badge-total-items").innerText = `${totalItems} SP`;
                 document.getElementById("badge-total-prints").innerText = `${totalPrints} Bản in`;
+                // Kích hoạt vẽ lại Tờ Giấy A4 khi dữ liệu thay đổi
+                TemplateEngine.updateLivePreview();
             }
         };
 
@@ -2049,6 +2105,19 @@
                 }, 50); 
             },
             
+            autoScaleTextToFitNode(node) {
+                const textContainers = node.querySelectorAll('.autofit-text');
+                textContainers.forEach(container => {
+                    const span = container.querySelector('span');
+                    if (!span) return;
+                    let currentFontSize = parseFloat(window.getComputedStyle(container).fontSize);
+                    const minFontSize = 6; 
+                    while ((span.offsetWidth > container.clientWidth || span.offsetHeight > container.clientHeight) && currentFontSize > minFontSize) {
+                        currentFontSize -= 0.5;
+                        container.style.fontSize = currentFontSize + 'px';
+                    }
+                });
+            },
             autoScaleTextToFit() {
                 const textContainers = document.querySelectorAll('#print-sheet-wrapper .autofit-text');
                 textContainers.forEach(container => {
