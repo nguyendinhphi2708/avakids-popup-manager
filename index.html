@@ -384,43 +384,6 @@
                         </h3>
                         <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
                         
-                        <!-- STICKY TOOLBAR CHO REAL-TIME PREVIEW -->
-                        <div class="bg-white border border-slate-200 rounded-xl p-2 mb-3 flex flex-wrap items-center justify-center gap-2 shadow-sm">
-                            <div class="flex items-center border-r border-slate-200 pr-2">
-                                <i data-feather="edit-2" class="w-3.5 h-3.5 text-ava-pink mr-1.5"></i>
-                                <span class="text-[11px] font-bold text-slate-700">Sửa Nhanh</span>
-                            </div>
-                            <select onchange="document.execCommand('fontName', false, this.value); this.selectedIndex=0;" class="ava-input !py-1 !px-2 !w-28 text-[11px]">
-                                <option value="">Đổi Font</option>
-                                <option value="Arial, sans-serif">Arial</option>
-                                <option value="'Roboto', sans-serif">Roboto</option>
-                                <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
-                                <option value="'Oswald', sans-serif">Oswald</option>
-                                <option value="'Anton', sans-serif">Anton</option>
-                                <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
-                                <option value="'Alfa Slab One', cursive">Alfa Slab One</option>
-                                <option value="'Passion One', cursive">Passion One</option>
-                                <option value="'Russo One', sans-serif">Russo One</option>
-                                <option value="'Paytone One', sans-serif">Paytone One</option>
-                            </select>
-                            <input type="color" class="w-6 h-6 p-0 border-none cursor-pointer rounded bg-transparent" onchange="document.execCommand('foreColor', false, this.value)" title="Đổi màu chữ">
-                            <div class="flex bg-slate-100 rounded p-0.5 gap-0.5">
-                                <button onclick="document.execCommand('bold', false, null)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 text-xs">B</button>
-                                <button onclick="document.execCommand('italic', false, null)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-serif italic text-slate-700 text-xs">I</button>
-                                <button onclick="TemplateEngine.applyBlackStrikeThrough()" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-black text-slate-700 text-xs line-through decoration-2" title="Gạch ngang Đen">S</button>
-                            </div>
-                            <select id="strike-thickness" onchange="TemplateEngine.changeStrikeThickness(this.value)" class="ava-input !py-1 !px-1 !w-16 text-[10px]" title="Độ dày gạch ngang">
-                                <option value="2px">Nét 2px</option>
-                                <option value="3px">Nét 3px</option>
-                                <option value="4px">Nét 4px</option>
-                                <option value="5px">Nét 5px</option>
-                            </select>
-                            <div class="flex bg-slate-100 rounded p-0.5 gap-0.5">
-                                <button onclick="TemplateEngine.adjustFontSize(1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 text-[10px]">A+</button>
-                                <button onclick="TemplateEngine.adjustFontSize(-1)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-white hover:shadow-sm font-bold text-slate-700 text-[10px]">A-</button>
-                            </div>
-                        </div>
-
                         <!-- BẢNG ĐIỀU KHIỂN TRANG -->
                         <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2 mb-3 shadow-sm">
                             <span class="text-[11px] font-bold text-slate-500 pl-2">Trang <span id="preview-current-page" class="text-ava-pink font-black">1</span> / <span id="preview-total-pages">1</span></span>
@@ -447,9 +410,9 @@
                             </div>
                         </div>
                         
-                        <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3 flex gap-2 items-start shadow-sm">
-                            <i data-feather="mouse-pointer" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
-                            <p class="text-[11px] text-blue-800 leading-relaxed font-medium"><b>Chỉnh sửa trực tiếp:</b> Khung trên là tờ giấy A4 thật. Hãy click trực tiếp vào giá tiền, tên sản phẩm để sửa chữ, đổi Font hoặc đổi màu ngay lập tức!</p>
+                        <div class="mt-4 bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex gap-2 items-start shadow-sm">
+                            <i data-feather="mouse-pointer" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                            <p class="text-[11px] text-emerald-800 leading-relaxed font-medium"><b>Lưu ý:</b> Khung trên mô phỏng chính xác tờ A4 thật. Nếu số lượng nhiều, vui lòng dùng nút qua trang ở trên để lướt xem. Để chỉnh độ đậm/nhạt/màu/font, vui lòng sang trang <b>Chỉnh Sửa Mẫu (Admin)</b>.</p>
                         </div>
                     </div>
                 </div> <!-- End col-span-4 -->
@@ -499,6 +462,7 @@
                         <button onclick="VisualDesigner.undo()" class="w-9 h-9 flex items-center justify-center ava-btn-secondary !p-0" title="Hoàn tác (Ctrl+Z)"><i data-feather="corner-up-left" class="w-4 h-4"></i></button>
                         <button onclick="VisualDesigner.redo()" class="w-9 h-9 flex items-center justify-center ava-btn-secondary !p-0 mr-2" title="Làm lại (Ctrl+Y)"><i data-feather="corner-up-right" class="w-4 h-4"></i></button>
                         
+                        <button onclick="VisualDesigner.setAsDefault()" class="ava-btn-secondary px-3 py-1.5 text-xs text-blue-500 border-blue-200 bg-blue-50 hover:bg-blue-100" title="Lưu thiết kế hiện tại làm mốc mặc định (Để dùng cho nút Khôi Phục)">Lưu Mốc Gốc</button>
                         <button onclick="VisualDesigner.resetToDefault()" class="ava-btn-secondary px-3 py-1.5 text-xs text-slate-500">Khôi phục gốc</button>
                         <button onclick="VisualDesigner.saveDraft()" class="ava-btn-secondary px-3 py-1.5 text-xs border-slate-300">Lưu nháp</button>
                         <button onclick="VisualDesigner.publishOnline()" class="ava-btn-primary px-4 py-1.5 text-xs flex items-center gap-1.5 shadow-md shadow-ava-pink/20">
@@ -624,8 +588,23 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="ava-label text-center !text-[11px]">Màu sắc</label>
+                                    <label class="ava-label text-center !text-[11px]">Màu chữ</label>
                                     <input type="color" id="prop-color" class="ava-input !p-0 !h-[30px] w-full border-none cursor-pointer rounded overflow-hidden" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
+                                </div>
+                                <div class="col-span-4 mt-2 border-t border-slate-200 pt-2 pb-1 grid grid-cols-2 gap-4">
+                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                                        <label class="ava-label !mb-0 text-slate-500">Nét gạch ngang:</label>
+                                        <select id="prop-strike-thickness" class="ava-input !py-1 !px-2 !w-20 text-xs font-bold" onchange="VisualDesigner.updateActiveStyle('strikeThickness', this.value)">
+                                            <option value="2px">2px</option>
+                                            <option value="3px">3px</option>
+                                            <option value="4px">4px</option>
+                                            <option value="5px">5px</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                                        <label class="ava-label !mb-0 text-slate-500">Màu gạch:</label>
+                                        <input type="color" id="prop-strike-color" class="ava-input !p-0 !h-[26px] !w-16 border-none cursor-pointer rounded" oninput="VisualDesigner.updateActiveStyle('strikeColor', this.value)">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1101,7 +1080,7 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, false, format); // isPrintView = false để bật contenteditable
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
                 });
                 
                 previewContainer.innerHTML = htmlStr;
@@ -1135,78 +1114,6 @@
                 });
             },
             
-            applyBlackStrikeThrough: function() {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) {
-                    alert("Vui lòng bôi đen dòng chữ cần gạch ngang!");
-                    return;
-                }
-                const range = selection.getRangeAt(0);
-                const span = document.createElement("span");
-                const thickness = document.getElementById('strike-thickness') ? document.getElementById('strike-thickness').value : '2px';
-                const sColor = document.getElementById('strike-color-picker') ? document.getElementById('strike-color-picker').value : 'black';
-                span.style.textDecoration = 'line-through';
-                span.style.textDecorationColor = sColor;
-                span.style.textDecorationThickness = thickness;
-                span.style.WebkitTextFillColor = 'inherit'; 
-                
-                try {
-                    range.surroundContents(span);
-                } catch(e) {
-                    document.execCommand('strikeThrough', false, null);
-                }
-            },
-            
-            changeStrikeThickness: function(val) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) return;
-                
-                let parentNode = selection.anchorNode.parentElement;
-                while (parentNode && parentNode.nodeName !== 'DIV') {
-                    if (parentNode.style.textDecoration && parentNode.style.textDecoration.includes('line-through')) {
-                        parentNode.style.textDecorationThickness = val;
-                        return;
-                    }
-                    parentNode = parentNode.parentElement;
-                }
-                alert("Hãy bôi đen chữ đã gạch ngang trước khi đổi độ dày!");
-            },
-            
-            changeStrikeColor: function(val) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) return;
-                
-                let parentNode = selection.anchorNode.parentElement;
-                while (parentNode && parentNode.nodeName !== 'DIV') {
-                    if (parentNode.style.textDecoration && parentNode.style.textDecoration.includes('line-through')) {
-                        parentNode.style.textDecorationColor = val;
-                        return;
-                    }
-                    parentNode = parentNode.parentElement;
-                }
-                alert("Hãy bôi đen chữ đã gạch ngang trước khi đổi màu gạch!");
-            },
-            
-            adjustFontSize: function(delta) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) return;
-                const range = selection.getRangeAt(0);
-                const span = document.createElement("span");
-                let parentElem = selection.anchorNode.parentElement;
-                let currentSize = 16; 
-                if(parentElem) {
-                     let sizeStr = window.getComputedStyle(parentElem).fontSize;
-                     if(sizeStr) currentSize = parseFloat(sizeStr);
-                }
-                let newSize = currentSize + (delta * 2); 
-                span.style.fontSize = newSize + "px";
-                try {
-                    range.surroundContents(span);
-                } catch(e) {
-                    let sizeCmd = delta > 0 ? 5 : 2; 
-                    document.execCommand("fontSize", false, sizeCmd);
-                }
-            },
             init() {
                 this.templates = JSON.parse(JSON.stringify(this.defaultTemplates));
             },
@@ -1304,7 +1211,9 @@
                     content = Utils.escapeHTML(content);
 
                     const finalFont = userFont || layer.fontFamily;
-                    const strikeClass = layer.isStrike ? 'price-strike-line' : '';
+                    const strikeThick = layer.strikeThickness || '2px';
+                    const strikeColor = layer.strikeColor || '#000000';
+                    const strikeStyle = layer.isStrike ? `text-decoration: line-through; text-decoration-thickness: ${strikeThick}; text-decoration-color: ${strikeColor};` : '';
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
 
                     layersHTML += `
@@ -1327,7 +1236,9 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span class="${strikeClass}" contenteditable="true" style="outline: none; cursor: text; display: inline-block; width: 100%; ${isPrintView ? 'pointer-events: auto;' : 'pointer-events: none;'}">${content}</span>
+                            <!-- isPrintView: true -> Đây là chế độ hiển thị Xem trước ở User View. Cần tắt tính năng Edit và Pointer Event.
+                                              false -> Đây là chế độ Edit (Trang Admin và Lúc bật Xem trước & In). Cần bật Edit và Pointer Event auto. -->
+                            <span ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; ${isPrintView ? 'pointer-events: none;' : 'pointer-events: auto;'} ${strikeStyle}">${content}</span>
                         </div>
                     `;
                 });
@@ -1335,7 +1246,7 @@
                 if (isOctagon) {
                     return `
                         <div class="popup-card card-tron" style="position: relative; width: ${tplConfig.widthMm}mm; height: ${tplConfig.heightMm}mm; background: transparent; border: none; overflow: hidden;">
-                            <img src="images/lucgiac.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;" alt="Nền Bát Giác">
+                            <img src="images/lucgiac.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none;" alt="Nền Bát Giác">
                             ${layersHTML}
                         </div>
                     `;
@@ -1447,7 +1358,7 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, false, format); // isPrintView = false để bật contenteditable
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
                 });
                 
                 previewContainer.innerHTML = htmlStr;
@@ -1481,78 +1392,6 @@
                 });
             },
             
-            applyBlackStrikeThrough: function() {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) {
-                    alert("Vui lòng bôi đen dòng chữ cần gạch ngang!");
-                    return;
-                }
-                const range = selection.getRangeAt(0);
-                const span = document.createElement("span");
-                const thickness = document.getElementById('strike-thickness') ? document.getElementById('strike-thickness').value : '2px';
-                const sColor = document.getElementById('strike-color-picker') ? document.getElementById('strike-color-picker').value : 'black';
-                span.style.textDecoration = 'line-through';
-                span.style.textDecorationColor = sColor;
-                span.style.textDecorationThickness = thickness;
-                span.style.WebkitTextFillColor = 'inherit'; 
-                
-                try {
-                    range.surroundContents(span);
-                } catch(e) {
-                    document.execCommand('strikeThrough', false, null);
-                }
-            },
-            
-            changeStrikeThickness: function(val) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) return;
-                
-                let parentNode = selection.anchorNode.parentElement;
-                while (parentNode && parentNode.nodeName !== 'DIV') {
-                    if (parentNode.style.textDecoration && parentNode.style.textDecoration.includes('line-through')) {
-                        parentNode.style.textDecorationThickness = val;
-                        return;
-                    }
-                    parentNode = parentNode.parentElement;
-                }
-                alert("Hãy bôi đen chữ đã gạch ngang trước khi đổi độ dày!");
-            },
-            
-            changeStrikeColor: function(val) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) return;
-                
-                let parentNode = selection.anchorNode.parentElement;
-                while (parentNode && parentNode.nodeName !== 'DIV') {
-                    if (parentNode.style.textDecoration && parentNode.style.textDecoration.includes('line-through')) {
-                        parentNode.style.textDecorationColor = val;
-                        return;
-                    }
-                    parentNode = parentNode.parentElement;
-                }
-                alert("Hãy bôi đen chữ đã gạch ngang trước khi đổi màu gạch!");
-            },
-            
-            adjustFontSize: function(delta) {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || selection.isCollapsed) return;
-                const range = selection.getRangeAt(0);
-                const span = document.createElement("span");
-                let parentElem = selection.anchorNode.parentElement;
-                let currentSize = 16; 
-                if(parentElem) {
-                     let sizeStr = window.getComputedStyle(parentElem).fontSize;
-                     if(sizeStr) currentSize = parseFloat(sizeStr);
-                }
-                let newSize = currentSize + (delta * 2); 
-                span.style.fontSize = newSize + "px";
-                try {
-                    range.surroundContents(span);
-                } catch(e) {
-                    let sizeCmd = delta > 0 ? 5 : 2; 
-                    document.execCommand("fontSize", false, sizeCmd);
-                }
-            },
             init() {
                 this.loadConfigForFormat('A8');
                 
@@ -1882,6 +1721,12 @@
                 const colorInput = document.getElementById("prop-color");
                 if (colorInput) colorInput.value = layer.color || "#000000";
 
+                const sThick = document.getElementById("prop-strike-thickness");
+                if (sThick) sThick.value = layer.strikeThickness || "2px";
+                
+                const sColor = document.getElementById("prop-strike-color");
+                if (sColor) sColor.value = layer.strikeColor || "#000000";
+
                 this.updateInspectorGeometryInputs();
             },
 
@@ -1949,14 +1794,35 @@
                 }
             },
 
+            setAsDefault() {
+                if (confirm(`Lưu cấu hình hiện tại làm mốc mặc định mới cho mẫu ${this.currentFormat}?
+(Sau này bấm Khôi phục gốc sẽ quay về mốc này)`)) {
+                    TemplateEngine.customDefaultTemplates = TemplateEngine.customDefaultTemplates || {};
+                    TemplateEngine.customDefaultTemplates[this.currentFormat] = JSON.parse(JSON.stringify(this.currentConfig));
+                    localStorage.setItem(`custom_default_${this.currentFormat}`, JSON.stringify(this.currentConfig));
+                    Utils.showToast("Đã lưu mốc mặc định thành công!");
+                }
+            },
+            
             resetToDefault() {
-                if (confirm(`Khôi phục mẫu ${this.currentFormat} về nguyên bản ban đầu?`)) {
+                if (confirm(`Khôi phục mẫu ${this.currentFormat} về mốc nguyên bản?`)) {
                     this.recordSnapshot();
-                    this.currentConfig = JSON.parse(JSON.stringify(TemplateEngine.defaultTemplates[this.currentFormat]));
+                    let baseConfig = TemplateEngine.defaultTemplates[this.currentFormat];
+                    
+                    // Nếu user có lưu mốc riêng trong LocalStorage thì ưu tiên dùng nó
+                    const savedCustom = localStorage.getItem(`custom_default_${this.currentFormat}`);
+                    if (savedCustom) {
+                        baseConfig = JSON.parse(savedCustom);
+                    } else if (TemplateEngine.customDefaultTemplates && TemplateEngine.customDefaultTemplates[this.currentFormat]) {
+                        baseConfig = TemplateEngine.customDefaultTemplates[this.currentFormat];
+                    }
+                    
+                    this.currentConfig = JSON.parse(JSON.stringify(baseConfig));
                     this.activeLayerId = this.currentConfig.layers[0]?.id || null;
                     this.renderLayersList();
                     this.renderCanvas();
                     this.updateInspectorUI();
+                    Utils.showToast("Đã khôi phục cài đặt gốc!");
                 }
             },
 
@@ -2457,6 +2323,56 @@
 
             closeModal() {
                 document.getElementById("print-preview-modal").classList.add("hidden");
+            },
+            
+            applyBlackStrikeThrough: function() {
+                const selection = window.getSelection();
+                if (!selection.rangeCount || selection.isCollapsed) {
+                    alert("Vui lòng bôi đen dòng chữ cần gạch ngang!");
+                    return;
+                }
+                const range = selection.getRangeAt(0);
+                const span = document.createElement("span");
+                const thickness = document.getElementById('strike-thickness-preview') ? document.getElementById('strike-thickness-preview').value : '2px';
+                const sColor = document.getElementById('strike-color-picker-preview') ? document.getElementById('strike-color-picker-preview').value : 'black';
+                span.style.textDecoration = 'line-through';
+                span.style.textDecorationColor = sColor;
+                span.style.textDecorationThickness = thickness;
+                span.style.WebkitTextFillColor = 'inherit'; 
+                
+                try {
+                    range.surroundContents(span);
+                } catch(e) {
+                    document.execCommand('strikeThrough', false, null);
+                }
+            },
+            
+            changeStrikeThickness: function(val) {
+                const selection = window.getSelection();
+                if (!selection.rangeCount || selection.isCollapsed) return;
+                
+                let parentNode = selection.anchorNode.parentElement;
+                while (parentNode && parentNode.nodeName !== 'DIV') {
+                    if (parentNode.style.textDecoration && parentNode.style.textDecoration.includes('line-through')) {
+                        parentNode.style.textDecorationThickness = val;
+                        return;
+                    }
+                    parentNode = parentNode.parentElement;
+                }
+            },
+            
+            changeStrikeColor: function(val) {
+                const selection = window.getSelection();
+                if (!selection.rangeCount || selection.isCollapsed) return;
+                
+                let parentNode = selection.anchorNode.parentElement;
+                while (parentNode && parentNode.nodeName !== 'DIV') {
+                    if (parentNode.style.textDecoration && parentNode.style.textDecoration.includes('line-through')) {
+                        parentNode.style.textDecorationColor = val;
+                        return;
+                    }
+                    parentNode = parentNode.parentElement;
+                }
             },
             
             adjustFontSize(delta) {
