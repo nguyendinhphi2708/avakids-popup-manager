@@ -608,21 +608,6 @@
                                     <label class="ava-label text-center !text-[11px]">Màu chữ</label>
                                     <input type="color" id="prop-color" class="ava-input !p-0 !h-[30px] w-full border-none cursor-pointer rounded overflow-hidden" oninput="VisualDesigner.updateActiveStyle('color', this.value)">
                                 </div>
-                                <div class="col-span-4 mt-2 border-t border-slate-200 pt-2 pb-1 grid grid-cols-2 gap-4">
-                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
-                                        <label class="ava-label !mb-0 text-slate-500">Nét gạch ngang:</label>
-                                        <select id="prop-strike-thickness" class="ava-input !py-1 !px-2 !w-20 text-xs font-bold" onchange="VisualDesigner.updateActiveStyle('strikeThickness', this.value)">
-                                            <option value="2px">2px</option>
-                                            <option value="3px">3px</option>
-                                            <option value="4px">4px</option>
-                                            <option value="5px">5px</option>
-                                        </select>
-                                    </div>
-                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
-                                        <label class="ava-label !mb-0 text-slate-500">Màu gạch:</label>
-                                        <input type="color" id="prop-strike-color" class="ava-input !p-0 !h-[26px] !w-16 border-none cursor-pointer rounded" oninput="VisualDesigner.updateActiveStyle('strikeColor', this.value)">
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -994,7 +979,7 @@
                         { id: "date_box", name: "Ô Ngày In", text: "AVAKIDS", x: 82, y: 50, w: 33, h: 7, fontSize: 9, fontWeight: "700", fontFamily: "Arial, sans-serif", textAlign: "center", color: "#000", hasBorder: true, isStrike: false, isLocked: false, isVisible: true }
                     ]
                 },
-                TRON: {
+                                TRON: {
                     name: "Popup Bát Giác",
                     widthMm: 70,
                     heightMm: 70,
@@ -1077,19 +1062,18 @@
                 }
                 
                 // Đồng bộ CSS Flex/Grid cho tờ giấy A4 ảo y hệt như bản in thật
-                previewContainer.className = "w-full h-full grid justify-center content-start";
+                                // Đồng bộ CSS Float/Block cho tờ giấy A4 ảo y hệt như bản in thật (Khắc phục lỗi overlap)
+                previewContainer.className = "w-full h-full block";
+                previewContainer.style.padding = "10mm 5mm";
+                
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
-                    previewContainer.style.gridTemplateColumns = "120mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.paddingLeft = "5mm";
                 } else if (format === 'A6') {
-                    previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 4mm";
+                    previewContainer.style.paddingLeft = "8mm";
                 } else if (format === 'TRON') {
-                    previewContainer.style.gridTemplateColumns = "80mm 80mm";
-                    previewContainer.style.gap = "5mm 8mm";
+                    previewContainer.style.paddingLeft = "20mm";
                 } else if (format === 'A8') {
-                    previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.paddingLeft = "10mm";
                 }
                 
                 // Scale thu nhỏ lại để vừa vùng chứa
@@ -1101,7 +1085,24 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
+                    htmlStr += this.renderPopupHTML(p, config, true, format); 
+                });
+                
+                previewContainer.innerHTML = htmlStr + '<div style="clear: both;"></div>';
+                
+                // Set Margin riêng y hệt CSS Print
+                const cards = previewContainer.querySelectorAll('.popup-card');
+                cards.forEach(c => {
+                    c.style.float = 'left';
+                    c.style.marginRight = '4mm';
+                    c.style.marginBottom = '4mm';
+                    if (format === 'NGANG' || format === 'GIAMNGAY') {
+                        c.style.float = 'none';
+                        c.style.margin = '6mm auto';
+                    } else if (format === 'TRON') {
+                        c.style.marginRight = '20mm';
+                        c.style.marginBottom = '12mm';
+                    }
                 });
                 
                 previewContainer.innerHTML = htmlStr;
@@ -1136,10 +1137,9 @@
             },
             
             init() {
-                // Xóa Cache cũ để ép nhận cấu trúc 70x70 mới
+                // XÓA CACHE ĐỂ LẤY BẢN 70X70 MỚI NHẤT
                 localStorage.removeItem('draft_tpl_TRON');
                 localStorage.removeItem('custom_default_TRON');
-                
                 this.templates = JSON.parse(JSON.stringify(this.defaultTemplates));
             },
 
@@ -1236,14 +1236,9 @@
                     content = Utils.escapeHTML(content);
 
                     const finalFont = userFont || layer.fontFamily;
+                    // Render logic mượt mà, tránh lỗi cú pháp text-decoration của Chrome
+                    // Các thẻ sẽ được apply trực tiếp qua script bên dưới để chèn inline style an toàn.
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
-                    
-                    let strikeStyleCSS = '';
-                    if (layer.isStrike) {
-                        const sThick = layer.strikeThickness || '2px';
-                        const sColor = layer.strikeColor || '#000000';
-                        strikeStyleCSS = `text-decoration: line-through; text-decoration-thickness: ${sThick}; text-decoration-color: ${sColor};`;
-                    }
 
                     layersHTML += `
                         <div class="layer-uppercase autofit-text" style="
@@ -1265,7 +1260,8 @@
                             word-break: break-word;
                             ${borderStyle}
                         ">
-                            <span ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; ${isPrintView ? 'pointer-events: none;' : 'pointer-events: auto;'} ${strikeStyleCSS}">${content}</span>
+                            <span ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; pointer-events: ${isPrintView ? 'none' : 'auto'}; 
+                            ${layer.isStrike ? `text-decoration: line-through; text-decoration-thickness: ${layer.strikeThickness || '2px'}; text-decoration-color: ${layer.strikeColor || '#000000'};` : ''}">${content}</span>
                         </div>
                     `;
                 });
@@ -1370,19 +1366,18 @@
                 }
                 
                 // Đồng bộ CSS Flex/Grid cho tờ giấy A4 ảo y hệt như bản in thật
-                previewContainer.className = "w-full h-full grid justify-center content-start";
+                                // Đồng bộ CSS Float/Block cho tờ giấy A4 ảo y hệt như bản in thật (Khắc phục lỗi overlap)
+                previewContainer.className = "w-full h-full block";
+                previewContainer.style.padding = "10mm 5mm";
+                
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
-                    previewContainer.style.gridTemplateColumns = "120mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.paddingLeft = "5mm";
                 } else if (format === 'A6') {
-                    previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 4mm";
+                    previewContainer.style.paddingLeft = "8mm";
                 } else if (format === 'TRON') {
-                    previewContainer.style.gridTemplateColumns = "80mm 80mm";
-                    previewContainer.style.gap = "5mm 8mm";
+                    previewContainer.style.paddingLeft = "20mm";
                 } else if (format === 'A8') {
-                    previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
-                    previewContainer.style.gap = "5mm";
+                    previewContainer.style.paddingLeft = "10mm";
                 }
                 
                 // Scale thu nhỏ lại để vừa vùng chứa
@@ -1394,7 +1389,24 @@
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để TAT contenteditable trong UserView
+                    htmlStr += this.renderPopupHTML(p, config, true, format); 
+                });
+                
+                previewContainer.innerHTML = htmlStr + '<div style="clear: both;"></div>';
+                
+                // Set Margin riêng y hệt CSS Print
+                const cards = previewContainer.querySelectorAll('.popup-card');
+                cards.forEach(c => {
+                    c.style.float = 'left';
+                    c.style.marginRight = '4mm';
+                    c.style.marginBottom = '4mm';
+                    if (format === 'NGANG' || format === 'GIAMNGAY') {
+                        c.style.float = 'none';
+                        c.style.margin = '6mm auto';
+                    } else if (format === 'TRON') {
+                        c.style.marginRight = '20mm';
+                        c.style.marginBottom = '12mm';
+                    }
                 });
                 
                 previewContainer.innerHTML = htmlStr;
@@ -1757,12 +1769,6 @@
                 const colorInput = document.getElementById("prop-color");
                 if (colorInput) colorInput.value = layer.color || "#000000";
 
-                const sThick = document.getElementById("prop-strike-thickness");
-                if (sThick) sThick.value = layer.strikeThickness || "2px";
-                
-                const sColor = document.getElementById("prop-strike-color");
-                if (sColor) sColor.value = layer.strikeColor || "#000000";
-
                 this.updateInspectorGeometryInputs();
             },
 
@@ -1798,8 +1804,23 @@
                 const layer = this.currentConfig.layers.find(l => l.id === this.activeLayerId);
                 if (layer) {
                     this.recordSnapshot();
-                    layer[prop] = val;
-                    this.renderCanvas(); // Đổi font/màu sắc cần render lại CSS
+                    
+                    // Cập nhật gạch ngang
+                    if (prop === 'isStrike') {
+                        layer.isStrike = val;
+                    } else {
+                        layer[prop] = val;
+                    }
+                    
+                    this.renderCanvas(); 
+                    if (prop === 'isStrike') this.updateInspectorUI();
+                    
+                    if (prop === 'isStrike' || prop === 'color') {
+                        TemplateEngine.templates[this.currentFormat] = this.currentConfig;
+                        if(document.getElementById('realtime-preview-content')) {
+                            TemplateEngine.updateLivePreview();
+                        }
+                    }
                 }
             },
 
