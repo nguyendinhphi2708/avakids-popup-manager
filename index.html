@@ -114,13 +114,20 @@
                 gap: 5mm !important;
             }
 
-            /* SỬ DỤNG GRID ĐỂ CHỐNG CẮT TRANG KHI IN */
+            /* A6: 4 popup 105x105mm/page, ghép sát tuyệt đối không margin/gap/padding */
             .print-page.layout-A6 {
                 display: grid !important;
                 grid-template-columns: 105mm 105mm !important;
-                justify-content: center !important;
+                grid-auto-rows: 105mm !important;
+                grid-auto-flow: row !important;
+                justify-content: start !important;
                 align-content: start !important;
-                gap: 5mm 0mm !important;
+                column-gap: 0 !important;
+                row-gap: 0 !important;
+                gap: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
             }
             .print-page.layout-TRON {
                 display: grid !important;
@@ -150,9 +157,17 @@
                 overflow: hidden !important;
             }
             
-            /* GÁN MARGIN TĨNH ĐỂ TẠO KHOẢNG HỞ TUYỆT ĐỐI */
+            /* A6: không cộng thêm bất kỳ lề nào vào popup 105x105mm */
             .print-page.layout-A6 .popup-card {
-                margin: 2.5mm !important; 
+                width: 105mm !important;
+                height: 105mm !important;
+                min-width: 105mm !important;
+                max-width: 105mm !important;
+                min-height: 105mm !important;
+                max-height: 105mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
             }
             
             .print-page.layout-TRON .popup-card {
