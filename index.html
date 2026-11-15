@@ -120,7 +120,7 @@
                 grid-template-columns: 95mm 95mm !important;
                 justify-content: center !important;
                 align-content: start !important;
-                gap: 5mm 4mm !important;
+                gap: 5mm 2mm !important; 
             }
             .print-page.layout-TRON {
                 display: grid !important;
@@ -1083,7 +1083,7 @@
                     previewContainer.style.gap = "5mm";
                 } else if (format === 'A6') {
                     previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 4mm";
+                    previewContainer.style.gap = "5mm 2mm"; /* Ép gap ngang mỏng lại 2mm để đảm bảo 190+2=192 lọt giữa 210 an toàn tuyệt đối */
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
                     previewContainer.style.gap = "5mm 5mm"; /* Kéo sát lại để không bị tràn viền A4 ảo */
@@ -1300,6 +1300,8 @@
                         background: #fff;
                         border: ${tplConfig.borderWidth}px solid #000;
                         margin: 0;
+                        overflow: hidden !important; 
+                        flex-shrink: 0 !important;
                     ">
                         ${layersHTML}
                     </div>
@@ -1387,7 +1389,7 @@
                     previewContainer.style.gap = "5mm";
                 } else if (format === 'A6') {
                     previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 4mm";
+                    previewContainer.style.gap = "5mm 2mm"; /* Ép gap ngang mỏng lại 2mm để đảm bảo 190+2=192 lọt giữa 210 an toàn tuyệt đối */
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
                     previewContainer.style.gap = "5mm 5mm"; /* Kéo sát lại để không bị tràn viền A4 ảo */
