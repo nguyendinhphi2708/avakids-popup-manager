@@ -166,7 +166,14 @@
             .card-a8 { width: 52mm !important; height: 53mm !important; max-width: 52mm !important; min-width: 52mm !important; min-height: 53mm !important; max-height: 53mm !important;}
             .card-a6 { width: 95mm !important; height: 105mm !important; max-width: 95mm !important; min-width: 95mm !important; min-height: 105mm !important; max-height: 105mm !important;}
             .card-ngang, .card-giamngay { width: 120mm !important; height: 60mm !important; max-width: 120mm !important; min-width: 120mm !important; min-height: 60mm !important; max-height: 60mm !important;}
-            .card-tron { width: 70mm !important; height: 70mm !important; max-width: 70mm !important; min-width: 70mm !important; min-height: 70mm !important; max-height: 70mm !important;}
+            .card-tron { 
+                width: 70mm !important; 
+                height: 62mm !important;        /* <--- Giảm chiều cao từ 70mm xuống 62mm */
+                max-width: 70mm !important; 
+                min-width: 70mm !important; 
+                min-height: 62mm !important;    /* <--- Giảm min-height xuống 62mm */
+                max-height: 62mm !important;    /* <--- Giảm max-height xuống 62mm */
+            }
             
             #print-sheet-wrapper {
                 overflow: visible !important;
