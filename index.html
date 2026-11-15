@@ -120,7 +120,7 @@
                 grid-template-columns: 95mm 95mm !important;
                 justify-content: center !important;
                 align-content: start !important;
-                gap: 5mm 2mm !important; 
+                gap: 5mm 4mm !important;
             }
             .print-page.layout-TRON {
                 display: grid !important;
@@ -1083,7 +1083,7 @@
                     previewContainer.style.gap = "5mm";
                 } else if (format === 'A6') {
                     previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 2mm"; /* Ép gap ngang mỏng lại 2mm để đảm bảo 190+2=192 lọt giữa 210 an toàn tuyệt đối */
+                    previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
                     previewContainer.style.gap = "5mm 5mm"; /* Kéo sát lại để không bị tràn viền A4 ảo */
@@ -1158,12 +1158,13 @@
                     if (data && data.length > 0) {
                         data.forEach(row => {
                             if (this.templates[row.id] && row.config) {
-                                // CHẶN MẪU BÁT GIÁC LỖI TỪ ĐÁM MÂY ĐỂ TRẢ LẠI 70x70 CHUẨN
-                                if (row.id === 'TRON') {
-                                    console.log('Skipping buggy TRON from cloud');
-                                } else {
-                                    this.templates[row.id] = row.config;
+                                let cnf = row.config;
+                                // Rào chắn vĩnh viễn bảo vệ TRON không bao giờ to hơn 70mm dù trên cloud có sai
+                                if (row.id === 'TRON' && (cnf.widthMm > 70 || cnf.heightMm > 70)) {
+                                    cnf.widthMm = 70;
+                                    cnf.heightMm = 70;
                                 }
+                                this.templates[row.id] = cnf;
                             }
                         });
                     }
@@ -1281,7 +1282,7 @@
                 if (isOctagon) {
                     const fixSize = 70; // Ép cứng kích thước 70 để không bị dữ liệu cũ (95) từ Supabase làm loạn
                     return `
-                        <div class="popup-card card-tron" style="position: relative; width: ${fixSize}mm !important; height: ${fixSize}mm !important; min-width: ${fixSize}mm !important; max-width: ${fixSize}mm !important; min-height: ${fixSize}mm !important; max-height: ${fixSize}mm !important; background: transparent; border: none; overflow: hidden; margin: 0; flex-shrink: 0 !important;">
+                        <div class="popup-card card-tron" style="position: relative; width: ${fixSize}mm !important; height: ${fixSize}mm !important; min-width: ${fixSize}mm !important; max-width: ${fixSize}mm !important; min-height: ${fixSize}mm !important; max-height: ${fixSize}mm !important; background: transparent; border: none; overflow: hidden; margin: 0;">
                             <img src="images/lucgiac.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;" alt="Nền Bát Giác">
                             ${layersHTML}
                         </div>
@@ -1300,8 +1301,6 @@
                         background: #fff;
                         border: ${tplConfig.borderWidth}px solid #000;
                         margin: 0;
-                        overflow: hidden !important; 
-                        flex-shrink: 0 !important;
                     ">
                         ${layersHTML}
                     </div>
@@ -1389,7 +1388,7 @@
                     previewContainer.style.gap = "5mm";
                 } else if (format === 'A6') {
                     previewContainer.style.gridTemplateColumns = "95mm 95mm";
-                    previewContainer.style.gap = "5mm 2mm"; /* Ép gap ngang mỏng lại 2mm để đảm bảo 190+2=192 lọt giữa 210 an toàn tuyệt đối */
+                    previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
                     previewContainer.style.gap = "5mm 5mm"; /* Kéo sát lại để không bị tràn viền A4 ảo */
