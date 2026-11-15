@@ -412,7 +412,7 @@
                             
                             <div class="w-full h-full overflow-auto flex justify-center custom-scrollbar pt-4 pb-4">
                                 <!-- Mô phỏng tờ giấy A4 Ảo chứa Real-time DOM. -->
-                                <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.65); transform-origin: top center; width: 210mm; min-width: 210mm; height: 297mm; min-height: 297mm; box-sizing: border-box; overflow: hidden; flex-shrink: 0;">
+                                <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.65); transform-origin: top center; width: 210mm; height: 297mm; box-sizing: border-box; overflow: hidden;">
                                     <div id="realtime-preview-content" class="w-full h-full" style="padding: 5mm 0; box-sizing: border-box;">
                                         <!-- Nội dung tem sẽ được Javascript vẽ trực tiếp vào đây -->
                                     </div>
@@ -1073,12 +1073,9 @@
                     }
                 }
                 
-                // ÉP CỨNG LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BỊ TRÌNH DUYỆT BÓP MÉO
-                previewContainer.className = "w-full h-full";
-                previewContainer.style.display = "grid";
-                previewContainer.style.justifyContent = "center";
-                previewContainer.style.alignContent = "start";
-                previewContainer.style.padding = "5mm 0"; 
+                // TẠO LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BAO GIỜ BỊ RỚT DÒNG
+                previewContainer.className = "w-full h-full grid justify-center content-start";
+                previewContainer.style.padding = "5mm 0"; // Khớp 100% với padding của máy in 
                 
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
                     previewContainer.style.gridTemplateColumns = "120mm";
@@ -1088,36 +1085,33 @@
                     previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    previewContainer.style.gap = "5mm 15mm"; 
+                    // Tinh chỉnh gap siêu an toàn để không bao giờ bị tràn biên phải trên bất kỳ trình duyệt nào
+                    previewContainer.style.gap = "5mm 5mm"; 
                 } else if (format === 'A8') {
                     previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
                     previewContainer.style.gap = "5mm";
                 }
                 
-                // Đảm bảo không bị đè CSS Grid
-                previewContainer.style.flexWrap = "nowrap"; 
-                
                 // Scale thu nhỏ lại để vừa vùng chứa
                 if (window.innerWidth < 768) {
-                    paper.style.transform = 'scale(0.35)'; 
+                    paper.style.transform = 'scale(0.35)'; // Mobile
                 } else {
-                    paper.style.transform = 'scale(0.55)'; 
+                    paper.style.transform = 'scale(0.55)'; // Desktop
                 }
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); 
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để tắt contenteditable
                 });
                 
                 previewContainer.innerHTML = htmlStr;
                 
-                // BẮT BUỘC TEM PHẢI TÔN TRỌNG GRID VÀ KHÔNG ĐƯỢC BỊ CO BÓP (flex-shrink: 0)
+                // XÓA MỌI MARGIN/FLOAT KHÔNG CẦN THIẾT Ở LIVE PREVIEW (CHỈ ĐỂ GRID LÀM VIỆC)
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
                     c.style.float = 'none';
                     c.style.margin = '0';
-                    c.style.position = 'relative'; 
-                    c.style.flexShrink = '0'; 
+                    c.style.position = 'relative'; // Bắt buộc
                 });
                 
                 // Chạy autofit cho chữ trên màn hình Live
@@ -1379,12 +1373,9 @@
                     }
                 }
                 
-                // ÉP CỨNG LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BỊ TRÌNH DUYỆT BÓP MÉO
-                previewContainer.className = "w-full h-full";
-                previewContainer.style.display = "grid";
-                previewContainer.style.justifyContent = "center";
-                previewContainer.style.alignContent = "start";
-                previewContainer.style.padding = "5mm 0"; 
+                // TẠO LƯỚI GRID ĐỘC LẬP CHO LIVE PREVIEW ĐỂ KHÔNG BAO GIỜ BỊ RỚT DÒNG
+                previewContainer.className = "w-full h-full grid justify-center content-start";
+                previewContainer.style.padding = "5mm 0"; // Khớp 100% với padding của máy in 
                 
                 if (format === 'NGANG' || format === 'GIAMNGAY') {
                     previewContainer.style.gridTemplateColumns = "120mm";
@@ -1394,36 +1385,33 @@
                     previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    previewContainer.style.gap = "5mm 15mm"; 
+                    // Tinh chỉnh gap siêu an toàn để không bao giờ bị tràn biên phải trên bất kỳ trình duyệt nào
+                    previewContainer.style.gap = "5mm 5mm"; 
                 } else if (format === 'A8') {
                     previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
                     previewContainer.style.gap = "5mm";
                 }
                 
-                // Đảm bảo không bị đè CSS Grid
-                previewContainer.style.flexWrap = "nowrap"; 
-                
                 // Scale thu nhỏ lại để vừa vùng chứa
                 if (window.innerWidth < 768) {
-                    paper.style.transform = 'scale(0.35)'; 
+                    paper.style.transform = 'scale(0.35)'; // Mobile
                 } else {
-                    paper.style.transform = 'scale(0.55)'; 
+                    paper.style.transform = 'scale(0.55)'; // Desktop
                 }
                 
                 let htmlStr = "";
                 productsToRender.forEach(p => {
-                    htmlStr += this.renderPopupHTML(p, config, true, format); 
+                    htmlStr += this.renderPopupHTML(p, config, true, format); // isPrintView = true để tắt contenteditable
                 });
                 
                 previewContainer.innerHTML = htmlStr;
                 
-                // BẮT BUỘC TEM PHẢI TÔN TRỌNG GRID VÀ KHÔNG ĐƯỢC BỊ CO BÓP (flex-shrink: 0)
+                // XÓA MỌI MARGIN/FLOAT KHÔNG CẦN THIẾT Ở LIVE PREVIEW (CHỈ ĐỂ GRID LÀM VIỆC)
                 const cards = previewContainer.querySelectorAll('.popup-card');
                 cards.forEach(c => {
                     c.style.float = 'none';
                     c.style.margin = '0';
-                    c.style.position = 'relative'; 
-                    c.style.flexShrink = '0'; 
+                    c.style.position = 'relative'; // Bắt buộc
                 });
                 
                 // Chạy autofit cho chữ trên màn hình Live
