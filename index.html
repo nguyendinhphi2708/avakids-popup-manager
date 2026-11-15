@@ -88,24 +88,53 @@
                 height: 100% !important;
             }
             
-                        .print-page {
+            .print-page {
                 width: 210mm !important;
                 height: 297mm !important;
                 margin: 0 !important;
-                padding: 10mm 0 !important; 
+                padding: 5mm 0 !important; /* Hạ lề trên xuống 5mm để 8 tem không bị ngộp */
                 page-break-after: always;
                 page-break-inside: avoid !important;
                 background: white !important;
                 box-shadow: none !important;
                 border: none !important;
-                overflow: hidden !important;
+                overflow: visible !important; /* Chống Chrome dùng kéo cắt ngang tem ở mép dưới */
                 box-sizing: border-box !important;
-                
-                /* SỬ DỤNG FLEXBOX LẠI NHƯNG KHÓA CỨNG FLEX-WRAP ĐỂ CHỐNG RỚT DÒNG */
-                display: flex !important;
-                flex-wrap: wrap !important;
-                align-content: flex-start !important;
+            }
+
+            /* SỬ DỤNG CSS GRID CHÍNH XÁC ĐỂ ÉP ĐÚNG SỐ CỘT (CHỐNG RỚT DÒNG CỦA CHROME) */
+            
+            /* NGANG & GIẢM NGAY (120mm): 1 CỘT Ở GIỮA */
+            .print-page.layout-NGANG, 
+            .print-page.layout-GIAMNGAY {
+                display: grid !important;
+                grid-template-columns: 120mm !important;
                 justify-content: center !important;
+                align-content: start !important;
+                gap: 5mm !important;
+            }
+
+            /* SỬ DỤNG GRID ĐỂ CHỐNG CẮT TRANG KHI IN */
+            .print-page.layout-A6 {
+                display: grid !important;
+                grid-template-columns: 95mm 95mm !important;
+                justify-content: center !important;
+                align-content: start !important;
+                gap: 5mm 4mm !important;
+            }
+            .print-page.layout-TRON {
+                display: grid !important;
+                grid-template-columns: 70mm 70mm !important;
+                justify-content: center !important;
+                align-content: start !important;
+                gap: 5mm 15mm !important; /* Dọc 5mm, ngang 15mm, tổng chiều cao 3 hàng: 70*3+5*2=220mm, lọt thỏm trong 297mm của A4 */
+            }
+            .print-page.layout-A8 {
+                display: grid !important;
+                grid-template-columns: 52mm 52mm 52mm !important;
+                justify-content: center !important;
+                align-content: start !important;
+                gap: 5mm !important;
             }
 
             .popup-card {
@@ -114,34 +143,21 @@
                 page-break-inside: avoid !important;
                 position: relative !important;
                 box-sizing: border-box !important;
+                flex-shrink: 0 !important;
                 overflow: hidden !important;
-                
-                display: block !important;
-                flex-shrink: 0 !important; 
             }
             
-            /* CĂN GIỮA MẪU LỚN */
-            .print-page.layout-NGANG, 
-            .print-page.layout-GIAMNGAY {
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 5mm !important;
+            /* GÁN MARGIN TĨNH ĐỂ TẠO KHOẢNG HỞ TUYỆT ĐỐI */
+            .print-page.layout-A6 .popup-card {
+                margin: 2.5mm !important; 
             }
             
-            /* A6 & A8: Tự do theo Gap */
-            .print-page.layout-A6 { gap: 5mm 4mm !important; }
-            .print-page.layout-A8 { gap: 5mm !important; }
+            .print-page.layout-TRON .popup-card {
+                margin: 4mm !important; /* Dư sức cách xa nhau */
+            }
             
-            /* TRÒN (BÁT GIÁC 70x70): CẦN 8 TEM => ÉP KHOẢNG CÁCH DỌC THẬT NHỎ CHỐNG CẮT! */
-            /* Với padding dọc 10mm x 2 = 20mm. Giấy còn 277mm.
-               4 tem cao 70*4 = 280mm => TRÀN! Lỗi ở đây! Khổ giấy A4 297mm KHÔNG THỂ CHỨA 280mm TEM + 20mm PADDING!
-               ĐỂ NHÉT VỪA 8 TEM, PADDING CỦA TỜ GIẤY CHỈ ĐƯỢC PHÉP LÀ 3mm.
-               Gap dọc = 2mm.
-               Kiểm tra: 70*4 + 2*3(gap) = 280 + 6 = 286mm. 286mm + 3mm(padding-top) + 3mm(padding-bottom) = 292mm < 297mm. VỪA KHÍT!
-            */
-            .print-page.layout-TRON {
-                padding: 3mm 0 !important; /* Hạ padding để giành đất cho 4 hàng */
-                gap: 2mm 15mm !important; /* Khe hở dọc cực mỏng 2mm, khe hở ngang 15mm cho 2 cột xa nhau dễ cắt */
+            .print-page.layout-A8 .popup-card {
+                margin: 2.5mm !important;
             }
 
             .card-a8 { width: 52mm !important; height: 53mm !important; max-width: 52mm !important; min-width: 52mm !important; min-height: 53mm !important; max-height: 53mm !important;}
@@ -1085,8 +1101,8 @@
                     previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    // Tinh chỉnh gap siêu an toàn để không bao giờ bị tràn biên phải trên bất kỳ trình duyệt nào
-                    previewContainer.style.gap = "5mm 5mm"; 
+                    // 70*3=210, 210 + gap 5*2(10) + padding 5*2(10) = 230mm. Bạo đảm không tràn 297mm.
+                    previewContainer.style.gap = "5mm 15mm"; 
                 } else if (format === 'A8') {
                     previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
                     previewContainer.style.gap = "5mm";
@@ -1158,12 +1174,7 @@
                     if (data && data.length > 0) {
                         data.forEach(row => {
                             if (this.templates[row.id] && row.config) {
-                                // TẠM THỜI CHẶN LOAD MẪU 'TRON' TỪ SUPABASE ĐỂ TRÁNH LẤY NHẦM BẢN 95x95 LỖI TỪ ĐỜI TRƯỚC
-                                if (row.id === 'TRON') {
-                                    console.log("Bỏ qua đồng bộ TRON từ Cloud để ưu tiên bản fix 70x70 Local");
-                                } else {
-                                    this.templates[row.id] = row.config;
-                                }
+                                this.templates[row.id] = row.config;
                             }
                         });
                     }
@@ -1299,7 +1310,6 @@
                         background: #fff;
                         border: ${tplConfig.borderWidth}px solid #000;
                         margin: 0;
-                        flex-shrink: 0 !important;
                     ">
                         ${layersHTML}
                     </div>
@@ -1390,8 +1400,8 @@
                     previewContainer.style.gap = "5mm 4mm";
                 } else if (format === 'TRON') {
                     previewContainer.style.gridTemplateColumns = "70mm 70mm";
-                    // Tinh chỉnh gap siêu an toàn để không bao giờ bị tràn biên phải trên bất kỳ trình duyệt nào
-                    previewContainer.style.gap = "5mm 5mm"; 
+                    // 70*3=210, 210 + gap 5*2(10) + padding 5*2(10) = 230mm. Bạo đảm không tràn 297mm.
+                    previewContainer.style.gap = "5mm 15mm"; 
                 } else if (format === 'A8') {
                     previewContainer.style.gridTemplateColumns = "52mm 52mm 52mm";
                     previewContainer.style.gap = "5mm";
@@ -1766,12 +1776,6 @@
                 
                 const colorInput = document.getElementById("prop-color");
                 if (colorInput) colorInput.value = layer.color || "#000000";
-
-                const sThick = document.getElementById("prop-strike-thickness");
-                if (sThick) sThick.value = layer.strikeThickness || "2px";
-                
-                const sColor = document.getElementById("prop-strike-color");
-                if (sColor) sColor.value = layer.strikeColor || "#000000";
 
                 this.updateInspectorGeometryInputs();
             },
@@ -2317,7 +2321,7 @@
         };
 
         const PrintEngine = {
-            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 6 },
+            capacityMap: { 'A8': 15, 'A6': 4, 'NGANG': 4, 'GIAMNGAY': 4, 'TRON': 8 },
 
             openPreviewModal() {
                 if (ProductController.products.length === 0) {
