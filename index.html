@@ -1158,7 +1158,12 @@
                     if (data && data.length > 0) {
                         data.forEach(row => {
                             if (this.templates[row.id] && row.config) {
-                                this.templates[row.id] = row.config;
+                                // TẠM THỜI CHẶN LOAD MẪU 'TRON' TỪ SUPABASE ĐỂ TRÁNH LẤY NHẦM BẢN 95x95 LỖI TỪ ĐỜI TRƯỚC
+                                if (row.id === 'TRON') {
+                                    console.log("Bỏ qua đồng bộ TRON từ Cloud để ưu tiên bản fix 70x70 Local");
+                                } else {
+                                    this.templates[row.id] = row.config;
+                                }
                             }
                         });
                     }
