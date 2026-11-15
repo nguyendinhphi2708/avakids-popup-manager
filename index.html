@@ -127,7 +127,10 @@
                 grid-template-columns: 70mm 70mm !important;
                 justify-content: center !important;
                 align-content: start !important;
-                gap: 1mm 5mm !important; /* Dọc 5mm, ngang 15mm, tổng chiều cao 3 hàng: 70*3+5*2=220mm, lọt thỏm trong 297mm của A4 */
+                gap: 2mm 15mm !important; /* Khoảng hở dọc 2mm giữa các hàng, ngang 15mm giữa 2 cột */
+                padding-top: 3mm !important;  /* Lề trên riêng cho mẫu Bát Giác */
+                padding-bottom: 3mm !important; /* Lề dưới riêng cho mẫu Bát Giác */
+            
             }
             .print-page.layout-A8 {
                 display: grid !important;
