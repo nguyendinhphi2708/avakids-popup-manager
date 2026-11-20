@@ -245,13 +245,15 @@
         .segmented-btn { flex: 1; text-align: center; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; color: #9299A3; transition: all 0.2s ease; cursor: pointer; border: none; background: transparent; }
         .segmented-btn.active { background-color: #F05A9D; color: white; box-shadow: 0 2px 4px rgba(240, 90, 157, 0.2); }
         .segmented-btn:not(.active):hover { color: #F05A9D; background-color: rgba(240, 90, 157, 0.05); }
-        .ava-table { width: 100%; text-align: left; border-collapse: collapse; }
-        .ava-table th { background-color: #F8F9FA; color: #9299A3; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; border-bottom: 1px solid #E9E9EF; }
-        .ava-table td { padding: 12px 16px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+        .ava-table { table-layout: auto; width: 100%; text-align: left; border-collapse: collapse; }
+        .ava-table th { background-color: #F8F9FA; color: #9299A3; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px; border-bottom: 1px solid #E9E9EF; white-space: nowrap; }
+        .ava-table td { padding: 10px 14px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; white-space: normal; word-break: break-word; }
         .ava-table tr:hover td { background-color: #FDF2F7; }
-        .ava-table input[type="text"], .ava-table input[type="number"] { border: 1px solid transparent; background: transparent; padding: 6px 8px; border-radius: 6px; width: 100%; transition: all 0.2s; }
-        .ava-table input[type="text"]:hover, .ava-table input[type="number"]:hover { border-color: #E9E9EF; background: #FFFFFF; }
-        .ava-table input[type="text"]:focus, .ava-table input[type="number"]:focus { border-color: #F05A9D; background: #FFFFFF; box-shadow: 0 0 0 2px rgba(240, 90, 157, 0.1); outline: none; }
+        .ava-table textarea.tbl-wrap-input,
+        .ava-table input[type="text"], .ava-table input[type="number"] { border: 1px solid transparent; background: transparent; padding: 6px 8px; border-radius: 6px; width: 100%; transition: all 0.2s; font-family: inherit; font-size: inherit; line-height: 1.35; }
+        .ava-table textarea.tbl-wrap-input { resize: none; overflow-y: hidden; display: block; }
+        .ava-table textarea.tbl-wrap-input:hover, .ava-table input[type="text"]:hover, .ava-table input[type="number"]:hover { border-color: #E9E9EF; background: #FFFFFF; }
+        .ava-table textarea.tbl-wrap-input:focus, .ava-table input[type="text"]:focus, .ava-table input[type="number"]:focus { border-color: #F05A9D; background: #FFFFFF; box-shadow: 0 0 0 2px rgba(240, 90, 157, 0.1); outline: none; }
         
         @media (max-width: 768px) {
             .ava-table thead { display: none; }
@@ -259,7 +261,7 @@
             .ava-table td { border-bottom: none; padding: 6px 0; display: flex; align-items: center; justify-content: space-between; }
             .ava-table td::before { content: attr(data-label); font-weight: 600; color: #9299A3; font-size: 11px; text-transform: uppercase; margin-right: 12px; white-space: nowrap; }
             .ava-table td:first-child { padding-bottom: 12px; border-bottom: 1px dashed #E9E9EF; margin-bottom: 6px; justify-content: flex-start; gap: 8px; }
-            .ava-table input[type="text"], .ava-table input[type="number"] { text-align: right; border: 1px solid #E9E9EF; background: #FAFAFA; }
+            .ava-table textarea.tbl-wrap-input, .ava-table input[type="text"], .ava-table input[type="number"] { text-align: right; border: 1px solid #E9E9EF; background: #FAFAFA; }
         }
         
         .tab-btn { padding: 10px 16px; font-weight: 600; font-size: 14px; color: #9299A3; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
@@ -313,89 +315,131 @@
 
         <section id="user-view" class="space-y-6">
             
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
-                    <h2 class="text-lg font-bold text-slate-800 shrink-0">CHỌN MẪU POPUP</h2>
-                    <div class="segmented-control w-full sm:w-auto overflow-x-auto" id="template-selector">
-                        <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">POPUP A8</button>
-                        <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">POPUP A6</button>
-                        <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
-                        <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">POPUP GIẢM NGAY</button>
-                        <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">POPUP LỤC GIÁC</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-8 space-y-6">
-                    <div class="ava-card overflow-hidden">
-                        <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
-                    <button class="tab-btn active" onclick="UITabs.switchTab('manual-input-tab', this)">
-                        <span class="flex items-center gap-2"><i data-feather="edit-3" class="w-4 h-4"></i> NHẬP TAY </span>
-                    </button>
-                    <button class="tab-btn" onclick="UITabs.switchTab('excel-import-tab', this)">
-                        <span class="flex items-center gap-2"><i data-feather="file-text" class="w-4 h-4"></i> IN ĐỒNG LOẠT</span>
-                    </button>
-                </div>
-
-                <div id="manual-input-tab" class="tab-content active p-6">
-                    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        <div class="md:col-span-12">
-                            <label class="ava-label">Tên sản phẩm <span class="text-rose-500">*</span></label>
-                            <input type="text" id="manual-name" placeholder="Ví dụ: Sữa non AVAKids 800g" class="ava-input text-sm">
-                        </div>
-                        <div class="md:col-span-3">
-                            <label class="ava-label" id="manual-lbl-orig-price">Giá gốc <span class="text-slate-500 font-normal">(để trống nếu ko có)</span></label>
-                            <input type="text" id="manual-original-price" placeholder="VD: 450.000" class="ava-input">
-                        </div>
-                        <div class="md:col-span-3">
-                            <label class="ava-label">Giá giảm <span class="text-rose-500">*</span></label>
-                            <input type="text" id="manual-price" placeholder="VD: 250.000" class="ava-input font-bold text-ava-pink">
-                        </div>
-                        <div class="md:col-span-4">
-                            <label class="ava-label">Khuyến mãi </label>
-                            <input type="text" id="manual-promo" placeholder="Khuyến mãi (để trống nếu ko có)" value="" class="ava-input">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="ava-label">Thời Gian Áp Dụng</label>
-                            <input type="text" id="manual-date" placeholder="AVAKIDS" value="AVAKIDS" class="ava-input font-medium text-slate-600">
-                        </div>
-                        <div class="md:col-span-12 flex flex-wrap justify-end items-end gap-3 mt-2">
-                            <div class="w-24">
-                                <label class="ava-label">SL In</label>
-                                <input type="number" id="manual-quantity" value="1" min="1" class="ava-input font-bold text-center">
-                            </div>
-                            <button onclick="ProductController.addManualProduct()" class="ava-btn-primary px-6 h-[38px] flex items-center justify-center shrink-0 shadow-md shadow-ava-pink/20 w-full md:w-auto" title="Thêm vào danh sách">
-                                <i data-feather="plus" class="w-5 h-5 mr-1"></i> Thêm Sản Phẩm
-                            </button>
+            <!-- KHỐI TRÊN: CỘT TRÁI (CHỌN MẪU + NHẬP LIỆU) & CỘT PHẢI (LIVE PREVIEW TỪ HÀNG CHỌN MẪU ĐẾN HẾT NÚT THÊM SẢN PHẨM) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                <!-- CỘT TRÁI (8 CỘT): THANH CHỌN MẪU POPUP + KHỐI NHẬP LIỆU -->
+                <div class="lg:col-span-8 flex flex-col justify-between gap-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+                        <h2 class="text-base font-bold text-slate-800 shrink-0">CHỌN MẪU POPUP</h2>
+                        <div class="segmented-control w-full sm:w-auto overflow-x-auto" id="template-selector">
+                            <button onclick="TemplateEngine.setUserFormat('A8')" id="u-tab-A8" class="segmented-btn active whitespace-nowrap">POPUP A8</button>
+                            <button onclick="TemplateEngine.setUserFormat('A6')" id="u-tab-A6" class="segmented-btn whitespace-nowrap">POPUP A6</button>
+                            <button onclick="TemplateEngine.setUserFormat('NGANG')" id="u-tab-NGANG" class="segmented-btn whitespace-nowrap">POPUP NGANG</button>
+                            <button onclick="TemplateEngine.setUserFormat('GIAMNGAY')" id="u-tab-GIAMNGAY" class="segmented-btn whitespace-nowrap text-ava-pink">POPUP GIẢM NGAY</button>
+                            <button onclick="TemplateEngine.setUserFormat('TRON')" id="u-tab-TRON" class="segmented-btn whitespace-nowrap">POPUP LỤC GIÁC</button>
                         </div>
                     </div>
-                </div>
 
-                <div id="excel-import-tab" class="tab-content p-6">
-                    <div class="max-w-3xl mx-auto flex flex-col items-center">
-                        <div class="text-center mb-4">
-                            <h3 class="font-bold text-slate-800 text-base mb-2">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
-                            <a href="Mau_In_Popup_AVAKids.xlsx" download class="inline-block bg-blue-600 text-white font-black text-sm px-6 py-2.5 rounded-lg border-b-4 border-blue-800 hover:bg-blue-500 hover:border-blue-700 transition-all mb-4 shadow-lg uppercase tracking-wide"><i data-feather="download" class="w-4 h-4 inline mr-1"></i> DOWNLOAD FILE MẪU</a>
-                        </div>
-                        
-                        <div class="w-full border-2 border-dashed border-[#cbd5e1] hover:border-ava-pink hover:bg-ava-light/20 rounded-xl p-8 text-center transition cursor-pointer flex flex-col items-center justify-center gap-3" onclick="ExcelImporter.showWarningModal()">
-                            <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
-                            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                <i data-feather="upload-cloud" class="w-6 h-6"></i>
+                    <div class="ava-card overflow-hidden flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex border-b border-[#E9E9EF] px-2 pt-2 bg-slate-50">
+                                <button class="tab-btn active" onclick="UITabs.switchTab('manual-input-tab', this)">
+                                    <span class="flex items-center gap-2"><i data-feather="edit-3" class="w-4 h-4"></i> NHẬP TAY </span>
+                                </button>
+                                <button class="tab-btn" onclick="UITabs.switchTab('excel-import-tab', this)">
+                                    <span class="flex items-center gap-2"><i data-feather="file-text" class="w-4 h-4"></i> IN ĐỒNG LOẠT</span>
+                                </button>
                             </div>
-                            <div>
-                                <span class="font-semibold text-ava-pink">Nhấn để tải file lên</span> <span class="text-slate-500">hoặc kéo thả vào đây</span>
+
+                            <div id="manual-input-tab" class="tab-content active p-5">
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                                    <div class="md:col-span-12">
+                                        <label class="ava-label">Tên sản phẩm <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="manual-name" placeholder="Ví dụ: Sữa non AVAKids 800g" class="ava-input text-sm">
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="ava-label" id="manual-lbl-orig-price">Giá gốc <span class="text-slate-500 font-normal">(để trống nếu ko có)</span></label>
+                                        <input type="text" id="manual-original-price" placeholder="VD: 450.000" class="ava-input">
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <label class="ava-label">Giá giảm <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="manual-price" placeholder="VD: 250.000" class="ava-input font-bold text-ava-pink">
+                                    </div>
+                                    <div class="md:col-span-4">
+                                        <label class="ava-label">Khuyến mãi </label>
+                                        <input type="text" id="manual-promo" placeholder="Khuyến mãi (để trống nếu ko có)" value="" class="ava-input">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="ava-label">Thời Gian Áp Dụng</label>
+                                        <input type="text" id="manual-date" placeholder="AVAKIDS" value="AVAKIDS" class="ava-input font-medium text-slate-600">
+                                    </div>
+                                    <div class="md:col-span-12 flex flex-wrap justify-end items-end gap-3 mt-1">
+                                        <div class="w-24">
+                                            <label class="ava-label">SL In</label>
+                                            <input type="number" id="manual-quantity" value="1" min="1" class="ava-input font-bold text-center">
+                                        </div>
+                                        <button onclick="ProductController.addManualProduct()" class="ava-btn-primary px-6 h-[38px] flex items-center justify-center shrink-0 shadow-md shadow-ava-pink/20 w-full md:w-auto" title="Thêm vào danh sách">
+                                            <i data-feather="plus" class="w-5 h-5 mr-1"></i> Thêm Sản Phẩm
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="excel-filename-display" class="bg-slate-100 px-3 py-1 rounded text-xs font-mono text-slate-600 font-semibold max-w-full truncate">
-                                Chưa chọn file nào
+
+                            <div id="excel-import-tab" class="tab-content p-5">
+                                <div class="max-w-3xl mx-auto flex flex-col items-center">
+                                    <div class="text-center mb-3">
+                                        <h3 class="font-bold text-slate-800 text-base mb-2">Tải lên danh sách sản phẩm (.xlsx, .csv)</h3>
+                                        <a href="Mau_In_Popup_AVAKids.xlsx" download class="inline-block bg-blue-600 text-white font-black text-sm px-6 py-2 rounded-lg border-b-4 border-blue-800 hover:bg-blue-500 hover:border-blue-700 transition-all mb-2 shadow-lg uppercase tracking-wide"><i data-feather="download" class="w-4 h-4 inline mr-1"></i> DOWNLOAD FILE MẪU</a>
+                                    </div>
+                                    
+                                    <div class="w-full border-2 border-dashed border-[#cbd5e1] hover:border-ava-pink hover:bg-ava-light/20 rounded-xl p-5 text-center transition cursor-pointer flex flex-col items-center justify-center gap-2" onclick="ExcelImporter.showWarningModal()">
+                                        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="ExcelImporter.handleFileSelected(event)">
+                                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                            <i data-feather="upload-cloud" class="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-ava-pink">Nhấn để tải file lên</span> <span class="text-slate-500">hoặc kéo thả vào đây</span>
+                                        </div>
+                                        <div id="excel-filename-display" class="bg-slate-100 px-3 py-1 rounded text-xs font-mono text-slate-600 font-semibold max-w-full truncate">
+                                            Chưa chọn file nào
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div> <!-- End col-span-8 -->
+                
+                <!-- CỘT PHẢI (4 CỘT): LIVE PREVIEW BẮT ĐẦU NGANG HÀNG CHỌN MẪU ĐẾN HẾT NÚT THÊM SẢN PHẨM -->
+                <div class="lg:col-span-4 flex flex-col">
+                    <div class="ava-card p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-[#E9E9EF] pb-2 mb-2.5">
+                                <h3 class="font-bold text-slate-800 text-xs uppercase flex items-center gap-1.5">
+                                    <i data-feather="image" class="w-3.5 h-3.5 text-ava-pink"></i> XEM TRƯỚC MẪU IN
+                                </h3>
+                                <span id="preview-template-name" class="text-[11px] text-ava-pink font-bold uppercase truncate max-w-[140px]">POPUP A8 NHỎ</span>
+                            </div>
+                            
+                            <!-- BẢNG ĐIỀU KHIỂN TRANG -->
+                            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 mb-2.5">
+                                <span class="text-[11px] font-bold text-slate-500">Trang <span id="preview-current-page" class="text-ava-pink font-black">1</span> / <span id="preview-total-pages">1</span></span>
+                                <div class="flex gap-1">
+                                    <button onclick="TemplateEngine.changePreviewPage(-1)" class="w-6 h-6 flex items-center justify-center bg-white border border-slate-200 hover:bg-ava-pink hover:text-white text-slate-600 rounded transition-colors"><i data-feather="chevron-left" class="w-3.5 h-3.5"></i></button>
+                                    <button onclick="TemplateEngine.changePreviewPage(1)" class="w-6 h-6 flex items-center justify-center bg-white border border-slate-200 hover:bg-ava-pink hover:text-white text-slate-600 rounded transition-colors"><i data-feather="chevron-right" class="w-3.5 h-3.5"></i></button>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="ava-card overflow-hidden flex flex-col">
+                        <!-- KHU VỰC BÀN LÀM VIỆC 3D CHỨA TỜ GIẤY ẢO -->
+                        <div class="relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-200/60 border border-slate-200 rounded-xl p-0 flex-1 min-h-[190px] flex flex-col items-center justify-start shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] overflow-hidden">
+                            <div class="w-full h-full overflow-auto flex justify-center custom-scrollbar pt-2 pb-6">
+                                <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.32); transform-origin: top center; width: 210mm; min-width: 210mm; height: 297mm; min-height: 297mm; box-sizing: border-box; flex-shrink: 0; overflow: hidden;">
+                                    <div id="realtime-preview-content" class="w-full h-full" style="padding: 5mm 0; box-sizing: border-box;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="absolute bottom-1.5 left-0 w-full flex justify-center z-10 pointer-events-none">
+                                <span class="bg-ava-pink text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow border border-white/20 flex items-center gap-1"><i data-feather="zap" class="w-2.5 h-2.5"></i> LIVE A4</span>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- End col-span-4 -->
+            </div> <!-- End Top Grid -->
+
+            <!-- KHỐI DƯỚI: BẢNG SẢN PHẨM CHỜ IN MỞ RỘNG FULL 100% CHIỀU NGANG -->
+            <div class="ava-card overflow-hidden flex flex-col w-full">
                 <div class="p-4 border-b border-[#E9E9EF] bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <h3 class="font-bold text-base">Sản phẩm chờ in</h3>
@@ -414,18 +458,18 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-hidden md:overflow-x-auto min-h-[300px] max-h-[500px] bg-slate-50 md:bg-white p-2 md:p-0 custom-scrollbar">
-                    <table class="ava-table">
+                <div class="overflow-x-auto min-h-[300px] max-h-[550px] bg-slate-50 md:bg-white p-2 md:p-0 custom-scrollbar w-full">
+                    <table class="ava-table w-full">
                         <thead class="sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="w-12 text-center">#</th>
-                                <th>Tên sản phẩm</th>
-                                <th class="w-28 text-right" id="th-orig-price">Giá gốc</th>
-                                <th class="w-32 text-right">Giá giảm</th>
-                                <th>KHUYẾN MÃI</th>
-                                <th class="w-28">TG ÁP DỤNG</th>
+                                <th class="min-w-[240px]">Tên sản phẩm</th>
+                                <th class="w-36 min-w-[130px] text-right" id="th-orig-price">Giá gốc</th>
+                                <th class="w-36 min-w-[130px] text-right">Giá giảm</th>
+                                <th class="min-w-[210px]">KHUYẾN MÃI</th>
+                                <th class="w-36 min-w-[130px]">TG ÁP DỤNG</th>
                                 <th class="w-20 text-center">SL</th>
-                                <th class="w-12 text-center">Xóa</th>
+                                <th class="w-14 text-center">Xóa</th>
                             </tr>
                         </thead>
                         <tbody id="product-list-tbody" class="bg-slate-50 md:bg-white">
@@ -433,49 +477,6 @@
                     </table>
                 </div>
             </div>
-                </div> <!-- End col-span-8 -->
-                
-                <!-- CỘT RIGHT: PREVIEW HÌNH ẢNH MẪU -->
-                <div class="lg:col-span-4">
-                    <div class="ava-card p-5">
-                        <h3 class="font-bold text-slate-800 text-sm mb-3 uppercase border-b border-[#E9E9EF] pb-3 flex items-center gap-2">
-                            <i data-feather="image" class="w-4 h-4 text-ava-pink"></i> XEM TRƯỚC MẪU IN
-                        </h3>
-                        <p class="text-xs text-slate-600 mb-3 font-medium">Mẫu đang chọn: <span id="preview-template-name" class="text-ava-pink font-bold uppercase">POPUP A8 NHỎ</span></p>
-                        
-                        <!-- BẢNG ĐIỀU KHIỂN TRANG -->
-                        <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2 mb-3 shadow-sm">
-                            <span class="text-[11px] font-bold text-slate-500 pl-2">Trang <span id="preview-current-page" class="text-ava-pink font-black">1</span> / <span id="preview-total-pages">1</span></span>
-                            <div class="flex gap-1">
-                                <button onclick="TemplateEngine.changePreviewPage(-1)" class="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-ava-pink hover:text-white text-slate-600 rounded transition-colors"><i data-feather="chevron-left" class="w-4 h-4"></i></button>
-                                <button onclick="TemplateEngine.changePreviewPage(1)" class="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-ava-pink hover:text-white text-slate-600 rounded transition-colors"><i data-feather="chevron-right" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-
-                        <!-- KHU VỰC BÀN LÀM VIỆC 3D CHỨA TỜ GIẤY ẢO -->
-                        <div class="relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-200/60 border border-slate-200 rounded-2xl p-0 flex flex-col items-center justify-start h-[500px] shadow-[inset_0_2px_15px_rgba(0,0,0,0.05)] overflow-hidden">
-                            
-                            <div class="w-full h-full overflow-auto flex justify-center custom-scrollbar pt-4 pb-4">
-                                <!-- Mô phỏng tờ giấy A4 Ảo chứa Real-time DOM. -->
-                                <div onmouseup="PrintEngine.saveSelection()" class="relative bg-white rounded shadow-2xl border border-slate-300 flex flex-col items-center justify-start z-10 transition-transform duration-300 ease-out" id="realtime-preview-paper" style="transform: scale(0.35); transform-origin: top center; width: 210mm; min-width: 210mm; height: 297mm; min-height: 297mm; box-sizing: border-box; flex-shrink: 0; overflow: hidden;">
-                                    <div id="realtime-preview-content" class="w-full h-full" style="padding: 5mm 0; box-sizing: border-box;">
-                                        <!-- Nội dung tem sẽ được Javascript vẽ trực tiếp vào đây -->
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="absolute bottom-3 left-0 w-full flex justify-center z-10 pointer-events-none">
-                                <span class="bg-ava-pink text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-md border border-white/20 flex items-center gap-1"><i data-feather="zap" class="w-3 h-3"></i> TỜ GIẤY A4 TRỰC TIẾP (LIVE)</span>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4 bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex gap-2 items-start shadow-sm">
-                            <i data-feather="mouse-pointer" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
-                            <p class="text-[11px] text-emerald-800 leading-relaxed font-medium"><b>Lưu ý:</b> Khung trên mô phỏng chính xác tờ A4 thật. Nếu số lượng nhiều, vui lòng dùng nút qua trang ở trên để lướt xem. Để chỉnh độ đậm/nhạt/màu/font, vui lòng sang trang <b>Chỉnh Sửa Mẫu (Admin)</b>.</p>
-                        </div>
-                    </div>
-                </div> <!-- End col-span-4 -->
-            </div> <!-- End Grid -->
         </section>
 
         <!-- ======================================================= -->
@@ -1278,9 +1279,9 @@
                     content = Utils.escapeHTML(content);
 
                     const finalFont = userFont || layer.fontFamily;
-                    // Render logic mượt mà, tránh lỗi cú pháp text-decoration của Chrome
-                    // Các thẻ sẽ được apply trực tiếp qua script bên dưới để chèn inline style an toàn.
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
+                    const hasNumber = /\d/.test(String(content));
+                    const shouldStrike = layer.id === 'orig_price' ? (layer.isStrike && hasNumber) : layer.isStrike;
 
                     layersHTML += `
                         <div class="layer-uppercase autofit-text" style="
@@ -1303,7 +1304,7 @@
                             ${borderStyle}
                         ">
                             <span ${isPrintView ? '' : 'contenteditable="true"'} style="outline: none; cursor: text; display: inline-block; width: 100%; pointer-events: ${isPrintView ? 'none' : 'auto'}; 
-                            ${layer.isStrike ? `text-decoration: line-through !important; text-decoration-thickness: 3px !important; text-decoration-color: #000000 !important; -webkit-text-decoration-color: #000000 !important;` : ''}">${content}</span>
+                            ${shouldStrike ? `text-decoration: line-through !important; text-decoration-thickness: 3px !important; text-decoration-color: #000000 !important; -webkit-text-decoration-color: #000000 !important;` : 'text-decoration: none !important;'}">${content}</span>
                         </div>
                     `;
                 });
@@ -2231,19 +2232,19 @@
                     tr.innerHTML = `
                         <td class="text-center text-slate-400 font-mono" data-label="#">${idx + 1}</td>
                         <td data-label="Tên sản phẩm">
-                            <input type="text" value="${Utils.escapeHTML(p.name)}" onchange="ProductController.updateField(${p.id}, 'name', this.value)" class="font-bold text-slate-700 w-full">
+                            <textarea rows="1" oninput="ProductController.autoResizeTextarea(this)" onchange="ProductController.updateField(${p.id}, 'name', this.value)" class="tbl-wrap-input font-bold text-slate-700 w-full">${Utils.escapeHTML(p.name)}</textarea>
                         </td>
                         <td class="text-right" data-label="Giá gốc / Nhãn">
-                            <input type="text" value="${Utils.escapeHTML(p.originalPrice || '')}" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="text-right text-slate-500 w-full">
+                            <textarea rows="1" oninput="ProductController.autoResizeTextarea(this)" onchange="ProductController.updateField(${p.id}, 'originalPrice', this.value)" class="tbl-wrap-input text-right text-slate-500 w-full">${Utils.escapeHTML(p.originalPrice || '')}</textarea>
                         </td>
                         <td class="text-right" data-label="Giá giảm">
                             <input type="text" value="${Utils.escapeHTML(p.price)}" onchange="ProductController.updateField(${p.id}, 'price', this.value)" class="text-right font-black text-ava-pink w-full">
                         </td>
                         <td data-label="Ghi chú / KM">
-                            <input type="text" value="${Utils.escapeHTML(p.promo || '')}" onchange="ProductController.updateField(${p.id}, 'promo', this.value)" class="text-slate-600 w-full">
+                            <textarea rows="1" oninput="ProductController.autoResizeTextarea(this)" onchange="ProductController.updateField(${p.id}, 'promo', this.value)" class="tbl-wrap-input text-slate-600 w-full">${Utils.escapeHTML(p.promo || '')}</textarea>
                         </td>
                         <td data-label="Ngày in">
-                            <input type="text" value="${Utils.escapeHTML(pDate)}" onchange="ProductController.updateField(${p.id}, 'date', this.value)" class="text-slate-500 text-xs w-full">
+                            <textarea rows="1" oninput="ProductController.autoResizeTextarea(this)" onchange="ProductController.updateField(${p.id}, 'date', this.value)" class="tbl-wrap-input text-slate-500 text-xs w-full">${Utils.escapeHTML(pDate)}</textarea>
                         </td>
                         <td class="text-center" data-label="Số lượng">
                             <input type="number" min="1" max="99" value="${p.quantity || 1}" onchange="ProductController.updateField(${p.id}, 'quantity', parseInt(this.value)||1)" class="text-center font-bold text-slate-800 bg-slate-50 border border-slate-200 !py-1 w-full md:w-auto">
@@ -2256,7 +2257,14 @@
                     `;
                     tbody.appendChild(tr);
                 });
+                tbody.querySelectorAll('textarea.tbl-wrap-input').forEach(ta => ProductController.autoResizeTextarea(ta));
                 feather.replace();
+            },
+
+            autoResizeTextarea(el) {
+                if (!el) return;
+                el.style.height = 'auto';
+                el.style.height = (el.scrollHeight > 0 ? el.scrollHeight : 28) + 'px';
             },
 
             async updateField(id, field, value) {
