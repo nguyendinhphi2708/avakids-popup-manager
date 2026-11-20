@@ -1280,11 +1280,8 @@
                
                     const finalFont = userFont || layer.fontFamily;
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
-                    const strContent = String(content).trim();
-                    const hasDigit = /\d/.test(strContent);
-                    const hasLetter = /[a-zA-ZÀ-ỹ]/.test(strContent);
-                    const isPriceLike = hasDigit && !hasLetter;
-                    const shouldStrike = layer.id === 'orig_price' ? isPriceLike : layer.isStrike;
+                    const hasDigit = /\d/.test(String(content));
+                    const shouldStrike = layer.id === 'orig_price' ? hasDigit : layer.isStrike;
 
                     layersHTML += `
                         <div class="layer-uppercase autofit-text" style="
