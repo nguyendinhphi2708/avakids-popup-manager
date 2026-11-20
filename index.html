@@ -1281,7 +1281,7 @@
                     const finalFont = userFont || layer.fontFamily;
                     const borderStyle = layer.hasBorder ? 'border: 2px solid #000; padding: 1px 4px;' : '';
                     const hasNumber = /\d/.test(String(content));
-                    const shouldStrike = layer.id === 'orig_price' ? (layer.isStrike && hasNumber) : layer.isStrike;
+                    const shouldStrike = layer.id === 'orig_price' ? (layer.isStrike && hasNumber) : (layer.isStrike && hasNumber);
 
                     layersHTML += `
                         <div class="layer-uppercase autofit-text" style="
