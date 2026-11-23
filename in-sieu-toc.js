@@ -2,7 +2,7 @@
   const SUPABASE_URL = 'https://anknaltyafulhkoaupyc.supabase.co';
   const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz';
   const CATALOG_TABLE = 'product_catalog';
-  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v3';
+  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v4';
   const PAGE_SIZE = 1000;
 
   const state = {
@@ -12,6 +12,7 @@
     selectedBrand: '',
     keyword: '',
     onlyFlash: false,
+    compactPromo: true,
     applyTime: '',
     selectedCodes: new Set(),
     rowQtyMap: {},
@@ -45,15 +46,135 @@
     return Math.round(n).toLocaleString('vi-VN') + ' Đ';
   }
 
+  function shortenCondition(cond) {
+    let c = String(cond || '').trim();
+    c = c.replace(/\b(\d{4,})\b/g, (m) => {
+      const val = parseInt(m, 10);
+      return val >= 1000 ? `${Math.round(val / 1000)}k` : m;
+    });
+    c = c.replace(/được\s+chọn/gi, 'chọn');
+    return c.trim();
+  }
+
+  function cleanGiftPhrase(rawGift) {
+    let s = String(rawGift || '').trim();
+    if (!s) return '';
+
+    s = s.replace(/\(SL:\s*\d+\)/gi, '');
+    s = s.replace(/-\s*Giao\s+(bao bì|màu|mẫu)?\s*ngẫu nhiên/gi, '');
+    s = s.replace(/\(?\s*(MÀU|GIAO MÀU|GIAO MẪU)\s*NGẪU NHIÊN\s*\)?/gi, '');
+    s = s.replace(/[-_]\s*(KM|Khuyến mãi)\b.*$/gi, '');
+    s = s.replace(/\b(KM|Khuyến mãi)\b.*$/gi, '');
+    s = s.replace(/\s*\([^)]*(kg|tháng|tuổi|miếng|viên|gói|màu)[^)]*\)/gi, '');
+    s = s.replace(/\b\d+\s*(miếng|viên|gói|ml|l|cm|g|kg)\b/gi, '');
+    s = s.replace(/\s{2,}/g, ' ').replace(/^[\s,\-–—/]+|[\s,\-–—/]+$/g, '').trim();
+
+    if (!s) return '';
+
+    const cutDesc = s.replace(/\s+(hình con|thả bồn tắm|led hoạt hình|tráng bạc kháng khuẩn|cho bé)\b.*$/i, '').trim();
+    const base = cutDesc || s;
+    const words = base.split(/\s+/).filter(Boolean);
+
+    if (words.length >= 2) {
+      const w0 = words[0].toLowerCase();
+      const w1 = words[1].toLowerCase();
+      if (w0 === 'balo') return words[0];
+      if (['đèn', 'đồ', 'thú', 'bình', 'bảng', 'máy', 'xe', 'nón', 'túi', 'khăn', 'hộp', 'bộ', 'gối', 'chảo', 'yếm'].includes(w0)) {
+        if (['ngủ', 'chơi', 'bông', 'nước', 'vẽ', 'ủi', 'tập', 'bơi', 'học'].includes(w1)) {
+          return `${words[0]} ${words[1]}`;
+        }
+      }
+    }
+
+    return words.length > 3 ? words.slice(0, 3).join(' ') : base;
+  }
+
+  function compressPromoBranch(branch) {
+    const b = String(branch || '').trim();
+    if (!b || /^không có$/i.test(b)) return '';
+
+    if (b.indexOf(':') === -1) {
+      return cleanGiftPhrase(b);
+    }
+
+    const colonIdx = b.indexOf(':');
+    const condShort = shortenCondition(b.slice(0, colonIdx));
+    const giftPart = b.slice(colonIdx + 1);
+    const rawGifts = giftPart.split(',').map((g) => g.trim()).filter(Boolean);
+    const cleaned = rawGifts.map(cleanGiftPhrase).filter(Boolean);
+
+    if (cleaned.length === 0) return `${condShort}: Quà tặng`;
+    if (cleaned.length === 1) return `${condShort}: ${cleaned[0]}`;
+
+    // Nếu lặp lại cùng một tên quà nhiều lần (ví dụ liệt kê lặp nhiều size/màu cùng tên)
+    const uniqueLower = new Set(cleaned.map((x) => x.toLowerCase()));
+    if (uniqueLower.size === 1) {
+      return `${condShort}: ${cleaned[0]}`;
+    }
+
+    // Kiểm tra tiền tố chung (cùng dòng sản phẩm khác size / phân loại)
+    const wordArrays = cleaned.map((c) => c.split(/\s+/));
+    const prefixWords = [];
+    const minLen = Math.min(...wordArrays.map((w) => w.length));
+    for (let i = 0; i < minLen; i++) {
+      const candidate = wordArrays[0][i];
+      if (wordArrays.every((w) => w[i].toLowerCase() === candidate.toLowerCase())) {
+        prefixWords.push(candidate);
+      } else {
+        break;
+      }
+    }
+
+    const prefix = prefixWords.join(' ').trim();
+    const suffixes = cleaned
+      .map((c) => c.slice(prefix.length).replace(/^[\s\-–—/]+|[\s\-–—/]+$/g, '').trim())
+      .filter(Boolean);
+
+    if (prefixWords.length >= 2 && suffixes.length === cleaned.length) {
+      const sizeVals = [];
+      let allSize = true;
+      for (const s of suffixes) {
+        const m = s.match(/^size\s+(.+)$/i);
+        if (m) sizeVals.push(m[1].trim());
+        else {
+          allSize = false;
+          break;
+        }
+      }
+      if (allSize && sizeVals.length > 0) {
+        const tail = sizeVals.slice(0, 6).join('/') + (sizeVals.length > 6 ? '...' : '');
+        return `${condShort}: ${prefix} size (${tail})`;
+      }
+      const tail = suffixes.slice(0, 6).join('/') + (suffixes.length > 6 ? '...' : '');
+      return `${condShort}: ${prefix} (${tail})`;
+    }
+
+    // Nhiều món khác nhau: liệt kê gọn cách nhau bằng " , "
+    const shortItems = cleaned.slice(0, 4).map((c) => {
+      const w = c.split(/\s+/);
+      return w.length > 2 ? w.slice(0, 2).join(' ') : c;
+    });
+    return `${condShort}: ${shortItems.join(' , ')}`;
+  }
+
+  function compactPromoText(rawText) {
+    const raw = String(rawText || '').trim();
+    if (!raw || /^không có$/i.test(raw)) return '';
+    const branches = raw.split('|').map((b) => b.trim()).filter(Boolean);
+    const lines = branches.map(compressPromoBranch).filter(Boolean);
+    return lines.join('\n');
+  }
+
   function formatPromoDisplay(item) {
     const parts = [];
     if (item.promo_text && String(item.promo_text).trim().toLowerCase() !== 'không có') {
-      parts.push(String(item.promo_text).trim());
+      const pText = String(item.promo_text).trim();
+      parts.push(state.compactPromo ? compactPromoText(pText) : pText);
     }
     if (item.is_flash_sale && !/flash\s*sale/i.test(item.promo_text || '')) {
       parts.unshift('FLASH SALE');
     }
-    return parts.join(' | ');
+    return parts.join('\n');
   }
 
   function findTabContainer() {
@@ -262,10 +383,8 @@
         font-size: 11px;
         color: #b45309;
         margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 520px;
+        white-space: pre-line;
+        max-width: 560px;
       }
       .ist-row-qty {
         width: 48px;
@@ -358,7 +477,6 @@
     const saleNum = Number(item.sale_price) || 0;
     const origNum = Number(item.original_price) || 0;
 
-    // Quy tắc giá: nếu Giá gốc == Giá giảm hoặc không giảm -> đưa vào Giá giảm, để trống Giá gốc
     let finalSale = saleNum > 0 ? formatAvaPrice(saleNum) : formatAvaPrice(origNum);
     let finalOrig = '';
     if (origNum > 0 && saleNum > 0 && Math.abs(origNum - saleNum) > 1e-6) {
@@ -392,7 +510,6 @@
       return;
     }
 
-    // Fallback nếu chạy độc lập
     const nameInput = document.getElementById('manual-name');
     const origInput = document.getElementById('manual-original-price');
     const saleInput = document.getElementById('manual-price');
@@ -567,7 +684,7 @@
                 <div style="font-size:11px;color:#64748b;">
                   ${item.brand ? `Hãng: <b>${item.brand}</b> • ` : ''}${item.sub_category || item.category_group || ''} • Mã: ${item.product_code || '-'}
                 </div>
-                ${promoStr ? `<div class="ist-promo-note" title="${promoStr}">🎁 ${promoStr}</div>` : ''}
+                ${promoStr ? `<div class="ist-promo-note" title="${promoStr.replace(/"/g, '&quot;')}">🎁 ${promoStr}</div>` : ''}
               </div>
             </div>
             <div class="ist-item-right">
@@ -658,6 +775,9 @@
           <span id="ist-status" style="font-size:12px;color:#475569;margin-left:8px;">Đang tải danh mục...</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+            <input type="checkbox" id="ist-compact-promo" checked /> Tóm gọn KM
+          </label>
           <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
             <input type="checkbox" id="ist-flash-only" /> Flash Sale
           </label>
@@ -751,6 +871,11 @@
 
     document.getElementById('ist-search-input')?.addEventListener('input', (e) => {
       state.keyword = e.target.value;
+      renderResults();
+    });
+
+    document.getElementById('ist-compact-promo')?.addEventListener('change', (e) => {
+      state.compactPromo = e.target.checked;
       renderResults();
     });
 
