@@ -1,6 +1,6 @@
 (function () {
   const SUPABASE_URL = 'https://anknaltyafulhkoaupyc.supabase.co';
-  const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7y7s'; // Thay đúng publishable/anon key công khai của dự án nếu cần
+  const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz'; // Thay đúng publishable/anon key công khai của dự án nếu cần
   const CATALOG_TABLE = 'product_catalog';
   const CACHE_KEY = 'avakids_in_sieu_toc_cache_v1';
 
@@ -547,4 +547,5 @@
   } else {
     mountUI();
   }
+
 })();
