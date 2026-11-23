@@ -2,7 +2,7 @@
   const SUPABASE_URL = 'https://anknaltyafulhkoaupyc.supabase.co';
   const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz';
   const CATALOG_TABLE = 'product_catalog';
-  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v2';
+  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v3';
   const PAGE_SIZE = 1000;
 
   const state = {
@@ -15,7 +15,7 @@
     applyTime: '',
     selectedCodes: new Set(),
     rowQtyMap: {},
-    activeTab: 'super', // 'manual' | 'super' | 'batch'
+    activeTab: 'super',
     loadedFrom: ''
   };
 
@@ -37,6 +37,12 @@
     const n = Number(num) || 0;
     if (!n) return '';
     return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function formatAvaPrice(num) {
+    const n = Number(num) || 0;
+    if (!n) return '';
+    return Math.round(n).toLocaleString('vi-VN') + ' Đ';
   }
 
   function formatPromoDisplay(item) {
@@ -100,9 +106,9 @@
         transition: all 0.15s ease;
       }
       .ist-tab-btn.active {
-        background: #ec4899;
+        background: #F05A9D;
         color: #fff;
-        border-color: #ec4899;
+        border-color: #F05A9D;
       }
       #ist-panel {
         background: #f8fafc;
@@ -174,15 +180,19 @@
         font-weight: 600;
         cursor: pointer;
       }
+      .ist-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
       .ist-btn-primary {
         background: #0284c7;
         color: #fff;
         border-color: #0284c7;
       }
       .ist-btn-pink {
-        background: #ec4899;
+        background: #F05A9D;
         color: #fff;
-        border-color: #ec4899;
+        border-color: #F05A9D;
       }
       .ist-btn-success {
         background: #15803d;
@@ -190,7 +200,7 @@
         border-color: #15803d;
       }
       .ist-results {
-        max-height: 280px;
+        max-height: 290px;
         overflow-y: auto;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
@@ -343,62 +353,88 @@
     });
   }
 
-  function applySingleItemToQueue(item, qty) {
+  function buildAvakidsQueueRecord(item, qty) {
     const useQty = Math.max(1, parseInt(qty, 10) || 1);
-    const promoText = formatPromoDisplay(item);
-    const applyDate = (state.applyTime || '').trim();
+    const saleNum = Number(item.sale_price) || 0;
+    const origNum = Number(item.original_price) || 0;
 
-    // Thử gọi hàm thêm vào danh sách chờ in của ứng dụng nếu có sẵn trên window/App
-    if (window.App && typeof window.App.addProductToQueue === 'function') {
-      window.App.addProductToQueue({
-        name: item.product_name || '',
-        originalPrice: item.original_price || 0,
-        salePrice: item.sale_price || 0,
-        promo: promoText,
-        applyDate: applyDate,
-        qty: useQty,
-        code: item.product_code || ''
-      });
+    // Quy tắc giá: nếu Giá gốc == Giá giảm hoặc không giảm -> đưa vào Giá giảm, để trống Giá gốc
+    let finalSale = saleNum > 0 ? formatAvaPrice(saleNum) : formatAvaPrice(origNum);
+    let finalOrig = '';
+    if (origNum > 0 && saleNum > 0 && Math.abs(origNum - saleNum) > 1e-6) {
+      finalOrig = formatAvaPrice(origNum);
+      finalSale = formatAvaPrice(saleNum);
+    }
+
+    const promoText = formatPromoDisplay(item);
+    const applyDate = (state.applyTime || '').trim() || 'AVAKIDS';
+
+    return {
+      name: String(item.product_name || '').trim(),
+      price: finalSale,
+      originalPrice: finalOrig,
+      promo: promoText,
+      date: applyDate,
+      quantity: useQty
+    };
+  }
+
+  async function applySingleItemToQueue(item, qty) {
+    const record = buildAvakidsQueueRecord(item, qty);
+    if (!record.name || !record.price) return;
+
+    if (typeof DBManager !== 'undefined' && typeof DBManager.addProduct === 'function' && typeof ProductController !== 'undefined') {
+      await DBManager.addProduct(record);
+      await ProductController.loadProducts();
+      if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+        Utils.showToast(`Đã thêm: ${record.name}`);
+      }
       return;
     }
 
-    // Fallback: điền trực tiếp vào form và bấm nút thêm hiện có
-    const inputs = Array.from(document.querySelectorAll('input, textarea'));
-    const setVal = (el, val) => {
-      if (!el) return;
-      el.value = val;
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-    };
+    // Fallback nếu chạy độc lập
+    const nameInput = document.getElementById('manual-name');
+    const origInput = document.getElementById('manual-original-price');
+    const saleInput = document.getElementById('manual-price');
+    const promoInput = document.getElementById('manual-promo');
+    const dateInput = document.getElementById('manual-date');
+    const qtyInput = document.getElementById('manual-quantity');
 
-    const nameInput = inputs.find((i) => /tên\s*sản\s*phẩm|product.*name/i.test(i.placeholder || i.name || i.id || ''));
-    const origInput = inputs.find((i) => /giá\s*gốc|orig/i.test(i.placeholder || i.name || i.id || ''));
-    const saleInput = inputs.find((i) => /giá\s*(giảm|bán|km)|sale|price/i.test(i.placeholder || i.name || i.id || ''));
-    const promoInput = inputs.find((i) => /khuyến\s*mãi|quà|promo/i.test(i.placeholder || i.name || i.id || ''));
-    const dateInput = inputs.find((i) => /áp\s*dụng|thời\s*gian|date/i.test(i.placeholder || i.name || i.id || ''));
-    const qtyInput = inputs.find((i) => /số\s*lượng|sl\s*in|qty/i.test(i.placeholder || i.name || i.id || ''));
-
-    setVal(nameInput, item.product_name || '');
-    setVal(origInput, item.original_price ? formatVND(item.original_price) : '');
-    setVal(saleInput, item.sale_price ? formatVND(item.sale_price) : '');
-    setVal(promoInput, promoText);
-    if (applyDate && dateInput) setVal(dateInput, applyDate);
-    if (qtyInput) setVal(qtyInput, String(useQty));
-
-    const addBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      /thêm\s*(vào\s*)?(ds|danh\s*sách|chờ\s*in)|add\s*(to\s*)?(queue|list)/i.test(b.textContent || '')
-    );
-    if (addBtn) addBtn.click();
+    if (nameInput) nameInput.value = record.name;
+    if (origInput) origInput.value = record.originalPrice;
+    if (saleInput) saleInput.value = record.price;
+    if (promoInput) promoInput.value = record.promo;
+    if (dateInput) dateInput.value = record.date;
+    if (qtyInput) qtyInput.value = String(record.quantity);
+    if (typeof ProductController !== 'undefined' && typeof ProductController.addManualProduct === 'function') {
+      await ProductController.addManualProduct();
+    }
   }
 
-  function addSelectedItemsToQueue() {
+  async function addSelectedItemsToQueue() {
     if (state.selectedCodes.size === 0) return;
     const selectedList = state.items.filter((it) => state.selectedCodes.has(makeItemKey(it)));
-    selectedList.forEach((it) => {
-      const k = makeItemKey(it);
-      const q = state.rowQtyMap[k] || 1;
-      applySingleItemToQueue(it, q);
-    });
+    const batch = selectedList
+      .map((it) => {
+        const k = makeItemKey(it);
+        const q = state.rowQtyMap[k] || 1;
+        return buildAvakidsQueueRecord(it, q);
+      })
+      .filter((r) => r.name && r.price);
+
+    if (batch.length > 0 && typeof DBManager !== 'undefined' && typeof DBManager.addProductsBatch === 'function' && typeof ProductController !== 'undefined') {
+      await DBManager.addProductsBatch(batch);
+      await ProductController.loadProducts();
+      if (typeof Utils !== 'undefined' && typeof Utils.showToast === 'function') {
+        Utils.showToast(`Đã thêm ${batch.length} sản phẩm vào DS chờ in!`);
+      }
+    } else {
+      for (const it of selectedList) {
+        const k = makeItemKey(it);
+        await applySingleItemToQueue(it, state.rowQtyMap[k] || 1);
+      }
+    }
+
     state.selectedCodes.clear();
     renderBulkBar();
     renderResults();
@@ -462,7 +498,7 @@
       <div>
         Đã tích chọn: <strong>${count}</strong> sản phẩm
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <button type="button" id="ist-select-visible-btn" class="ist-btn">Chọn kết quả đang hiện</button>
         <button type="button" id="ist-clear-sel-btn" class="ist-btn" ${count === 0 ? 'disabled' : ''}>Bỏ chọn</button>
         <button type="button" id="ist-add-selected-btn" class="ist-btn ist-btn-success" ${count === 0 ? 'disabled' : ''}>
@@ -513,7 +549,10 @@
         const isChecked = state.selectedCodes.has(key);
         const rowQty = state.rowQtyMap[key] || 1;
         const saleStr = item.sale_price ? `${formatVND(item.sale_price)}đ` : '';
-        const origStr = item.original_price ? `${formatVND(item.original_price)}đ` : '';
+        const origStr =
+          item.original_price && Math.abs(Number(item.original_price) - Number(item.sale_price || 0)) > 1e-6
+            ? `${formatVND(item.original_price)}đ`
+            : '';
         const promoStr = formatPromoDisplay(item);
 
         return `
@@ -566,12 +605,12 @@
     });
 
     listEl.querySelectorAll('.ist-row-add').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const idx = Number(btn.getAttribute('data-idx'));
         const item = rows[idx];
         const key = makeItemKey(item);
         const qty = state.rowQtyMap[key] || 1;
-        applySingleItemToQueue(item, qty);
+        await applySingleItemToQueue(item, qty);
       });
     });
   }
@@ -586,7 +625,6 @@
 
     const targetForm = findFormContainer(manualTab);
 
-    // Tạo thanh 3 tab rõ ràng: Nhập tay | In siêu tốc | In đồng loạt
     const tabBar = document.createElement('div');
     tabBar.id = 'ist-tab-bar';
     tabBar.className = 'ist-tab-bar';
@@ -666,7 +704,6 @@
     anchorParent.insertBefore(tabBar, anchorBefore);
     anchorParent.insertBefore(panel, anchorBefore);
 
-    // Ẩn cụm nút tab cũ nếu trùng lặp để tránh rối
     if (parent && parent.id !== 'ist-tab-bar') {
       parent.style.display = 'none';
     }
