@@ -2,7 +2,7 @@
   const SUPABASE_URL = 'https://anknaltyafulhkoaupyc.supabase.co';
   const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz';
   const CATALOG_TABLE = 'product_catalog';
-  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v4';
+  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v5';
   const PAGE_SIZE = 1000;
 
   const state = {
@@ -56,10 +56,20 @@
     return c.trim();
   }
 
-  function cleanGiftPhrase(rawGift) {
-    let s = String(rawGift || '').trim();
-    if (!s) return '';
+  function extractBrandTag(raw) {
+    const m = String(raw || '').match(/(?:[-_]\s*(?:KM|Khuyến mãi)\s+)([A-Za-zÀ-ỹ0-9\s]+?)(?:\s*-|\s*\(|$)/i);
+    if (!m) return '';
+    const brand = m[1].replace(/\b(TPCN|VNM)\b/gi, '').trim();
+    if (!brand || brand.split(/\s+/).length > 3) return '';
+    return brand;
+  }
 
+  function parseGiftItem(rawGift) {
+    const brand = extractBrandTag(rawGift);
+    let s = String(rawGift || '').trim();
+    if (!s) return { label: '', size: '', brand: '' };
+
+    // 1. Dọn sạch phần nhiễu
     s = s.replace(/\(SL:\s*\d+\)/gi, '');
     s = s.replace(/-\s*Giao\s+(bao bì|màu|mẫu)?\s*ngẫu nhiên/gi, '');
     s = s.replace(/\(?\s*(MÀU|GIAO MÀU|GIAO MẪU)\s*NGẪU NHIÊN\s*\)?/gi, '');
@@ -69,24 +79,67 @@
     s = s.replace(/\b\d+\s*(miếng|viên|gói|ml|l|cm|g|kg)\b/gi, '');
     s = s.replace(/\s{2,}/g, ' ').replace(/^[\s,\-–—/]+|[\s,\-–—/]+$/g, '').trim();
 
-    if (!s) return '';
+    if (!s) return { label: '', size: '', brand };
 
-    const cutDesc = s.replace(/\s+(hình con|thả bồn tắm|led hoạt hình|tráng bạc kháng khuẩn|cho bé)\b.*$/i, '').trim();
-    const base = cutDesc || s;
-    const words = base.split(/\s+/).filter(Boolean);
-
-    if (words.length >= 2) {
-      const w0 = words[0].toLowerCase();
-      const w1 = words[1].toLowerCase();
-      if (w0 === 'balo') return words[0];
-      if (['đèn', 'đồ', 'thú', 'bình', 'bảng', 'máy', 'xe', 'nón', 'túi', 'khăn', 'hộp', 'bộ', 'gối', 'chảo', 'yếm'].includes(w0)) {
-        if (['ngủ', 'chơi', 'bông', 'nước', 'vẽ', 'ủi', 'tập', 'bơi', 'học'].includes(w1)) {
-          return `${words[0]} ${words[1]}`;
-        }
+    // 2. Tách size nếu có (size L, size XL, size 2, L26, XL24...)
+    let sizeVal = '';
+    const sizeMatch = s.match(/\bsize\s+([A-Za-z0-9]+)\b/i);
+    if (sizeMatch) {
+      sizeVal = sizeMatch[1].toUpperCase();
+      s = s.replace(/\bsize\s+[A-Za-z0-9]+\b/i, '').replace(/\s{2,}/g, ' ').trim();
+    } else {
+      const codeSizeMatch = s.match(/\b(NB|S|M|L|XL|XXL|XXXL)\d{1,2}\b$/i);
+      if (codeSizeMatch) {
+        sizeVal = codeSizeMatch[1].toUpperCase();
+        s = s.replace(/\b(NB|S|M|L|XL|XXL|XXXL)\d{1,2}\b$/i, '').trim();
       }
     }
 
-    return words.length > 3 ? words.slice(0, 3).join(' ') : base;
+    // 3. Làm gọn cụm từ nối phụ nhưng không bẻ đôi cụm danh từ
+    s = s.replace(/\b(cho bé|trẻ em)\b/gi, '').replace(/\s{2,}/g, ' ').trim();
+    s = s.replace(/\s+(hình con|thả bồn tắm|led hoạt hình|tráng bạc kháng khuẩn)\b.*$/i, '').trim();
+
+    // Giữ trọn cụm danh từ có nghĩa (ví dụ "Thảm chần bông", "Bộ hộp đồ ăn", "Set hủ gốm", "Chảo inox", "Xe chòi chân")
+    const intactPhrases = [
+      /^thảm chần bông/i,
+      /^bộ hộp đồ ăn/i,
+      /^set hủ gốm/i,
+      /^chảo inox/i,
+      /^xe chòi chân/i,
+      /^xe thăng bằng/i,
+      /^combo \d+ khăn ướt(?:\s+[a-zA-ZÀ-ỹ0-9]+)?/i,
+      /^khăn ướt(?:\s+[a-zA-ZÀ-ỹ0-9]+)?/i,
+      /^tã (?:quần|dán)\s+[a-zA-ZÀ-ỹ0-9]+/i,
+      /^bình ủ cháo/i,
+      /^bình giữ nhiệt/i,
+      /^bình nước/i,
+      /^bảng vẽ/i,
+      /^bảng học chữ cái/i,
+      /^đèn ngủ/i,
+      /^đồ chơi/i,
+      /^thú bông/i,
+      /^balo/i
+    ];
+
+    let label = '';
+    for (const rx of intactPhrases) {
+      const m = s.match(rx);
+      if (m) {
+        label = m[0].trim();
+        break;
+      }
+    }
+
+    if (!label) {
+      const words = s.split(/\s+/).filter(Boolean);
+      if (words.length > 0 && words[0].toLowerCase() === 'balo') {
+        label = words[0];
+      } else {
+        label = words.length > 3 ? words.slice(0, 3).join(' ') : s;
+      }
+    }
+
+    return { label, size: sizeVal, brand };
   }
 
   function compressPromoBranch(branch) {
@@ -94,67 +147,94 @@
     if (!b || /^không có$/i.test(b)) return '';
 
     if (b.indexOf(':') === -1) {
-      return cleanGiftPhrase(b);
+      const single = parseGiftItem(b);
+      return single.label || b;
     }
 
     const colonIdx = b.indexOf(':');
     const condShort = shortenCondition(b.slice(0, colonIdx));
     const giftPart = b.slice(colonIdx + 1);
     const rawGifts = giftPart.split(',').map((g) => g.trim()).filter(Boolean);
-    const cleaned = rawGifts.map(cleanGiftPhrase).filter(Boolean);
+    const parsed = rawGifts.map(parseGiftItem).filter((p) => p.label);
 
-    if (cleaned.length === 0) return `${condShort}: Quà tặng`;
-    if (cleaned.length === 1) return `${condShort}: ${cleaned[0]}`;
+    if (parsed.length === 0) return `${condShort}: Quà tặng`;
 
-    // Nếu lặp lại cùng một tên quà nhiều lần (ví dụ liệt kê lặp nhiều size/màu cùng tên)
-    const uniqueLower = new Set(cleaned.map((x) => x.toLowerCase()));
-    if (uniqueLower.size === 1) {
-      return `${condShort}: ${cleaned[0]}`;
-    }
+    // Gom nhóm theo tên đã chuẩn hóa để khử trùng lặp
+    const groups = [];
+    const groupMap = new Map();
 
-    // Kiểm tra tiền tố chung (cùng dòng sản phẩm khác size / phân loại)
-    const wordArrays = cleaned.map((c) => c.split(/\s+/));
-    const prefixWords = [];
-    const minLen = Math.min(...wordArrays.map((w) => w.length));
-    for (let i = 0; i < minLen; i++) {
-      const candidate = wordArrays[0][i];
-      if (wordArrays.every((w) => w[i].toLowerCase() === candidate.toLowerCase())) {
-        prefixWords.push(candidate);
-      } else {
-        break;
+    for (const item of parsed) {
+      const key = item.label.toLowerCase();
+      if (!groupMap.has(key)) {
+        const entry = {
+          label: item.label,
+          sizes: [],
+          brands: []
+        };
+        groupMap.set(key, entry);
+        groups.push(entry);
+      }
+      const g = groupMap.get(key);
+      if (item.size && !g.sizes.includes(item.size)) {
+        g.sizes.push(item.size);
+      }
+      if (item.brand && !g.brands.some((x) => x.toLowerCase() === item.brand.toLowerCase())) {
+        g.brands.push(item.brand);
       }
     }
 
-    const prefix = prefixWords.join(' ').trim();
-    const suffixes = cleaned
-      .map((c) => c.slice(prefix.length).replace(/^[\s\-–—/]+|[\s\-–—/]+$/g, '').trim())
-      .filter(Boolean);
+    // Xử lý đặc biệt cho nhóm thú bông (Chó bông, Vịt bông, Thú bông voi, Thú bông khỉ...)
+    const plushEntries = [];
+    const nonPlushEntries = [];
+    for (const g of groups) {
+      const low = g.label.toLowerCase();
+      if (/^(chó|vịt|thỏ|gấu|khỉ|voi|ngựa)\s+bông/i.test(low) || /^thú\s+bông/i.test(low)) {
+        let animal = g.label
+          .replace(/^thú\s+bông\s*/i, '')
+          .replace(/\s+bông.*$/i, '')
+          .trim();
+        if (!animal) animal = g.label;
+        plushEntries.push(animal);
+      } else {
+        nonPlushEntries.push(g);
+      }
+    }
 
-    if (prefixWords.length >= 2 && suffixes.length === cleaned.length) {
-      const sizeVals = [];
-      let allSize = true;
-      for (const s of suffixes) {
-        const m = s.match(/^size\s+(.+)$/i);
-        if (m) sizeVals.push(m[1].trim());
-        else {
-          allSize = false;
-          break;
+    const formattedParts = [];
+
+    if (plushEntries.length >= 2) {
+      const uniqueAnimals = Array.from(new Set(plushEntries.map((a) => a.charAt(0).toUpperCase() + a.slice(1).toLowerCase())));
+      formattedParts.push(`Thú bông (${uniqueAnimals.slice(0, 5).join(', ')})`);
+    } else if (plushEntries.length === 1) {
+      const singlePlush = groups.find((g) => /^(chó|vịt|thỏ|gấu|khỉ|voi|ngựa)\s+bông|^thú\s+bông/i.test(g.label));
+      if (singlePlush) formattedParts.push(singlePlush.label);
+    }
+
+    // Nếu nhiều món cùng loại khăn ướt khác hãng (vd: Khăn ướt Bobby, Khăn ướt Fressi -> Khăn ướt Bobby, Fressi)
+    let firstBrandPrefix = '';
+    for (const g of nonPlushEntries) {
+      let text = g.label;
+      if (g.sizes.length > 0) {
+        text += ` (size ${g.sizes.slice(0, 6).join('/')}${g.sizes.length > 6 ? '...' : ''})`;
+      } else if (g.brands.length > 0) {
+        const labelLow = text.toLowerCase();
+        const extraBrands = g.brands.filter((br) => !labelLow.includes(br.toLowerCase()));
+        if (extraBrands.length > 0 && groups.length <= 2) {
+          text += ` ${extraBrands[0]}`;
         }
       }
-      if (allSize && sizeVals.length > 0) {
-        const tail = sizeVals.slice(0, 6).join('/') + (sizeVals.length > 6 ? '...' : '');
-        return `${condShort}: ${prefix} size (${tail})`;
+
+      if (firstBrandPrefix && text.toLowerCase().startsWith(firstBrandPrefix.toLowerCase() + ' ')) {
+        text = text.slice(firstBrandPrefix.length).trim();
+      } else if (/^khăn ướt\s+/i.test(text)) {
+        firstBrandPrefix = 'Khăn ướt';
       }
-      const tail = suffixes.slice(0, 6).join('/') + (suffixes.length > 6 ? '...' : '');
-      return `${condShort}: ${prefix} (${tail})`;
+
+      formattedParts.push(text);
     }
 
-    // Nhiều món khác nhau: liệt kê gọn cách nhau bằng " , "
-    const shortItems = cleaned.slice(0, 4).map((c) => {
-      const w = c.split(/\s+/);
-      return w.length > 2 ? w.slice(0, 2).join(' ') : c;
-    });
-    return `${condShort}: ${shortItems.join(' , ')}`;
+    const joined = formattedParts.slice(0, 4).join(', ');
+    return `${condShort}: ${joined}`;
   }
 
   function compactPromoText(rawText) {
