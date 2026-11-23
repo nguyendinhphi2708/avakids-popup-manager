@@ -1,19 +1,27 @@
 (function () {
   const SUPABASE_URL = 'https://anknaltyafulhkoaupyc.supabase.co';
-  const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz'; // Thay đúng publishable/anon key công khai của dự án nếu cần
+  const SUPABASE_PUBLIC_KEY = 'sb_publishable_2LbdQ1yiwnrK-FUi5ipI9Q_pzNe7hIz';
   const CATALOG_TABLE = 'product_catalog';
-  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v1';
+  const CACHE_KEY = 'avakids_in_sieu_toc_cache_v2';
+  const PAGE_SIZE = 1000;
 
   const state = {
     items: [],
     selectedGroup: '',
     selectedSub: '',
+    selectedBrand: '',
     keyword: '',
     onlyFlash: false,
-    selectedItem: null,
-    qty: 1,
+    applyTime: '',
+    selectedCodes: new Set(),
+    rowQtyMap: {},
+    activeTab: 'super', // 'manual' | 'super' | 'batch'
     loadedFrom: ''
   };
+
+  function makeItemKey(item) {
+    return `${item.product_code || ''}__${item.product_name || ''}`;
+  }
 
   function stripDiacritics(str) {
     return String(str || '')
@@ -33,7 +41,9 @@
 
   function formatPromoDisplay(item) {
     const parts = [];
-    if (item.promo_text) parts.push(item.promo_text.trim());
+    if (item.promo_text && String(item.promo_text).trim().toLowerCase() !== 'không có') {
+      parts.push(String(item.promo_text).trim());
+    }
     if (item.is_flash_sale && !/flash\s*sale/i.test(item.promo_text || '')) {
       parts.unshift('FLASH SALE');
     }
@@ -72,6 +82,12 @@
     const style = document.createElement('style');
     style.id = 'ist-style';
     style.textContent = `
+      .ist-tab-bar {
+        display: inline-flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
       .ist-tab-btn {
         padding: 8px 14px;
         border-radius: 8px;
@@ -79,30 +95,37 @@
         background: #fff;
         color: #111827;
         font-weight: 600;
+        font-size: 13px;
         cursor: pointer;
         transition: all 0.15s ease;
       }
       .ist-tab-btn.active {
-        background: #0f766e;
+        background: #ec4899;
         color: #fff;
-        border-color: #0f766e;
+        border-color: #ec4899;
       }
       #ist-panel {
         background: #f8fafc;
         border: 1px solid #cbd5e1;
         border-radius: 10px;
         padding: 14px;
-        margin: 10px 0 14px;
+        margin: 8px 0 14px;
         font-family: inherit;
       }
-      .ist-row {
+      .ist-grid-4 {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 10px;
       }
-      @media (max-width: 768px) {
-        .ist-row { grid-template-columns: 1fr; }
+      .ist-grid-2 {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      @media (max-width: 900px) {
+        .ist-grid-4, .ist-grid-2 { grid-template-columns: 1fr; }
       }
       .ist-field label {
         display: block;
@@ -120,7 +143,7 @@
         font-size: 13px;
         box-sizing: border-box;
       }
-      .ist-actions {
+      .ist-header-bar {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
@@ -128,8 +151,21 @@
         justify-content: space-between;
         margin-bottom: 10px;
       }
+      .ist-bulk-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
       .ist-btn {
-        padding: 7px 12px;
+        padding: 6px 11px;
         border-radius: 7px;
         border: 1px solid #cbd5e1;
         background: #fff;
@@ -143,13 +179,18 @@
         color: #fff;
         border-color: #0284c7;
       }
+      .ist-btn-pink {
+        background: #ec4899;
+        color: #fff;
+        border-color: #ec4899;
+      }
       .ist-btn-success {
         background: #15803d;
         color: #fff;
         border-color: #15803d;
       }
       .ist-results {
-        max-height: 220px;
+        max-height: 280px;
         overflow-y: auto;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
@@ -162,15 +203,31 @@
         gap: 10px;
         padding: 8px 10px;
         border-bottom: 1px solid #f1f5f9;
-        cursor: pointer;
         font-size: 13px;
       }
-      .ist-item:hover, .ist-item.selected {
-        background: #e0f2fe;
+      .ist-item:hover {
+        background: #fdf2f8;
+      }
+      .ist-item.checked {
+        background: #fce7f3;
+      }
+      .ist-item-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+      }
+      .ist-item-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
       }
       .ist-price-box {
         text-align: right;
         white-space: nowrap;
+        min-width: 78px;
       }
       .ist-sale {
         font-weight: 700;
@@ -191,23 +248,28 @@
         font-weight: 700;
         margin-left: 6px;
       }
-      .ist-preview-card {
-        margin-top: 10px;
-        padding: 10px 12px;
-        background: #fff;
-        border: 1px dashed #0284c7;
-        border-radius: 8px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        justify-content: space-between;
+      .ist-promo-note {
+        font-size: 11px;
+        color: #b45309;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 520px;
+      }
+      .ist-row-qty {
+        width: 48px;
+        padding: 4px 6px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 12px;
+        text-align: center;
       }
     `;
     document.head.appendChild(style);
   }
 
-  async function fetchCatalogFromSupabase(forceRefresh = false) {
+  async function fetchAllCatalogFromSupabase(forceRefresh = false) {
     if (!forceRefresh) {
       try {
         const cached = localStorage.getItem(CACHE_KEY);
@@ -215,7 +277,7 @@
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed.items) && parsed.items.length > 0) {
             state.items = parsed.items;
-            state.loadedFrom = `Bộ nhớ tạm (${parsed.items.length} SP)`;
+            state.loadedFrom = `Bộ nhớ tạm (${parsed.items.length.toLocaleString('vi-VN')} SP)`;
             renderSelectors();
             renderResults();
           }
@@ -223,21 +285,37 @@
       } catch (_) {}
     }
 
-    const url = `${SUPABASE_URL}/rest/v1/${CATALOG_TABLE}?select=product_code,category_group,sub_category,brand,product_name,original_price,sale_price,discount_pct,price_type,promo_text,is_flash_sale,updated_at&limit=10000`;
-    const res = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_PUBLIC_KEY,
-        Authorization: `Bearer ${SUPABASE_PUBLIC_KEY}`
-      }
-    });
+    const allRows = [];
+    let offset = 0;
 
-    if (!res.ok) {
-      throw new Error(`Không tải được danh mục Supabase (${res.status})`);
+    while (true) {
+      const from = offset;
+      const to = offset + PAGE_SIZE - 1;
+      const url = `${SUPABASE_URL}/rest/v1/${CATALOG_TABLE}?select=product_code,category_group,sub_category,brand,product_name,original_price,sale_price,discount_pct,price_type,promo_text,is_flash_sale,updated_at&order=id.asc`;
+      const res = await fetch(url, {
+        headers: {
+          apikey: SUPABASE_PUBLIC_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLIC_KEY}`,
+          Range: `${from}-${to}`,
+          'Range-Unit': 'items'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`Không tải được danh mục Supabase (${res.status})`);
+      }
+
+      const chunk = await res.json();
+      if (!Array.isArray(chunk) || chunk.length === 0) break;
+
+      allRows.push(...chunk);
+      if (chunk.length < PAGE_SIZE) break;
+      offset += PAGE_SIZE;
     }
 
-    const rows = await res.json();
-    state.items = Array.isArray(rows) ? rows : [];
-    state.loadedFrom = `Supabase (${state.items.length} SP)`;
+    state.items = allRows;
+    const latestUpdate = allRows.find((r) => r.updated_at)?.updated_at || '';
+    state.loadedFrom = `${allRows.length.toLocaleString('vi-VN')} SP${latestUpdate ? ` • Cập nhật: ${latestUpdate}` : ''}`;
 
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items: state.items }));
@@ -253,20 +331,38 @@
       if (state.onlyFlash && !item.is_flash_sale) return false;
       if (state.selectedGroup && item.category_group !== state.selectedGroup) return false;
       if (state.selectedSub && item.sub_category !== state.selectedSub) return false;
+      if (state.selectedBrand && item.brand !== state.selectedBrand) return false;
 
       if (tokens.length > 0) {
         const haystack = stripDiacritics(
-          `${item.product_code || ''} ${item.product_name || ''} ${item.brand || ''} ${item.sub_category || ''}`
+          `${item.product_code || ''} ${item.product_name || ''} ${item.brand || ''} ${item.sub_category || ''} ${item.category_group || ''}`
         );
-        const allMatch = tokens.every((t) => haystack.includes(t));
-        if (!allMatch) return false;
+        if (!tokens.every((t) => haystack.includes(t))) return false;
       }
       return true;
-    }).slice(0, 80);
+    });
   }
 
-  function fillIntoExistingFormAndAdd(item, qty) {
-    // Điền vào các input hiện có trên trang nếu khớp tên/placeholder/id/label
+  function applySingleItemToQueue(item, qty) {
+    const useQty = Math.max(1, parseInt(qty, 10) || 1);
+    const promoText = formatPromoDisplay(item);
+    const applyDate = (state.applyTime || '').trim();
+
+    // Thử gọi hàm thêm vào danh sách chờ in của ứng dụng nếu có sẵn trên window/App
+    if (window.App && typeof window.App.addProductToQueue === 'function') {
+      window.App.addProductToQueue({
+        name: item.product_name || '',
+        originalPrice: item.original_price || 0,
+        salePrice: item.sale_price || 0,
+        promo: promoText,
+        applyDate: applyDate,
+        qty: useQty,
+        code: item.product_code || ''
+      });
+      return;
+    }
+
+    // Fallback: điền trực tiếp vào form và bấm nút thêm hiện có
     const inputs = Array.from(document.querySelectorAll('input, textarea'));
     const setVal = (el, val) => {
       if (!el) return;
@@ -279,31 +375,45 @@
     const origInput = inputs.find((i) => /giá\s*gốc|orig/i.test(i.placeholder || i.name || i.id || ''));
     const saleInput = inputs.find((i) => /giá\s*(giảm|bán|km)|sale|price/i.test(i.placeholder || i.name || i.id || ''));
     const promoInput = inputs.find((i) => /khuyến\s*mãi|quà|promo/i.test(i.placeholder || i.name || i.id || ''));
+    const dateInput = inputs.find((i) => /áp\s*dụng|thời\s*gian|date/i.test(i.placeholder || i.name || i.id || ''));
     const qtyInput = inputs.find((i) => /số\s*lượng|sl\s*in|qty/i.test(i.placeholder || i.name || i.id || ''));
 
     setVal(nameInput, item.product_name || '');
     setVal(origInput, item.original_price ? formatVND(item.original_price) : '');
     setVal(saleInput, item.sale_price ? formatVND(item.sale_price) : '');
-    setVal(promoInput, formatPromoDisplay(item));
-    if (qtyInput && qty) setVal(qtyInput, String(qty));
+    setVal(promoInput, promoText);
+    if (applyDate && dateInput) setVal(dateInput, applyDate);
+    if (qtyInput) setVal(qtyInput, String(useQty));
 
-    // Thử kích hoạt nút thêm vào danh sách chờ in nếu tìm thấy
     const addBtn = Array.from(document.querySelectorAll('button')).find((b) =>
       /thêm\s*(vào\s*)?(ds|danh\s*sách|chờ\s*in)|add\s*(to\s*)?(queue|list)/i.test(b.textContent || '')
     );
     if (addBtn) addBtn.click();
   }
 
+  function addSelectedItemsToQueue() {
+    if (state.selectedCodes.size === 0) return;
+    const selectedList = state.items.filter((it) => state.selectedCodes.has(makeItemKey(it)));
+    selectedList.forEach((it) => {
+      const k = makeItemKey(it);
+      const q = state.rowQtyMap[k] || 1;
+      applySingleItemToQueue(it, q);
+    });
+    state.selectedCodes.clear();
+    renderBulkBar();
+    renderResults();
+  }
+
   function renderSelectors() {
     const groupSel = document.getElementById('ist-group-select');
     const subSel = document.getElementById('ist-sub-select');
+    const brandSel = document.getElementById('ist-brand-select');
     const statusEl = document.getElementById('ist-status');
-    if (!groupSel || !subSel) return;
+    if (!groupSel || !subSel || !brandSel) return;
 
     const groups = Array.from(new Set(state.items.map((x) => x.category_group).filter(Boolean))).sort((a, b) =>
       a.localeCompare(b, 'vi')
     );
-
     groupSel.innerHTML = `<option value="">-- Tất cả nhóm ngành (${groups.length}) --</option>`;
     groups.forEach((g) => {
       const opt = document.createElement('option');
@@ -313,15 +423,10 @@
       groupSel.appendChild(opt);
     });
 
-    const subs = Array.from(
-      new Set(
-        state.items
-          .filter((x) => !state.selectedGroup || x.category_group === state.selectedGroup)
-          .map((x) => x.sub_category)
-          .filter(Boolean)
-      )
-    ).sort((a, b) => a.localeCompare(b, 'vi'));
-
+    const subPool = state.items.filter((x) => !state.selectedGroup || x.category_group === state.selectedGroup);
+    const subs = Array.from(new Set(subPool.map((x) => x.sub_category).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, 'vi')
+    );
     subSel.innerHTML = `<option value="">-- Tất cả nhóm hàng (${subs.length}) --</option>`;
     subs.forEach((s) => {
       const opt = document.createElement('option');
@@ -331,93 +436,142 @@
       subSel.appendChild(opt);
     });
 
+    const brandPool = subPool.filter((x) => !state.selectedSub || x.sub_category === state.selectedSub);
+    const brands = Array.from(new Set(brandPool.map((x) => x.brand).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, 'vi')
+    );
+    brandSel.innerHTML = `<option value="">-- Tất cả hãng (${brands.length}) --</option>`;
+    brands.forEach((b) => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = b;
+      if (b === state.selectedBrand) opt.selected = true;
+      brandSel.appendChild(opt);
+    });
+
     if (statusEl && state.loadedFrom) {
-      statusEl.textContent = `Nguồn: ${state.loadedFrom}`;
+      statusEl.textContent = state.loadedFrom;
     }
   }
 
-  function renderSelectedCard() {
-    const card = document.getElementById('ist-selected-card');
-    if (!card) return;
-    if (!state.selectedItem) {
-      card.style.display = 'none';
-      return;
-    }
-    const it = state.selectedItem;
-    card.style.display = 'flex';
-    card.innerHTML = `
+  function renderBulkBar() {
+    const bulkEl = document.getElementById('ist-bulk-bar');
+    if (!bulkEl) return;
+    const count = state.selectedCodes.size;
+    bulkEl.innerHTML = `
       <div>
-        <div style="font-weight:700;font-size:13px;color:#0f172a;">${it.product_name}</div>
-        <div style="font-size:12px;color:#475569;margin-top:2px;">
-          Mã: <b>${it.product_code || '-'}</b> |
-          Giá giảm: <b style="color:#dc2626;">${it.sale_price ? formatVND(it.sale_price) + 'đ' : '-'}</b> |
-          Giá gốc: <span>${it.original_price ? formatVND(it.original_price) + 'đ' : '(trống)'}</span>
-        </div>
-        ${formatPromoDisplay(it) ? `<div style="font-size:11px;color:#b45309;margin-top:2px;">KM: ${formatPromoDisplay(it)}</div>` : ''}
+        Đã tích chọn: <strong>${count}</strong> sản phẩm
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <label style="font-size:12px;font-weight:600;">SL in:
-          <input id="ist-qty-input" type="number" min="1" value="${state.qty}" style="width:60px;padding:5px;border:1px solid #cbd5e1;border-radius:6px;" />
-        </label>
-        <button type="button" id="ist-add-btn" class="ist-btn ist-btn-success">+ Thêm chờ in</button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button type="button" id="ist-select-visible-btn" class="ist-btn">Chọn kết quả đang hiện</button>
+        <button type="button" id="ist-clear-sel-btn" class="ist-btn" ${count === 0 ? 'disabled' : ''}>Bỏ chọn</button>
+        <button type="button" id="ist-add-selected-btn" class="ist-btn ist-btn-success" ${count === 0 ? 'disabled' : ''}>
+          + Thêm ${count} SP đã chọn
+        </button>
       </div>
     `;
 
-    const qtyInput = document.getElementById('ist-qty-input');
-    qtyInput?.addEventListener('change', (e) => {
-      state.qty = Math.max(1, parseInt(e.target.value, 10) || 1);
+    document.getElementById('ist-select-visible-btn')?.addEventListener('click', () => {
+      const visible = getFilteredItems().slice(0, 120);
+      visible.forEach((it) => state.selectedCodes.add(makeItemKey(it)));
+      renderBulkBar();
+      renderResults();
     });
-    document.getElementById('ist-add-btn')?.addEventListener('click', () => {
-      fillIntoExistingFormAndAdd(it, state.qty);
+
+    document.getElementById('ist-clear-sel-btn')?.addEventListener('click', () => {
+      state.selectedCodes.clear();
+      renderBulkBar();
+      renderResults();
     });
+
+    document.getElementById('ist-add-selected-btn')?.addEventListener('click', addSelectedItemsToQueue);
   }
 
   function renderResults() {
     const listEl = document.getElementById('ist-results');
+    const countEl = document.getElementById('ist-filter-count');
     if (!listEl) return;
-    const rows = getFilteredItems();
+
+    const matched = getFilteredItems();
+    const rows = matched.slice(0, 120);
+
+    if (countEl) {
+      countEl.textContent =
+        matched.length > 120
+          ? `Hiển thị 120 / ${matched.length.toLocaleString('vi-VN')} SP khớp (gõ thêm từ khóa để thu hẹp)`
+          : `${matched.length.toLocaleString('vi-VN')} SP khớp`;
+    }
 
     if (rows.length === 0) {
-      listEl.innerHTML = `<div style="padding:14px;text-align:center;color:#64748b;">Không tìm thấy sản phẩm phù hợp. Thử gõ từ khóa ngắn hơn (vd: <code>friso 3</code>).</div>`;
+      listEl.innerHTML = `<div style="padding:16px;text-align:center;color:#64748b;">Không tìm thấy sản phẩm phù hợp. Thử gõ từ khóa ngắn hơn (vd: <code>friso 3</code>) hoặc bấm <strong>Xóa lọc</strong>.</div>`;
       return;
     }
 
     listEl.innerHTML = rows
       .map((item, idx) => {
-        const isSel = state.selectedItem && state.selectedItem.product_code === item.product_code && state.selectedItem.product_name === item.product_name;
+        const key = makeItemKey(item);
+        const isChecked = state.selectedCodes.has(key);
+        const rowQty = state.rowQtyMap[key] || 1;
         const saleStr = item.sale_price ? `${formatVND(item.sale_price)}đ` : '';
         const origStr = item.original_price ? `${formatVND(item.original_price)}đ` : '';
+        const promoStr = formatPromoDisplay(item);
+
         return `
-          <div class="ist-item ${isSel ? 'selected' : ''}" data-idx="${idx}">
-            <div>
-              <div style="font-weight:600;color:#0f172a;">
-                ${item.product_name}
-                ${item.is_flash_sale ? '<span class="ist-badge">FLASH</span>' : ''}
-              </div>
-              <div style="font-size:11px;color:#64748b;">
-                ${item.sub_category || item.category_group || ''} • Mã: ${item.product_code || '-'}
+          <div class="ist-item ${isChecked ? 'checked' : ''}" data-idx="${idx}">
+            <div class="ist-item-left">
+              <input type="checkbox" class="ist-row-check" data-idx="${idx}" ${isChecked ? 'checked' : ''} style="margin-top:3px;cursor:pointer;" />
+              <div style="min-width:0;flex:1;">
+                <div style="font-weight:600;color:#0f172a;word-break:break-word;">
+                  ${item.product_name}
+                  ${item.is_flash_sale ? '<span class="ist-badge">FLASH</span>' : ''}
+                </div>
+                <div style="font-size:11px;color:#64748b;">
+                  ${item.brand ? `Hãng: <b>${item.brand}</b> • ` : ''}${item.sub_category || item.category_group || ''} • Mã: ${item.product_code || '-'}
+                </div>
+                ${promoStr ? `<div class="ist-promo-note" title="${promoStr}">🎁 ${promoStr}</div>` : ''}
               </div>
             </div>
-            <div class="ist-price-box">
-              <div class="ist-sale">${saleStr}</div>
-              ${origStr ? `<div class="ist-orig">${origStr}</div>` : ''}
+            <div class="ist-item-right">
+              <div class="ist-price-box">
+                <div class="ist-sale">${saleStr}</div>
+                ${origStr ? `<div class="ist-orig">${origStr}</div>` : ''}
+              </div>
+              <input type="number" min="1" class="ist-row-qty" data-idx="${idx}" value="${rowQty}" title="Số lượng tem" />
+              <button type="button" class="ist-btn ist-btn-pink ist-row-add" data-idx="${idx}">+ Thêm</button>
             </div>
           </div>
         `;
       })
       .join('');
 
-    listEl.querySelectorAll('.ist-item').forEach((el) => {
-      el.addEventListener('click', () => {
-        const idx = Number(el.getAttribute('data-idx'));
-        state.selectedItem = rows[idx];
-        renderSelectedCard();
+    listEl.querySelectorAll('.ist-row-check').forEach((chk) => {
+      chk.addEventListener('change', (e) => {
+        const idx = Number(e.target.getAttribute('data-idx'));
+        const key = makeItemKey(rows[idx]);
+        if (e.target.checked) state.selectedCodes.add(key);
+        else state.selectedCodes.delete(key);
+        renderBulkBar();
         renderResults();
       });
-      el.addEventListener('dblclick', () => {
-        const idx = Number(el.getAttribute('data-idx'));
-        state.selectedItem = rows[idx];
-        fillIntoExistingFormAndAdd(rows[idx], state.qty);
+    });
+
+    listEl.querySelectorAll('.ist-row-qty').forEach((inp) => {
+      inp.addEventListener('change', (e) => {
+        const idx = Number(e.target.getAttribute('data-idx'));
+        const key = makeItemKey(rows[idx]);
+        const val = Math.max(1, parseInt(e.target.value, 10) || 1);
+        state.rowQtyMap[key] = val;
+        e.target.value = String(val);
+      });
+    });
+
+    listEl.querySelectorAll('.ist-row-add').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.getAttribute('data-idx'));
+        const item = rows[idx];
+        const key = makeItemKey(item);
+        const qty = state.rowQtyMap[key] || 1;
+        applySingleItemToQueue(item, qty);
       });
     });
   }
@@ -427,40 +581,54 @@
     if (!tabInfo) return;
 
     injectStyles();
-
     const { parent, manualTab, batchTab } = tabInfo;
-    if (document.getElementById('ist-tab-btn')) return;
+    if (document.getElementById('ist-tab-bar')) return;
 
-    const superTab = document.createElement('button');
-    superTab.type = 'button';
-    superTab.id = 'ist-tab-btn';
-    superTab.className = 'ist-tab-btn';
-    superTab.textContent = 'In siêu tốc';
+    const targetForm = findFormContainer(manualTab);
 
-    if (batchTab) {
-      parent.insertBefore(superTab, batchTab);
-    } else {
-      parent.appendChild(superTab);
-    }
+    // Tạo thanh 3 tab rõ ràng: Nhập tay | In siêu tốc | In đồng loạt
+    const tabBar = document.createElement('div');
+    tabBar.id = 'ist-tab-bar';
+    tabBar.className = 'ist-tab-bar';
+
+    const btnManual = document.createElement('button');
+    btnManual.type = 'button';
+    btnManual.className = 'ist-tab-btn';
+    btnManual.textContent = 'Nhập tay';
+
+    const btnSuper = document.createElement('button');
+    btnSuper.type = 'button';
+    btnSuper.id = 'ist-tab-btn';
+    btnSuper.className = 'ist-tab-btn active';
+    btnSuper.textContent = '⚡ In siêu tốc';
+
+    const btnBatch = document.createElement('button');
+    btnBatch.type = 'button';
+    btnBatch.className = 'ist-tab-btn';
+    btnBatch.textContent = 'In đồng loạt';
+
+    tabBar.appendChild(btnManual);
+    tabBar.appendChild(btnSuper);
+    tabBar.appendChild(btnBatch);
 
     const panel = document.createElement('div');
     panel.id = 'ist-panel';
-    panel.style.display = 'none';
     panel.innerHTML = `
-      <div class="ist-actions">
+      <div class="ist-header-bar">
         <div>
           <strong style="font-size:14px;color:#0f172a;">⚡ In siêu tốc</strong>
           <span id="ist-status" style="font-size:12px;color:#475569;margin-left:8px;">Đang tải danh mục...</span>
         </div>
-        <div style="display:flex;gap:6px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
             <input type="checkbox" id="ist-flash-only" /> Flash Sale
           </label>
+          <button type="button" id="ist-reset-filter-btn" class="ist-btn">× Xóa lọc</button>
           <button type="button" id="ist-refresh-btn" class="ist-btn ist-btn-primary">↻ Đồng bộ giá</button>
         </div>
       </div>
 
-      <div class="ist-row">
+      <div class="ist-grid-4">
         <div class="ist-field">
           <label for="ist-group-select">Nhóm ngành hàng</label>
           <select id="ist-group-select"><option value="">-- Tất cả nhóm ngành --</option></select>
@@ -470,54 +638,77 @@
           <select id="ist-sub-select"><option value="">-- Tất cả nhóm hàng --</option></select>
         </div>
         <div class="ist-field">
+          <label for="ist-brand-select">Hãng sản xuất</label>
+          <select id="ist-brand-select"><option value="">-- Tất cả hãng --</option></select>
+        </div>
+        <div class="ist-field">
           <label for="ist-search-input">Tìm nhanh (tên, mã, từ khóa: vd. friso 3)</label>
           <input id="ist-search-input" type="text" placeholder="Gõ từ khóa gần đúng..." autocomplete="off" />
         </div>
       </div>
 
+      <div class="ist-grid-2">
+        <div style="display:flex;align-items:center;font-size:12px;color:#475569;">
+          <span id="ist-filter-count">Đang chờ dữ liệu...</span>
+        </div>
+        <div class="ist-field" style="margin-bottom:0;">
+          <label for="ist-apply-time">TG áp dụng chung cho tem thêm mới (tùy chọn)</label>
+          <input id="ist-apply-time" type="text" placeholder="Vd: 20/11 - 30/11 hoặc để trống..." />
+        </div>
+      </div>
+
+      <div id="ist-bulk-bar" class="ist-bulk-bar"></div>
       <div id="ist-results" class="ist-results"></div>
-      <div id="ist-selected-card" class="ist-preview-card" style="display:none;"></div>
     `;
 
-    const targetForm = findFormContainer(manualTab);
-    if (targetForm && targetForm.parentElement) {
-      targetForm.parentElement.insertBefore(panel, targetForm);
-    } else {
-      parent.insertAdjacentElement('afterend', panel);
+    const anchorParent = targetForm?.parentElement || parent.parentElement;
+    const anchorBefore = targetForm || parent.nextSibling;
+    anchorParent.insertBefore(tabBar, anchorBefore);
+    anchorParent.insertBefore(panel, anchorBefore);
+
+    // Ẩn cụm nút tab cũ nếu trùng lặp để tránh rối
+    if (parent && parent.id !== 'ist-tab-bar') {
+      parent.style.display = 'none';
     }
 
-    const activateSuperTab = () => {
-      superTab.classList.add('active');
-      panel.style.display = 'block';
-      if (targetForm) targetForm.style.display = 'none';
-      if (state.items.length === 0) {
-        fetchCatalogFromSupabase(false).catch((err) => {
-          const st = document.getElementById('ist-status');
-          if (st) st.textContent = err.message;
-        });
+    const switchMode = (mode) => {
+      state.activeTab = mode;
+      btnManual.classList.toggle('active', mode === 'manual');
+      btnSuper.classList.toggle('active', mode === 'super');
+      btnBatch.classList.toggle('active', mode === 'batch');
+
+      panel.style.display = mode === 'super' ? 'block' : 'none';
+      if (targetForm) {
+        targetForm.style.display = mode === 'super' ? 'none' : '';
       }
-      document.getElementById('ist-search-input')?.focus();
+      if (mode === 'manual' && manualTab) manualTab.click();
+      if (mode === 'batch' && batchTab) batchTab.click();
+      if (mode === 'super') {
+        document.getElementById('ist-search-input')?.focus();
+      }
     };
 
-    const deactivateSuperTab = () => {
-      superTab.classList.remove('active');
-      panel.style.display = 'none';
-      if (targetForm) targetForm.style.display = '';
-    };
-
-    superTab.addEventListener('click', activateSuperTab);
-    manualTab?.addEventListener('click', deactivateSuperTab);
-    batchTab?.addEventListener('click', deactivateSuperTab);
+    btnManual.addEventListener('click', () => switchMode('manual'));
+    btnSuper.addEventListener('click', () => switchMode('super'));
+    btnBatch.addEventListener('click', () => switchMode('batch'));
 
     document.getElementById('ist-group-select')?.addEventListener('change', (e) => {
       state.selectedGroup = e.target.value;
       state.selectedSub = '';
+      state.selectedBrand = '';
       renderSelectors();
       renderResults();
     });
 
     document.getElementById('ist-sub-select')?.addEventListener('change', (e) => {
       state.selectedSub = e.target.value;
+      state.selectedBrand = '';
+      renderSelectors();
+      renderResults();
+    });
+
+    document.getElementById('ist-brand-select')?.addEventListener('change', (e) => {
+      state.selectedBrand = e.target.value;
       renderResults();
     });
 
@@ -531,14 +722,40 @@
       renderResults();
     });
 
+    document.getElementById('ist-apply-time')?.addEventListener('input', (e) => {
+      state.applyTime = e.target.value;
+    });
+
+    document.getElementById('ist-reset-filter-btn')?.addEventListener('click', () => {
+      state.selectedGroup = '';
+      state.selectedSub = '';
+      state.selectedBrand = '';
+      state.keyword = '';
+      state.onlyFlash = false;
+      const kw = document.getElementById('ist-search-input');
+      const fl = document.getElementById('ist-flash-only');
+      if (kw) kw.value = '';
+      if (fl) fl.checked = false;
+      renderSelectors();
+      renderResults();
+    });
+
     document.getElementById('ist-refresh-btn')?.addEventListener('click', async () => {
       const st = document.getElementById('ist-status');
-      if (st) st.textContent = 'Đang đồng bộ từ Supabase...';
+      if (st) st.textContent = 'Đang đồng bộ toàn bộ danh mục từ Supabase...';
       try {
-        await fetchCatalogFromSupabase(true);
+        await fetchAllCatalogFromSupabase(true);
       } catch (err) {
         if (st) st.textContent = `Lỗi: ${err.message}`;
       }
+    });
+
+    renderBulkBar();
+    switchMode('super');
+
+    fetchAllCatalogFromSupabase(false).catch((err) => {
+      const st = document.getElementById('ist-status');
+      if (st) st.textContent = `Lỗi: ${err.message}`;
     });
   }
 
@@ -547,6 +764,4 @@
   } else {
     mountUI();
   }
-
 })();
-
