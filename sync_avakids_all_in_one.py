@@ -21,9 +21,23 @@ HEADERS = {
     'siteid': SITE_ID,
     'os': 'WebAVAKids',
     'platform': '1',
+    'origin': 'https://www.avakids.com',
+    'referer': 'https://www.avakids.com/',
     'accept': 'application/json, text/plain, */*',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    'accept-language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'connection': 'keep-alive',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 }
+
+FALLBACK_CATEGORIES = [
+    {'nganh_hang': 'Sữa - Thực phẩm', 'nhom_hang': 'Sữa - Thực phẩm', 'url': '/sua-bot-cho-be', 'id': '0'},
+    {'nganh_hang': 'Bỉm - Tã', 'nhom_hang': 'Bỉm - Tã', 'url': '/ta-bim', 'id': '0'},
+    {'nganh_hang': 'Chăm sóc bé', 'nhom_hang': 'Chăm sóc bé', 'url': '/cham-soc-be', 'id': '0'},
+    {'nganh_hang': 'Chăm sóc mẹ', 'nhom_hang': 'Chăm sóc mẹ', 'url': '/cham-soc-me', 'id': '0'},
+    {'nganh_hang': 'Đồ dùng cho bé', 'nhom_hang': 'Đồ dùng cho bé', 'url': '/do-dung-cho-be', 'id': '0'},
+    {'nganh_hang': 'Đồ chơi', 'nhom_hang': 'Đồ chơi', 'url': '/do-choi', 'id': '0'},
+    {'nganh_hang': 'Thời trang & Phụ kiện', 'nhom_hang': 'Thời trang & Phụ kiện', 'url': '/thoi-trang-phu-kien', 'id': '0'},
+]
 
 POPULAR_BRANDS = [
     'molfix', 'rascals', 'rascal', 'nan', 'pediasure', 'similac', 'growplus', 'grow', 'aptamil', 'enfa', 'enfagrow', 'enspire',
@@ -40,10 +54,37 @@ POPULAR_BRANDS = sorted(POPULAR_BRANDS, key=len, reverse=True)
 
 
 def get_session():
+    from urllib3.util.retry import Retry
     s = requests.Session()
-    adapter = requests.adapters.HTTPAdapter(pool_connections=35, pool_maxsize=35, max_retries=2)
+    retry = Retry(
+        total=4,
+        connect=4,
+        read=4,
+        backoff_factor=1.5,
+        status_forcelist=[403, 429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST"],
+        raise_on_status=False,
+    )
+    adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20, max_retries=retry)
     s.mount('https://', adapter)
+    s.mount('http://', adapter)
     return s
+
+def request_with_retry(session, method, url, **kwargs):
+    kwargs.setdefault("timeout", 20)
+    last_err = None
+    for attempt in range(1, 5):
+        try:
+            resp = session.request(method, url, **kwargs)
+            if resp.status_code in (403, 429, 500, 502, 503, 504):
+                time.sleep(1.5 * attempt)
+                last_err = RuntimeError(f"HTTP {resp.status_code} from {url}")
+                continue
+            return resp
+        except Exception as e:
+            last_err = e
+            time.sleep(1.5 * attempt)
+    raise last_err
 
 
 def extract_brand_fallback(name):
@@ -152,10 +193,12 @@ def clean_promotions(product, promo_detail=None):
 def fetch_flash_sale_codes(session):
     fs_codes = set()
     try:
-        r_tl = session.get(
+        r_tl = request_with_retry(
+            session,
+            "GET",
             f"https://api.avakids.com/gw/bus-ava-tmdt/api/v2/FlashSale/GetFlashSaleTimeLine?provinceId={PROVINCE_ID}",
             headers=HEADERS,
-            timeout=10
+            timeout=15
         )
         if r_tl.status_code == 200:
             timelines = r_tl.json().get('data') or []
@@ -163,11 +206,13 @@ def fetch_flash_sale_codes(session):
                 tl_id = tl.get('timelineId')
                 if not tl_id:
                     continue
-                r_fs = session.post(
+                r_fs = request_with_retry(
+                    session,
+                    "POST",
                     "https://api.avakids.com/gw/bus-ava-tmdt/api/v2/FlashSale/GetFlashSaleProducts",
                     headers=HEADERS,
                     json={"provinceId": PROVINCE_ID, "pageSize": 500, "timelineId": tl_id},
-                    timeout=10
+                    timeout=15
                 )
                 if r_fs.status_code == 200:
                     prods = r_fs.json().get('data') or []
@@ -183,8 +228,15 @@ def fetch_flash_sale_codes(session):
 
 def fetch_all_categories(session):
     menu_url = f"https://api.avakids.com/gw/bus-ava-tmdt/api/Static/GetMenu?provinceId={PROVINCE_ID}"
-    r_menu = session.get(menu_url, headers=HEADERS, timeout=12)
-    menu_data = r_menu.json().get('data') or []
+    try:
+        r_menu = request_with_retry(session, "GET", menu_url, headers=HEADERS, timeout=15)
+        menu_data = r_menu.json().get('data') or []
+        if not menu_data:
+            print("[!] GetMenu trả về rỗng, dùng danh sách ngành hàng dự phòng.")
+            return list(FALLBACK_CATEGORIES)
+    except Exception as e:
+        print(f"[!] GetMenu bị chặn/ngắt kết nối từ runner ({e}), dùng danh sách ngành hàng dự phòng.")
+        return list(FALLBACK_CATEGORIES)
     tasks = []
     seen = set()
     for parent in menu_data:
@@ -233,7 +285,7 @@ def scrape_category_products(session, task):
             "filters": [{"filterId": 1, "filterTypeId": 6, "sortName": "FEATURED_PRODUCTS", "url": ""}]
         }
         try:
-            res = session.post(cate_url, headers=HEADERS, json=payload, timeout=18)
+            res = request_with_retry(session, "POST", cate_url, headers=HEADERS, json=payload, timeout=20)
             if res.status_code != 200:
                 break
             d = res.json().get('data') or {}
@@ -399,7 +451,7 @@ def run_all():
 
     print("\n[+] BƯỚC 3: Tải danh sách sản phẩm đa luồng...")
     all_raw = []
-    with ThreadPoolExecutor(max_workers=12) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         futures = {executor.submit(scrape_category_products, session, t): t for t in tasks}
         completed = 0
         for f in as_completed(futures):
@@ -420,7 +472,7 @@ def run_all():
         if p.get('gift') or p.get('giftFS') or p.get('lstTextPromotion') or p.get('promotionList')
     ]
     promo_details_map = {}
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         futures = [executor.submit(fetch_single_promotion_detail, session, p) for p in products_with_promo]
         for f in as_completed(futures):
             p_code, promo_data = f.result()
