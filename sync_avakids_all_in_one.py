@@ -1,18 +1,12 @@
-import glob
-import io
 import os
 import re
 import sys
 import time
 import datetime
 import requests
-import pandas as pd
-import openpyxl
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- CẤU HÌNH HỆ THỐNG ---
-FILE_OUTPUT = "BANG_GIA_AVAKIDS.xlsx"
-SHEET_NAME = "Tất cả sản phẩm"
 PROVINCE_ID = 1027  # Hồ Chí Minh / Toàn quốc
 SITE_ID = "17"
 
@@ -44,11 +38,13 @@ POPULAR_BRANDS = [
 ]
 POPULAR_BRANDS = sorted(POPULAR_BRANDS, key=len, reverse=True)
 
+
 def get_session():
     s = requests.Session()
     adapter = requests.adapters.HTTPAdapter(pool_connections=35, pool_maxsize=35, max_retries=2)
     s.mount('https://', adapter)
     return s
+
 
 def extract_brand_fallback(name):
     name_lower = name.lower()
@@ -56,6 +52,39 @@ def extract_brand_fallback(name):
         if re.search(r'\b' + re.escape(b) + r'\b', name_lower):
             return b.title()
     return "Khác"
+
+
+def clean_number(val) -> float:
+    if val is None:
+        return 0.0
+    if isinstance(val, (int, float)):
+        return float(val)
+    s = str(val).strip()
+    if not s or s.lower() in ("nan", "none", "không có", "-"):
+        return 0.0
+    s_num = re.sub(r"[^\d.,-]", "", s)
+    if not s_num:
+        return 0.0
+    if "." in s_num and "," in s_num:
+        s_num = s_num.replace(".", "").replace(",", ".")
+    elif s_num.count(".") > 1:
+        s_num = s_num.replace(".", "")
+    elif len(s_num.split(".")[-1]) == 3 and "." in s_num:
+        s_num = s_num.replace(".", "")
+    try:
+        return float(s_num)
+    except ValueError:
+        return 0.0
+
+
+def clean_text(val) -> str:
+    if val is None:
+        return ""
+    s = str(val).strip()
+    if s.lower() in ("nan", "none", "không có"):
+        return ""
+    return s
+
 
 def clean_promotions(product, promo_detail=None):
     promos = []
@@ -119,6 +148,7 @@ def clean_promotions(product, promo_detail=None):
             unique_promos.append(p)
     return " | ".join(unique_promos) if unique_promos else "Không có"
 
+
 def fetch_flash_sale_codes(session):
     fs_codes = set()
     try:
@@ -149,6 +179,7 @@ def fetch_flash_sale_codes(session):
     except Exception as e:
         print(f"[!] Cảnh báo khi tải Flash Sale Timeline: {e}")
     return fs_codes
+
 
 def fetch_all_categories(session):
     menu_url = f"https://api.avakids.com/gw/bus-ava-tmdt/api/Static/GetMenu?provinceId={PROVINCE_ID}"
@@ -182,6 +213,7 @@ def fetch_all_categories(session):
                     tasks.append({'nganh_hang': pname, 'nhom_hang': cname, 'url': curl, 'id': str(cid)})
     return tasks
 
+
 def scrape_category_products(session, task):
     nganh_hang = task['nganh_hang']
     nhom_hang_default = task['nhom_hang']
@@ -207,3 +239,213 @@ def scrape_category_products(session, task):
             d = res.json().get('data') or {}
             prods = d.get('products') or []
             if not prods:
+                break
+            for p in prods:
+                p['__nganh_hang'] = nganh_hang
+                p['__nhom_hang_default'] = nhom_hang_default
+                category_products.append(p)
+            total_prod = d.get('totalProduct', 0)
+            if len(category_products) >= total_prod or len(prods) < page_size:
+                break
+            page_index += 1
+        except Exception:
+            break
+    return category_products
+
+
+def fetch_single_promotion_detail(session, product):
+    model_code = str(product.get('id') or '')
+    prod_code = str(product.get('productCode') or product.get('productPEId') or '')
+    if not model_code or not prod_code:
+        return prod_code, None
+    url = (
+        f"https://api.avakids.com/gw/bus-ava-tmdt/api/Product/GetPromotionDetail"
+        f"?ModelCode={model_code}&ProductCode={prod_code}&ProvinceId={PROVINCE_ID}&DistrictId=0&WardId=0&isFlashSale=false"
+    )
+    try:
+        res = session.get(url, headers=HEADERS, timeout=6)
+        if res.status_code == 200:
+            return prod_code, res.json().get('data')
+    except Exception:
+        pass
+    return prod_code, None
+
+
+def parse_product_record(p, fs_codes, update_time_str, promo_detail=None):
+    name = (p.get('name') or '').strip()
+    code = str(p.get('productCode') or p.get('productPEId') or p.get('id') or '')
+    pe_id = str(p.get('productPEId') or '')
+    variant_code = str(p.get('variantCode') or '')
+
+    nganh_hang = p.get('__nganh_hang') or "Mẹ và Bé"
+    nhom_hang = p.get('cateName') or p.get('__nhom_hang_default') or "Khác"
+
+    brand_obj = p.get('brand')
+    brand_name = ""
+    if isinstance(brand_obj, dict):
+        brand_name = brand_obj.get('brandName', '').strip()
+    elif isinstance(brand_obj, str):
+        brand_name = brand_obj.strip()
+    if not brand_name:
+        brand_name = extract_brand_fallback(name)
+
+    prices = p.get('productPrices') or [{}]
+    p0 = prices[0]
+    sys_price = clean_number(p0.get('sysPrice', 0))
+    current_price = clean_number(p0.get('price', 0))
+
+    if sys_price <= 0:
+        sys_price = current_price
+    if current_price <= 0 and sys_price > 0:
+        current_price = sys_price
+
+    # Quy tắc: nếu Giá gốc == Giá giảm (không giảm giá) -> đưa giá vào Giá giảm, để trống Giá gốc (0)
+    if sys_price > 0 and current_price > 0 and abs(sys_price - current_price) < 1e-6:
+        orig_price = 0.0
+        sale_price = current_price
+    else:
+        orig_price = sys_price
+        sale_price = current_price
+
+    tiet_kiem = max(0.0, orig_price - sale_price) if orig_price > 0 else 0.0
+    phan_tram_giam = round((tiet_kiem / orig_price * 100.0), 2) if orig_price > 0 else 0.0
+
+    is_flash_sale = False
+    if p.get('flashSaleInfo') is not None:
+        is_flash_sale = True
+    elif code in fs_codes or pe_id in fs_codes or variant_code in fs_codes:
+        is_flash_sale = True
+    else:
+        for pr in prices:
+            if pr.get('saleProgramTypeId') == 1 or pr.get('orderTypeId') == 341 or pr.get('outputTypeId') == 222:
+                is_flash_sale = True
+                break
+
+    loai_gia = "Giá Flash Sale" if is_flash_sale else "Giá thường"
+    promo_str = clean_promotions(p, promo_detail)
+
+    return {
+        "product_code": code,
+        "category_group": nganh_hang,
+        "sub_category": nhom_hang,
+        "brand": brand_name,
+        "product_name": name,
+        "original_price": orig_price,
+        "sale_price": sale_price,
+        "discount_pct": phan_tram_giam,
+        "price_type": loai_gia,
+        "promo_text": promo_str,
+        "is_flash_sale": is_flash_sale,
+        "updated_at": update_time_str,
+        "_sort_key": (nganh_hang.lower(), nhom_hang.lower(), brand_name.lower(), name.lower()),
+    }
+
+
+def sync_to_supabase(records: list[dict]):
+    if not SUPABASE_SECRET_KEY:
+        raise ValueError("Thiếu SUPABASE_SECRET_KEY trong biến môi trường / GitHub Secrets!")
+
+    headers = {
+        "apikey": SUPABASE_SECRET_KEY,
+        "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+    }
+
+    rpc_url = f"{SUPABASE_URL}/rest/v1/rpc/clear_product_catalog"
+    resp_clear = requests.post(rpc_url, headers=headers, json={})
+    if resp_clear.status_code not in (200, 204):
+        raise RuntimeError(f"Lỗi xóa dữ liệu cũ ({resp_clear.status_code}): {resp_clear.text}")
+
+    insert_url = f"{SUPABASE_URL}/rest/v1/{TABLE_NAME}"
+    total_inserted = 0
+    clean_payload = [
+        {k: v for k, v in rec.items() if not k.startswith("_")}
+        for rec in records
+    ]
+
+    for i in range(0, len(clean_payload), BATCH_SIZE):
+        batch = clean_payload[i : i + BATCH_SIZE]
+        resp = requests.post(insert_url, headers=headers, json=batch)
+        if resp.status_code not in (200, 201):
+            raise RuntimeError(f"Lỗi đẩy lô {i // BATCH_SIZE + 1} ({resp.status_code}): {resp.text}")
+        total_inserted += len(batch)
+        print(f"Đã đẩy: {total_inserted}/{len(clean_payload)} dòng...")
+
+    return total_inserted
+
+
+def run_all():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
+    update_time_str = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    start_time = time.time()
+
+    print("==================================================================")
+    print(" HỆ THỐNG CÀO GIÁ & ĐỒNG BỘ SUPABASE AVAKIDS (1 FILE GỘP)")
+    print(f" Thời gian thực hiện: {update_time_str}")
+    print("==================================================================")
+
+    session = get_session()
+
+    print("\n[+] BƯỚC 1: Quét danh sách Flash Sale...")
+    fs_codes = fetch_flash_sale_codes(session)
+    print(f"-> Đã phát hiện {len(fs_codes)} mã Flash Sale.")
+
+    print("\n[+] BƯỚC 2: Quét toàn bộ cây danh mục AVAKids...")
+    tasks = fetch_all_categories(session)
+    print(f"-> Tìm thấy {len(tasks)} danh mục.")
+
+    print("\n[+] BƯỚC 3: Tải danh sách sản phẩm đa luồng...")
+    all_raw = []
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        futures = {executor.submit(scrape_category_products, session, t): t for t in tasks}
+        completed = 0
+        for f in as_completed(futures):
+            all_raw.extend(f.result())
+            completed += 1
+            if completed % 20 == 0 or completed == len(tasks):
+                print(f"    Tiến độ: {completed}/{len(tasks)} danh mục ({len(all_raw)} lượt SP)...")
+
+    print("\n[+] BƯỚC 4: Lọc trùng & lấy chi tiết quà tặng...")
+    unique_map = {}
+    for p in all_raw:
+        code = str(p.get('productCode') or p.get('productPEId') or p.get('id') or p.get('name'))
+        if code not in unique_map:
+            unique_map[code] = p
+
+    products_with_promo = [
+        p for p in unique_map.values()
+        if p.get('gift') or p.get('giftFS') or p.get('lstTextPromotion') or p.get('promotionList')
+    ]
+    promo_details_map = {}
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = [executor.submit(fetch_single_promotion_detail, session, p) for p in products_with_promo]
+        for f in as_completed(futures):
+            p_code, promo_data = f.result()
+            if p_code and promo_data:
+                promo_details_map[p_code] = promo_data
+
+    parsed_records = []
+    for _, p in unique_map.items():
+        promo_data = promo_details_map.get(str(p.get('productCode') or p.get('productPEId') or ''))
+        rec = parse_product_record(p, fs_codes, update_time_str, promo_data)
+        if rec['sale_price'] > 0 or rec['original_price'] > 0:
+            parsed_records.append(rec)
+
+    parsed_records.sort(key=lambda x: x['_sort_key'])
+    print(f"-> Tổng số SP hợp lệ: {len(parsed_records):,}")
+
+    if not parsed_records:
+        raise RuntimeError("Không có dữ liệu sản phẩm hợp lệ để đồng bộ!")
+
+    print("\n[+] BƯỚC 5: Đẩy dữ liệu trực tiếp lên Supabase...")
+    count = sync_to_supabase(parsed_records)
+
+    elapsed = time.time() - start_time
+    print(f"\nHOÀN TẤT ĐỒNG BỘ {count:,} SẢN PHẨM TRONG {elapsed:.1f} GIÂY!")
+
+
+if __name__ == "__main__":
+    run_all()
