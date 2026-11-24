@@ -1,0 +1,29 @@
+name: Sync AVAKids Catalog
+
+on:
+  schedule:
+    # 07:30 sáng giờ Việt Nam (UTC+7) = 00:30 UTC
+    - cron: "30 0 * * *"
+    # 15:00 chiều giờ Việt Nam (UTC+7) = 08:00 UTC
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run AVAKids crawler & sync to Supabase
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: python sync_avakids_all_in_one.py
